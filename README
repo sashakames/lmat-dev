@@ -1,0 +1,32 @@
+File: README
+
+Livermore Metagenomics Analysis Tool Index Preparation Suite
+
+This software package contains source files to build binaries needed
+for reference database index preparation and execution of the search
+tool read_label_lo.
+
+The search tool runs in two modes: (1) build index + search (2) load index
+and search.  We recommend mode 2 because full database indices take
+long times to build, so pre-building an index and loading on
+subsequent execution of the search tool avoids repetition of the index
+building phase.  The index load phase uses memory-mapped files. 
+
+
+Compilation:
+
+Set up environment variables necessary for index file generation and loading 
+
+
+
+
+
+in the src/ directory  
+
+
+
+
+This work performed under the auspices of the U.S. Department of
+Energy by Lawrence Livermore National Laboratory under contract DE-
+AC52-07NA27344
+

@@ -1,0 +1,781 @@
+\documentclass[11pt]{article}
+\usepackage{underscore}
+%\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+%\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+%\usepackage{graphicx}
+%\usepackage{amssymb}
+%\usepackage{epstopdf}
+%\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\usepackage{ifpdf}
+\ifpdf
+   \pdfcompresslevel=9
+   \pdfpagewidth=8.5 true in
+   \pdfpageheight=11 true in
+   \pdfhorigin=.25 true in
+   \pdfvorigin=.25 true in
+\fi
+
+
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{xspace}
+
+\textwidth=7.50in
+\textheight=10.in
+\topmargin=0.0in
+\headsep=0.0in
+\headheight=0.0in
+\oddsidemargin=0.25in
+\evensidemargin=0.25in
+
+
+\title{Livermore Metagenomics Analysis Toolkit - LMAT}
+%\author{The Author}
+%\date{}                                           % Activate to display a given date or no date
+
+\newcommand{\lmatver}{VERSIONNO}
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{What's New in Version \lmatver}
+
+Version \lmatver~includes a number of major changes, which should be described in more technical detail in forthcoming publications.  Changes include:
+\begin{itemize}
+\item The kmer/taxonomy search database (DB) index structure was changed from gnu\_hash to a custom designed index.
+This dramatically improves speed and dramatically reduces memory requirements
+\item NCBI taxonomy identifiers are used instead of our own local database representation (should simplify interpretation)
+\item The DB stores NCBI taxonomy identifiers in a 16-bit representation to substantially reduce memory requirements
+(our current Full database is XXXGB compared to the previous size of 540GB)
+\item The read binning step is now included in the initial database search application to increase speed.
+\item Added a content summarization step.  Output from initial read labeling is re-processed to estimate abundance profiles
+and to assign each read (including higher ranked reads) to the nearest most likely genome of origin. A more detailed description
+of the method is given later in the documentation.
+\item An gene annotation option is included.
+\item The null-model has been improved select a GC context specific null model based on the GC content of the query read.
+\item The run script for LMAT has been refined to better allow individually customized runs.
+\item Input sets can now be ``load-balanced'' among multiple cores. 
+\item The module to label reads includes techniques for improving runtime with a slightly reduced accuracy by means of selectively pruning low-rank taxonomy identifiers.  
+\item The module to index the database can be enabled to use the same pruning technique (as above) to build databases with reduced numbers of taxonomy identifiers that should give even better runtime performance than runtime pruning.
+\item Use latest je-malloc memory management library, which simplifies filemanagement
+\item provide utility for retrieving organism specific reads and placing them into a single fasta file
+\item The runtime-input files are now provided in a separate download from our ftp site.  As a result, the source tarball is significantly smaller.
+\item A script is provided to download databases and the runtime-input files from the ftp site.
+
+\end{itemize}
+
+{\it Earlier updates:}
+
+Version 1.1.2 differs from LMAT-1.1.1 in only the following:
+
+We add support for null-model generation (Section \ref{sec:nullmodel})
+where random reads are now explicitly drawn from a range of GC content
+values.
+
+
+\section{Overview}
+
+This software package (LMAT) contains source code with the initial work described in
+"Scalable metagenomic taxonomy classification using a reference genome 
+database".   
+     The web site for LMAT is \texttt{http://computation.llnl.gov/lmat}.  
+     
+The basic requirement is x86_84 Linux (tested with 2.6.32-358 or later kernels).  Running on other 64-bit platforms is unconfirmed but feasible (please share your experiences).
+Our approach is divided into two steps:
+
+
+\begin{enumerate}[A.]
+\label{sec:over-a}
+
+   \item 
+{
+%\setlength{\itemindent{15pt}}
+   {\bf Searchable K-mer/Taxonomy Database Preparation:}\\
+   \\
+    In somewhat simplistic 
+     terms, the database is a hashtable that maps k-mers to the genomes in which they
+     appear, and the genomes to nodes in a taxonomy tree. (Hereafter
+     we abbreviate "Searchable K-mer/Taxonomy Database" as DB.)
+
+     Preparing a full DB involves several steps and takes many hours. 
+     ("Full" refers to a database that contains k-mers from
+     all viral, prokaryote, fungal and protist genomes.)
+
+     *** TODO: Get size of 1000 taxid threshold version when done
+
+     Our current ``Full'' database (not yet available) is 400 GB in
+     size, smaller than what we used for our July 2013 publication in
+     Bioinformatics due to several of the key optimizations within
+     this release.  We have two smaller ``marker'' database available for 
+     ftp download, the sizes of the two databases listed below are respectively 52GB and 16GB uncompressed.  
+
+     An additional download required for running LMAT is the collection of ``runtime-input'' files needed to go along with the database (about 300MB in total).  For convenience, we include a script to perform these ftp downloads, details below.
+     
+
+Our databases are available for download from the ftp site:
+
+     \texttt{gdo-bioinformatics.ucllnl.org/pub/lmat}.  
+
+
+   First download the external datafiles needed to run LMAT, these include the required NCBI taxonomy information, gene annotation and other support data.
+
+\begin{verbatim}
+
+   cd <LMAT-root-dir>/bin
+
+   ./get_db.sh inputs <LMAT-root-dir/runtime_inputs>
+
+   #  set the environment variable to point to the location
+   setenv LMAT_DIR=<LMAT-root-dir>/runtime_inputs
+
+   #  Download the marker libary, set <db-name> to kML.18mer.16bit.db (larger)
+   #  or kML.18mer.16bit.reduced (smaller) 
+   ./get_db.sh <db-name> <data-dir>
+
+   #  Download the gene annotation libary, set <db-name> 
+   #  to gene.20mer (for gene annotation only)
+   ./get_db.sh <db-name> <data-dir>
+
+
+
+\end{verbatim}     
+         
+     Due to the time and effort involved in constructing a reference
+     DB, we suggest that first-time users begin with our Marker
+     database.  In this case you can skip the sections "Searchable
+     K-mer/Taxonomy Database Preparation", "Custom Null Model
+     Generation.".  Our \nameref{sec:quick-start} instructions give a
+     brief example of how to perform classification using the
+     downloadable Marker DB and included application binary
+     executable.
+
+     We include a shell script to download and assemble the larger
+     marker library as it is broken into 5 separate compressed files.
+     Run \texttt{./get\_db.sh} from LMAT-\lmatver/bin.
+     Alternatively, each file can be downloaded separately to reduce
+     the risk of incomplete downloads, then uncompressed and merged to
+     create the whole marker database file.
+        
+     We highly recommend the use of a "ramdisk", Solid-State Drive, or
+     other flash-based storage (eg. PCIe card) to store the
+     uncompressed DB files.  Make sure that there is enough space on
+     the device to hold the relatively large file(s).  Save these
+     file(s) to a directory on that storage device and use
+     \texttt{gunzip} to uncompress the \texttt{*.gz}.
+
+     The files must remain with read-write ("rw") file access
+     permissions set or LMAT cannot open them.
+
+     Additionally, we encourage users to install
+     the DI-MMAP runtime (optional) if considering use of LMAT
+     databases on flash-based storage.  Please see
+     https://bitbucket.org/vanessen/di-mmap for more information.
+     Accessing the database at run-time over a NFS mounted file system
+     is not recommended.  
+
+\begin{quote}
+  {\it Tip:} If a ramdisk is not available on a large (512GB+) server,
+  we recommend that the database be ``precopied'' into the system's
+  buffer cache (from network attached or local HDD storage) prior to
+  running LMAT.  LMAT uses memory mapped files so pages in the
+  database are loaded on demand.  Regular system prefetching of pages
+  under the memory-mapped approach is slow unless run from an SSD.  To
+  perform the ``precopy'':
+
+ \texttt{\% cat <database-filename> > /dev/null}.
+\end{quote}
+
+}
+  \item
+{
+%\setlength{\itemindent{15pt}}
+
+
+  {\bf Scoring and Classification:}\\
+  \\
+   K-mers in queries are searched for in the DB
+     and taxonomic lineages are written to file; a PERL script subsequently
+     analyzes this file and outputs classification and abundancy statistics.  For more details, refer to the section \nameref{sec:scoring}.
+}
+\end{enumerate}
+
+\subsection{Quick-Start}
+\label{sec:quick-start}
+
+This section gives instructions in brief on how to perform scoring and classification on an input query set using the Marker DB.  The example in this section is covered in more detail in subsequent sections of this manual.   Be sure you have successfully downloaded the reference database files as described above in \nameref{sec:over-a} (A) above. Once that is complete, you can use the included binary executable application to run the scoring portion.  To complete the example execution below, you need to provide: 
+
+\begin{enumerate}[(1)]
+\item 
+{
+%\setlength{\itemindent{15pt}}
+ an input .fasta file to classify. 
+ }
+ \item
+{ 
+%\setlength{\itemindent{15pt}}
+ a directory for output data files.
+ }
+\end{enumerate}
+
+
+\noindent Recommended configuration setting to use LMAT: 
+
+ disable address space randomization (if not already set).\\
+   As super-user: \texttt{echo 0 > /proc/sys/kernel/randomize\_va\_space}\\
+-or-\\
+ Use ``setarch -R''.
+
+Note this step is recommened to reduce any potential memory management conflicts. 
+So far this step does not appear to be required and if address space randomization cannot be disabled, LMAT should 
+still run.   
+
+   
+Example scoring and classification using the included binary and the Marker DB:
+
+\begin{verbatim}
+The environment variable LMAT_DIR must be set and point to the directory containing the files given in the runtime_inputs directory (see above for download information)
+%for example in bash:
+%export LMAT_DIR=../runtime_inputs
+%or csh:
+%setenv LMAT_DIR ../runtime_inputs
+
+
+% cd LMAT-VERSIONNO/
+
+%
+% to run the marker library first and then full database run
+
+Example Run of LMAT:
+
+Recall the environment variable LMAT_DIR must be set and point to the directory containing the files given in the runtime_inputs directory
+%for example in bash:
+%export LMAT_DIR=../runtime_inputs
+%or csh:
+%setenv LMAT_DIR ../runtime_inputs
+
+
+% cd LMAT-VERSIONNO/
+
+create a temporary directory to store LMAT output
+mkdir tmp
+
+# unpack the simple example, includes 1000 reads from 3 organisms, and example LMAT output
+cd example
+tar zxvf example.tar.gz
+cd ..
+
+cd bin
+./run_lmat.sh --marker_library=<path-to-library/kML.18mer.16bit.db --query_file=../bin/simple_list.fna --odir=../tmp --genedb_file=<path-to-gene-database>/gene.20mer.db
+
+Output files:
+simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output.0.30.fastsummary - Shows the initial LMAT search output, bins reads into rank flexible categories
+simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output.0.30.fastsummary.summ - Reassigns higher order ranked reads to a target organism call
+simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output.0.01.20.genesummary - gene content summary
+simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output[0-9]*.out - initial individually labeled reads
+simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output[0-9]*out.ras.1 - rebinned reads where higher ranked reads were assigned to target organisms
+
+
+
+%Additional example run configurations
+
+% run with full database and marker library 
+% ./run_lmat.sh --db_file=<path-to-database>/m9.0904.16 --marker_library=<path-to-library>/marker_lib.20.v1.1 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --genedb_file=<path-to-gene-database>
+% run just the marker library
+% ./run_lmat.sh --marker_library=<path-to-library>/marker_lib.20.v1.1 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --genedb_file=<path-to-gene-database>
+% run just the full database
+% ./run_lmat.sh --db_file=<path-to-database>/m9.0904.16 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --genedb_file=<path-to-gene-database>
+% to bypass the gene annotation step type:
+%./run_lmat.sh --db_file=<path-to-library>/marker_lib.20.v1.1 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --gl_off
+\end{verbatim}
+
+The purpose of having two different types of reference databases (--marker_library and --db_file) is for the conveniance of tuning the cutoff values for the two database types differently
+
+If the pre-built executable does not load on your system, proceed with the \nameref{sec:compile} step below.
+
+\section{Required Software Packages}
+
+gcc 4.4.X\\
+python 2.6\\
+OpenMP\\
+MPI (optional, for use in building a Reference Database)
+
+\section{Compilation}
+\label{sec:compile}
+
+\begin{enumerate}
+
+%\item
+%
+% Set up environment variables using your shell syntax; typically:
+%
+%\begin{verbatim}
+%
+%   export WITH_PJMALLOC=1
+%   export HAVE_MPI=0
+%
+%  or:
+%
+%   setenv WITH_PJMALLOC 1
+%   setenv HAVE_MPI 0
+%\end{verbatim}
+%
+%   (note: MPI is optional, and only used in some drivers when building
+%    a DB from scratch; it is not used in the Scoring and Classification
+%    steps)
+
+
+\item
+
+If using MPI (optional; only used in some drivers when building
+    a DB from scratch) set up environment variable using your shell syntax; typically: 
+\begin{verbatim}
+
+   export HAVE_MPI=1
+
+  or:
+
+   setenv HAVE_MPI 1
+\end{verbatim}
+
+   (note: MPI is not used in the Scoring and Classification
+    steps)
+
+
+\item
+%Compile by running (in the \texttt{LMAT-\lmatver} directory): \texttt{make}
+
+%   Note: the \texttt{LMAT-\lmatver/lib} includes pre-built libraries for \emph{perm-je},
+        % \emph{gzstream}, and \emph{gzlib}. 
+         \texttt{LMAT-\lmatver/bin} contains prebuilt executables for all c++ drivers.
+         If these do not work on your system,
+         cd to \texttt{LMAT-\lmatver} and run {\em make}
+         %cd to \texttt{LMAT-\lmatver/third-party} and rebuild the three packages
+         %y running '\texttt{make}.'
+\item
+ Disable address space randomization (if not already set).\\
+   As super-user: \texttt{echo 0 > /proc/sys/kernel/randomize\_va\_space}
+\end{enumerate}
+
+
+\section{Searchable K-mer/Taxonomy Database Preparation}
+
+
+Note: some drivers and scripts described below contain hardcoded paths,
+      so execute from within the src directory.
+
+\subsection{summary of steps required for building a database} 
+This section gives a step-by-step overview of the steps required to build a searchable reference database for use with LMAT.
+This example assumes that you have already compiled the LMAT-\lmatver and that your working directory as specified below is also suitable for placing the database (eg. ramdisk or SSD).  If not, is is fine to substitute "\texttt{WORK}" below with any suitable directory.  The subsequent sections \ref{sec:upd} - \ref{sec:make-db} expand upon these steps in more detail.\\
+\\
+\texttt{cd <filepath>/LMAT-\lmatver/data}\\
+\\
+\begin{itemize}
+\item
+download \texttt{gi\_taxid\_nucl.dmp.gz} from ftp://ftp.ncbi.nih.gov/pub/taxonomy
+\end{itemize}
+\texttt{cd <filepath>/LMAT-\lmatver/src}\\
+\begin{verbatim}
+mkdir WORK
+
+#assume your reference genome fasta file is: WORK/test.fa.  
+#Note to get started we provide a list of genome files from fall 2012, which we used for our initial database
+#the identifiers can be obtained here:  wget ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/microbe2.gi.header_table.gz
+#currently the actual genomes sequences must be retrieved from NCBI
+
+prepare_fasta.py WORK/test.fa WORK
+kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 0
+kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 1
+kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 2
+kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 3
+tax_histo_fast_limited -o WORK/out.tax_hist.0 -d WORK/kmerDB.0 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
+tax_histo_fast_limited -o WORK/out.tax_hist.1 -d WORK/kmerDB.1 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
+tax_histo_fast_limited -o WORK/out.tax_hist.2 -d WORK/kmerDB.2 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
+tax_histo_fast_limited -o WORK/out.tax_hist.3 -d WORK/kmerDB.3 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
+
+# generate the file containing list of binary source data files
+
+ls WORK/*.bin > WORK/table_input_list
+ 
+make_db_table -i WORK/table_input_list -o WORK/my_table -k 20
+
+\end{verbatim}
+
+\subsection{How to update the taxonomy}
+\label{sec:upd}
+
+This release contains a prebuilt file, \texttt{LMAT-\lmatver/runtime\_inputs/ncbi\_taxonomy.dat},
+so you only need to rebuild if you're using sequences with gi numbers
+that are not in \texttt{ncbi\_taxonomy.dat}.  (\texttt{LMAT-\lmatver/runtime\_inputs/ncbi\_taxonomy.dat} 
+was built from NCBI files downloaded on September 4, 2013)
+
+to rebuild:
+
+download \texttt{taxdmp.zip} from ftp://ftp.ncbi.nih.gov/pub/taxonomy and unzip;
+you can download these to a separate directory if you wish.
+
+\texttt{>parse\_ncbi\_taxonomy.py <dir>}
+
+where: \texttt{dir>} is directory containing uncompressed files from \texttt{taxdmp.zip}
+
+This will create three files:
+\begin{verbatim}
+  ../runtime_inputs/ncbi_taxonomy_rank.txt
+  ../runtime_inputs/depth_for_ncbi_taxonomy.dat
+  ../runtime_inputs/ncbi_taxonomy.dat
+\end{verbatim}
+
+\subsection{prepare fasta file, and generate gi to tax ID mapping}
+ 
+\begin{enumerate}[a)]
+\item
+Download \texttt{gi\_taxid\_nucl.dmp.gz} from ftp://ftp.ncbi.nih.gov/pub/taxonomy
+   and place it in the \texttt{LMAT-\lmatver/data directory}. Note: this is a large file,
+   approximately 700M. Do not uncompress this file.
+\item
+run: \texttt{src/prepare\_fasta.py fasta.fn <output-directory>}\\
+\\
+   where '\texttt{fasta.fn}' contains your fasta formatted reference genomes. 
+   The sequence headers should contain NCBI gi numbers, else they
+   will be discarded.
+
+   Note users can retrieve bacterial, viral and plasmid data as follows:
+\begin{verbatim}
+   wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/all.fna.tar.gz
+   wget ftp://ftp.ncbi.nih.gov/genomes/Viruses/all.fna.tar.gz
+   wget ftp://ftp.ncbi.nih.gov/genomes/Plasmids/all.fna.tar.gz
+\end{verbatim}
+
+   A list of files used in our original database, which includes eukaryote genomes is provided here:
+
+\begin{verbatim}
+   wget ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/microbe2.gi.header_table.gz
+\end{verbatim}
+ 
+
+   The \texttt{<output-directory>} will contain several files. \texttt{fasta.fn.int}
+   is the input to the next step: \texttt{kmerPrefixCounter}.
+   \texttt{all\_virus.gi\_to\_tid\_map} should replace \texttt{gid\_to\_tid\_kpath.txt}
+   for the classification phase.
+\end{enumerate}
+\begin{itemize}
+\item
+\textbf{Nice to know:} \texttt{prepare\_fasta.py} executes the following three codes:
+
+\begin{verbatim}
+
+get_gi_numbers.py
+
+    function: parses fasta header files to extract NCBI gi numbers;
+    input: fasta file
+    input: data/gi_taxid_nucl.dmp.gz
+    output: file with one gi number per line
+
+build_gi_to_tid_map.cpp
+
+    function: maps NCBI gi numbers to NCBI tax_id numbers
+    input: output file from get_gi_numbers.py
+    input: gi_taxid_nucl.dmp.gz
+    output: file with 'gi tid' per line
+
+build_header_table.py
+
+\end{verbatim}
+
+  transforms fasta file containing reference genome into format with a
+  single id for header; the header is the NCBI taxonomy node ID associated
+  with the sequences gi number. If the input file is '\texttt{fasta.fa},'
+  the output files will be:
+
+\begin{verbatim}
+    fasta.fa.int        - same as fasta.fa, but with transformed headers
+    fasta.fa.gi.table   - each two-line entry contains
+                           (1) gi number
+                           (2) header from the input file
+    fasta.fa.gi.table   - each two-line entry contains
+                           (1) tax node ID;
+                           (2) header from the input file
+
+\end{verbatim}
+\end{itemize}
+
+\subsection{run 'kmerPrefixCounter' to build reference genome database files}
+
+   Usage for \texttt{kmerPrefixCounter}:
+   \begin{verbatim}
+    -i <string>  - input fasta_fn
+    -k <int>     - k-mer length
+    -o <string>  - output filename
+    -l <int>     - prefix length (as in: the string representation of the prefix)
+    -f <int> [optional] first prefix
+\end{verbatim}
+
+  This driver can build DB files for a large set of reference genomes by
+  incrementally building files that only contain k-mers that begin with
+  a given prefix. This driver can be run either sequentially or in
+  parallel mode.
+
+  If you invoke with '\texttt{-l 1}' you will have four output files; the first will
+  contain (binary encoded) k-mers that begin with '\texttt{a}', the second k-mers that
+  begin with '\texttt{c},' and so on. For '\texttt{-l 2}' there will be 16 output files.
+  In general, there will be $4^l$ output files.
+
+  The output files contain k-mers, and each k-mer has a list of genome IDs
+  (gi numbers) in which it appears.
+
+\begin{description}
+
+ \item[Sequential Example:]
+ 
+  \begin{verbatim}
+  
+    kmerPrefixCounter my_fasta_file.int -k 18 -o kmer_and_genomes -l 1 -f 0
+    kmerPrefixCounter my_fasta_file.int -k 18 -o kmer_and_genomes -l 1 -f 1
+    kmerPrefixCounter my_fasta_file.int -k 18 -o kmer_and_genomes -l 1 -f 2
+    kmerPrefixCounter my_fasta_file.int -k 18 -o kmer_and_genomes -l 1 -f 3
+    \end{verbatim}
+    
+  this will produce four output files: \\
+  \\
+    \texttt{kmer\_and\_genomes.0, kmer\_and\_genomes.1}, etc.
+
+  \item[Parallel Example 1:]
+  Use your favorite utility to run kmerPrefixCounter jobs in parallel, eg. gnu parallel (in your path).
+  \begin{verbatim}
+    seq 0 3 | parallel kmerPrefixCounter my_fasta_file.int -k 18 -o kmer_and_genomes -l 1 -f {.}
+  \end{verbatim}
+
+
+
+
+  \item[Parallel Example 2:]
+
+
+  assuming you have a cluster with eight nodes:\\
+  \begin{verbatim}
+  
+    mpirun -np 8 kmerPrefixCounter my_fasta_file.int -k 18 -o kmer_and_genomes -l 2 -f 0
+    mpirun -np 8 kmerPrefixCounter my_fasta_file.int -k 18 -o kmer_and_genomes -l 2 -f 8
+    \end{verbatim}
+  the first run output files \texttt{kmer\_and\_genomes.0} through \texttt{kmer\_and\_genomes.7},
+  and the second outputs files \texttt{kmer\_and\_genomes.0} through \texttt{kmer\_and\_genomes.15}
+
+
+
+\end{description}
+
+\subsection{Tax Histo}
+\label{tax-histo}
+ Run \texttt{tax\_histo} to construct the k-mer/taxonomy database
+   (discussed in Section 2.1 of our paper); run with no options for usage
+   information. Output files -o used for running \texttt{make\_db\_table}.
+
+
+
+\subsection{Make DB Table}
+\label{sec:make-db}
+Run '\texttt{make\_db\_table};' run with no options for usage information.
+   For the required argument to specify input '\texttt{-i <list-file>}', \texttt{<list-file>} contains the list of binary data (.bin) files generated in step \ref{tax-histo-fast-limited} above, eg. \texttt{my\_tax\_histo\_output.bin}
+
+ Once the execution has completed, the output filename specified by -o must remain with read-write ("rw") file access permissions set or the subsequent applications cannot open.
+
+   When running  \nameref{sec:scoring} you would specify "\texttt{-d my\_ref\_db}"  
+
+ To use make\_db\_table with values of $k$ (-k) other than 20, requires
+ recompiling with alternate environment variables set.  For 18-mers
+ ($k=18$) set the variable SDBIDX=1827 prior to compilation.  This sets up LMAT's
+ two-level indexing to work with 18-mers.  Other LMAT binaries do not
+ require this change for use with 18-mer databases built in this way.
+
+For values of $k$ other than 18 or 20, set the environment variable
+ USE_SORTED_DB=0 prior to compilation.  All LMAT binaries must be
+ built with this variable set to use values of $k$ other than 18 or
+ 20.  This enables LMAT indexing to use a hash table rather than two-level indexing.  Future releases may support different $k$ databases without need for
+ these particular compile-time changes.
+
+
+\section{Custom Null Model Generation}
+\label{sec:nullmodel}
+
+\begin{enumerate}
+\item
+Files needed for this step are placed in the rmodel subdirectory.  Two
+scripts must be run to generate the model files. First, need to
+prepare a count of k-mers per every taxonomy identifier.
+\item
+\texttt{countTaxidFrequency}: this executable takes as input the ascii output file from step \ref{tax-histo-fast-limited}. 
+\item
+
+If run for multiple input files, use \texttt{combine\_counts.py} to aggregate to a single file., eg:
+\begin{verbatim}
+
+ls *.kcnt | python combine_counts.py > my_counts.kcnt
+\end{verbatim}
+\item
+Sort the output by count (column 2) in descending order.
+\item 
+Run:
+\begin{verbatim}
+
+gen_rand_mod.sh --db_file=<reference-database> --read_len=<integer> --tax_histo_count=<count-kmers.py-output> --filter=<cutoff-param>
+\end{verbatim}
+
+Generated files will have the prefix "null" and will be in the form:
+
+\texttt{null.bin.10.<database-name>.<read-length>.<number-of-reads.rl\_output.rand\_lst.gz}
+
+Lines of the file appear as:\\
+\\
+\texttt{<kmers-per-line> <corresponding file>}\\
+\\
+ and ranked in ascending order\\
+\\
+Eg. for read length of 80 and using k=20, the line would appear as:\\
+\\
+\texttt{61 null.bin.10.20merDB.80.480000.rl\_output.rand\_lst.gz}\\
+\\
+\end{enumerate}
+
+\section{Scoring and Classification}
+\label{sec:scoring}
+
+\subsection{Query input files}
+
+Input query (read) files should be in fasta format, and sequences should
+be contained on a single line. If your sequences span multiple lines,
+they should be preprocessed with the \texttt{reformatQueryFile.py} script.
+
+The PhymmBL dataset reported on in our paper can be downloaded from:\\
+http://www.cbcb.umd.edu/software/phymm/exp\_datasets/01\_\_10\_X\_100\_bp\_test\_sets/10\_X\_100\_bp.tgz
+
+\subsection{Scoring (Labeling)}
+
+The \texttt{read\_label} driver searches the Reference Database for all k-mers 
+in the queries, and outputs taxonomic lineages, as discussed in Section 2.2 and
+Figure 2 in our paper.  Output files have the format: \texttt{<prefix>N.out} - where N is 0 to
+$(numthreads-1)$ - even in single threaded execution. 
+
+\texttt{run\_lmat.sh} is the wrapper script for running the LMAT pipeline; it takes several required 
+and optional paramaters; run with no arguments for usage and example invocation.
+
+\subsection{Classification}
+
+LMAT bins the reads that were assigned a taxonomic label with a score greater than or equal to the value specified by -x in the read_label (min_score variable in run\_lmat.sh) binary, the value defaults to 0.
+The output of the initial binning is in the file \texttt{<prefix>.fastsummary}, the file \texttt{<prefix>.krona}, gives the output as human readable lineages that Krona {http://sourceforge.net/p/krona/home/krona/}
+can process. \texttt{<prefix>.krona.html} gives the Krona output (when Krona is installed on the user system).
+
+The user has the option re-bin the reads applying different thresholds, without re-running read_label binary. 
+\begin{enumerate}
+\item
+\texttt{losummary_fast_mc.sh} is script to re-bin reads using the different thresholds
+type losummary_fast_mc.sh for usage
+\end{enumerate}
+example usage: 
+\begin{verbatim}
+losummary_fast_mc.sh --file_lst=<list_of_output_files_from_read_label.txt> --min_score=<new minimum score>
+\texttt{<min_score>} if user wants to pick up more distantly related hits, try a value of -0.5 or -1.0,
+if the user wants to focus on high confidence hits try a value of 1.0
+
+\end{verbatim}
+
+\subsection{Read Analysis}
+A common post processing step is to retrieve reads for a specific organism or set of taxnomic IDs.
+pull\_reads\_mc.sh (type without command line arguments for usage) retrieves reads from LMAT output.
+Output can come either from the initial read_label output (the *.out output files) or the reads that
+were re-assigned to potentially more specific organisms during the content summary stage (these are the *.ras.1 
+output files)
+example usage:
+\begin{verbatim}
+pull_reads_mc.sh --file_lst=<list of files containing read label output> --idfile=<file listing the taxids specify the reads to store in fasta files>
+\end{verbatim}
+You can specify multiple taxids to be placed in one fasta file, and/or place multiple taxids in distinct fasta files. 
+
+A second utility script is included called {build_taxid_lst.sh}, which allows the user to build a taxid list using a NCBI taxonomy string key word of the form rank,rank_value.
+For example kingdom,Virus will retrieve all reads explicitly tagged as viral reads in the user specified *.fastsummary files (output generated by LMAT's {read_label} and {losummary_fast_mc.sh}
+example usage:
+\begin{verbatim}
+build_taxid_lst.sh --file_lst=fastsummary.file_lst --sstr=superkingdom,Viruses --idfile=output_taxid_file.txt
+\end{verbatim}
+
+Most of the utility scripts that operate on sequencer reads require
+GNU parallel (http://www.gnu.org/software/parallel/), which is included with the LMAT distribution for conveniance.
+
+\section{Content Summarization}
+There is now a content summary module (called {content_summ} in
+ {run_lmat.sh}).  {read_label} generates the rank-flexible list of
+ taxonomic IDs (TIDs), reporting the number of reads assigned to each
+ TID and the weighted read count (the sum of scores from each read
+ assignment). The most rank-specific TIDs are extracted from the
+ original list to serve as the list of candidate organisms
+ present. For example, if there are two candidate strains reported,
+ both strains will be considered. If no strain TID is found, but the
+ species TID is reported, then the species TID serves as the
+ candidate. The non-negative scores for each read are re-examined to
+ find the highest scoring label in the lineage of a candidate
+ organism. If a high scoring TID associated with a higher rank of a
+ candidate organism is found then the associated organism is greedily
+ selected. This is done to avoid missassignment when multiple
+ candidate near-neighbor organisms are considered at different rank
+ levels. Consider two candidates: organism A identified at rank
+ species and organism B identified at rank strain belonging to a
+ different species than A but from the same genus. For a read
+ initially assigned to the genus where the true closest origin is the
+ B strain, but the read includes a variant or error that puts it
+ closer to a neighbor strain of B. Here the B strain score may be
+ lower than the A species score so it is important to consider the
+ species for B to avoid greedy assignment to A by virtue of its higher
+ rank-order. In the case of ties, where something is identically
+ scored across the genus level, the method is left taking a greedy
+ approach where it assigns the reads to the candidate organism that
+ was initially associated with the greatest number of reads (counting
+ reads from all ranks).
+
+ 
+During the TID re-assignment stage the total number of distinct k-mers from each read are counted for the assigned TID. Each candidate organism is evaluated in order sorted by the ratio of the number of distinct k-mers attributed to the TID in the dataset divided by the number of distinct k-mers for the TID in the database. The distinct k-mers attributed to the TID are inferrred trivially from the reads assigned to the TID (including the reassignments) plus the higher rank read assignments (up to the rank of class). This calculation serves as a proxy for estimating how much of the genome was sequenced in the sample. The expectation is that most of the reads at this point of analysis are associated with lower ranks. The re-assignment process, requires at least one iteration of the process, since multiple strains may be initially considered candidates. But after one iteration, if the top scoring strain doesn't have sufficient genome coverage (for simplicity sake), then the presence of additional strains is ignored, and all reads initially assigned to neighbor strains must be re-assigned to the top scoring strain.
+
+Output from the summary step is plced in a file \texttt{<prefix>.summ}
+
+\section{Gene identification}
+
+There is now a gene identification step.  The user can download the gene database, which contains all microbial genes obtained from microbial genome database (current does not include all of NR). Reads are searched and the best gene match is reported.  Matches are in DNA space. Output is placed in a file \texttt{<prefix>.genesummary}
+
+\section{Advanced LMAT features.}
+
+\subsection{16-bit ID Space}
+
+The make\_db\_table utility contains an option to store taxonomy IDs as 16-bit values.  The downloadable databases are built with 16-bit taxonomy id fields.  The instructions given above to use those reference databases refer to a file that maps traditional 32-bit taxonomy IDs (eg. from NCBI) to 16-bit IDs.  This is in tht run\_lmat.sh helper script or the '-f' option to the read\_label binary executable.
+
+In order to use custom 16 bit IDs within a custom reference database, this mapping file  needs to be generated from file containing the complete list of taxonomy IDs.  If 32-bit IDs are adequate or necessary due to the ID space, you can skip most of these steps.  However, you should ensure that you have compiled the LMAT binaries with the following environment variable set:  \texttt{TAXID\_SIZE=32}  
+
+  The complete list of taxids used in a database can be obtained from the output of the countTaxidFrequency / combine\_counts.py execution.  Run Tid16_getMapping.py with that file as input.  Output the mapping file (user chooses the filename) which is used in the following steps
+
+Ensure you have compiled (make) LMAT with the following enviroment variable set:  \texttt{TAXID\_SIZE=16}
+Use the -f <filename> option with make\_db\_table to specify the filename when creating the database index.
+
+Run LMAT (read\_label) with -f <filename> option to specify the mapping table or set the file in the run\_lmat.sh helper script.
+
+\subsection{Taxonomy list pruning}
+
+The LMAT database indexes contain lists of taxonomy ids for each k-mer.  Some lists are significantly long enough to affect LMAT classification performance (read\_label).  LMAT supports two types of pruning: (1) reduce lists of strain IDs to species only (faster) when list length exceeds a cutoff value;  (2) prune any lower-rank taxid when list length exceeds the cutoff value.   The following options are passed to the make\_db\_table executable:
+the cutoff value specified with -g <max taxid-list length> ;  table file specified by -m <filename> ; -w toggles if the strain-species filtering.  If set then(1) above is used and then use specific ``species map'' table file for -m.  If -w is ommitted, then (2) above will be used and use the ``numeric rank'' file for -m.  Sample files are available for LMAT downloadable databases.
+
+The LMAT software distribution comes with scripts to generate these files.  \texttt{build_tid_numeric_rank_table.py} requires a ``taxonomy\_rank.txt'' file as input and produces the ``numeric rank'' mapping table file for (2) above.  \texttt{build\_species\_level\_map.py}  requires both the ``taxonomy\_rank.txt'' and  ``taxonomy.dat'' files to  produce the table file for (1).
+
+
+\section{AUSPICES STATEMENT}
+
+This work performed under the auspices of the U.S. Department of
+Energy by Lawrence Livermore National Laboratory under contract DE-
+AC52-07NA27344
+
+
+
+
+\end{document}  
+

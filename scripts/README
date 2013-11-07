@@ -1,0 +1,8 @@
+run_read_search_omp.sh - a script to run multiple trials of the read_search application with varying numbers of threads.:  
+rso_plot_data.py -  generates a data table from the timing output from run_read_search_omp.sh. It takes only one argument: the path to the timing data.
+
+get_checks.sh - compiles output from read_check5.pl  
+
+usage:
+
+ls <filespec> | get_checks.sh

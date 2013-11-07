@@ -1,0 +1,11 @@
+include ../Makefile.inc
+
+TARGET = print_db
+
+all: $(TARGET)
+
+$(TARGET): $(METAG_LIB) $(TARGET).cpp
+	  $(CXX) $(CXXFLAGS)  $(LDFLAGS) $@.cpp $(LIBS) -o $@
+
+clean:
+	$(RM) $(TARGET) $(TARGET).o

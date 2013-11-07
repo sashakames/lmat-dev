@@ -1,0 +1,9 @@
+ex1.c
+
+  Query a KmerDB for either sorted or unsorted
+  randomly generated kmers
+
+ex2.c
+
+  Shows how to instantiate KmerNodes from file.  You probably
+  won't need to do this, unless you're writing a test.

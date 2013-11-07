@@ -1,0 +1,46 @@
+cat kpath_taxonomy.dat | conv_to_name.pl > kpath_names.txt
+put kpath_names.txt in ../runtime_intputs
+
+# calculate correct labelling using this
+test1.ans.txt.full -> subset of ncbi_taxonomy.rank for true contents of sample
+
+ls -1 test1-*.rank | perl -ne 'chomp; system("cat $_ | check_ans.pl test1.ans.txt.full > $_.ans");'
+
+ls -1 *.ans > test1.ans.flst
+cnt_corr.sh --file_lst=test1.ans.flst
+
+
+
+ls -1 *.ans | perl -ne 'chomp; print "$_ "; system("grep rank_breakdown: $_ | grep species | cut -d\" \" -f2 | sum.pl");' > test1.species_calls.txt
+
+
+
+
+
+#
+#compute accuracy stats from metaphlan output 
+read_mp_check.pl
+
+## convert genometa to summary file format
+genometa-summary.pl geno_5x100.csv
+
+#painfull genometa parsing to get the stragglers
+grep "\-1   " geno_5x100.csv.summary | cut -f2 | cut -d";" -f1 | cut -d"," -f2 | grep.pl > geno_5x100.csv.leftover
+genometa-summary.pl geno_5x100.csv.leftover
+## note I did some painful editing of *.leftover but there are still some left!
+grep -v ^"\-1  " geno_5x100.csv.summary > geno_5x100.csv.summary.mapped
+cat geno_5x100.csv.leftover.summary geno_5x100.csv.summary.mapped > geno_5x100.csv.summary.all
+
+
+## phymmbl
+phymmbl-summary.pl phymmBL.all_5x100bp.txt.out
+
+required a little bit of nomenclature mapping
+more nomenclature.txt | cut -d"/" -f2 | head -6 | perl -ne 'chomp; system("grep $_ phymmBL.all_5x100bp.txt.out");' > phymmBL.all_5x100bp.txt.out.leftover
+phymmbl-summary.pl phymmBL.all_5x100bp.txt.out.leftover
+
+cat phymmBL.all_5x100bp.txt.out.summary phymmBL.all_5x100bp.txt.out.leftover.summary > phymmBL.all_5x100bp.txt.out.all.summary
+
+
+
+

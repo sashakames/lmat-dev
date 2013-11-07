@@ -1,0 +1,38 @@
+This file documents my attempts to improve read_label's
+execution time via a step-by-step developmental process.
+Some of the steps are intended as much for code cleaning
+and clarity as they are for improving performance.
+
+After each step I (attempt) to verify the revision is
+correct by comparing its output on a smallish set of
+tax_histo and queries, against the output from the
+read_label version:
+
+r444 | allen99 | 2012-07-11 10:22:16 -0700 (Wed, 11 Jul 2012)
+
+================================================================
+read_label_v1.cpp
+
+  replaced: 
+    list<uint32_t> taxid_lst
+      -- with --
+    set<uint32_t> taxid_lst
+
+  rationale: elements were added to taxid_list depending on the result
+             of tax2idx.find(tid) == tax2idx.end().
+             Both tax2idx and its inverse, idx2tax, will be
+             removed in the future (when moving from the current
+             dense  vector<vector<uint32_t> > label_matrix
+             structure to a sparse counter-part
+             
+================================================================
+read_label_v2.cpp
+ 
+  modified fill_in_labels to use "map<uint32_t,uint16_t> taxids" 
+  as a sparse row, rather than working with label_matrix[pos].  
+  At the end of fill_in_labels, however, we transfer the counts
+  back to label_matrix[pos], so the remainder of the code works
+  as before.
+
+================================================================
+read_label_v3.cpp

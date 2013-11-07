@@ -1,0 +1,36 @@
+tests for kmerPrefixCounterSort:
+
+  $ ../kmerPrefixCounterSort -i test.fa -k 20 -o from_sorter -l 0 -f 0 -a
+  $ testPrefixCounterSorted.py 20 test.fa from_sorter.0
+
+
+----- the following may be out of date; dah, 08/15/2013
+
+test_taxhisto.py
+
+  1. input: output from tax_histo_fast_limited
+  2: runs: convertTaxHisto_ascii2bin
+  3: runs: convertTaxHisto_bin2ascii
+
+  tests: output from 3 matches output from 1. 
+
+
+test_preprocessing.py
+
+  1. generates: some random sequences
+  2. runs: jellylist
+  3. runs: tax_histo_fast_limited
+  4. runs: convertTaxHisto_ascii2bin
+  5. runs: convertTaxHisto_bin2ascii
+  6. runs: dumpJellylistOutput [for output from 2]
+  7. runs: merge_jellylist_outputs
+  8. runs: dumpJellylistOutput [for output from 7]
+
+  tests: 
+    1. the kmer sets from stepts 2 & 3 are identical
+    2. the output from 7 is sorted
+    2. output from 
+    4. output from 3 matches output from 5
+    3. output from 6 matches output from 8
+
+test_preprocessing_mpi.py

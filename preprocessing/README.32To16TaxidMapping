@@ -1,0 +1,47 @@
+To construct files needed for 16->32 bit mapping:
+
+1. get the set of tax IDs in the genome reference DB:
+
+   $Tid16_get32BitTaxIDs.py m9.int.tid m9.tid_list
+
+2. get mapping 32->16 bit IDs:
+
+   $Tid16_getMapping.py m9.tid_list ncbi_taxonomy.segment_20130204.dat m9_32To16BitMap.txt
+
+3. construct a 16bit ID taxonomy subtree. Run this step for every taxonomy
+   of interest. As of 5/14/2013, these are:
+
+     ncbi_taxonomy.segment_20130204.dat  
+       -- standard tree with human lineage
+
+     ncbi_taxonomy.segment_20130204.dat.nohl    
+       -- Removes the extended human lineage from the tree to speed up read_label
+
+   $Tid16_getTaxonomy.py ncbi_taxonomy.segment_20130204.dat m9_32To16BitMap.txt ncbi_taxonomy.segment_20130204.dat.16Bit
+   $Tid16_getTaxonomy.py ncbi_taxonomy.segment_20130204.dat.nohl m9_32To16BitMap.txt ncbi_taxonomy.segment_20130204.dat.nohl.16Bit
+
+4. construct 16bit depth file:
+
+   $Tid16_getDepthFile.py ncbi_taxonomy_rank.segment_20130204.txt m9_32To16BitMap.txt ncbi_taxonomy_rank.segment_20130204.txt.16Bit
+     
+==============================================================================
+I've checked in the following, for use with read_label:
+
+  ncbi_taxonomy.segment_20130204.dat.16Bit
+  ncbi_taxonomy.segment_20130204.dat.nohl.16Bit
+  ncbi_taxonomy_rank.segment_20130204.txt.16Bit
+
+And the following, for use with SortedDB, and for inverse mapping the
+read_label output files:
+
+  m9_32To16BitMap.txt  
+
+Output from read_label should be mapped back, to 32bit identifiers via:
+
+  $Tid16_getReadLableInverseMapping.py <input read_label file> m9_32To16BitMap.txt <output_fn>
+
+
+
+
+==============================================================================
+m1

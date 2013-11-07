@@ -1,0 +1,10 @@
+make help
+
+  gives information on some environmental variables that
+  control how the library is compiled.  
+  
+The first thing
+you should do is run 'make test.'  This will (eventually)
+compile and test the library in several different forms.
+
+After that, compile with your preferred options.

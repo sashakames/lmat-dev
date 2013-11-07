@@ -1,0 +1,49 @@
+
+
+fixGenomeIDs.cpp
+
+  replaces sequential numbering in *.header files with kpath IDs
+
+===============================================================================
+Codes for parsing the NCBI taxonomy,
+extracting sequences with gi numbers,
+and building lookup tables.
+
+
+
+===============================================================================
+Data files output by source code:
+
+(note: gi is a sequence number assigned by NCBI; 
+       gid (genome id) is a number that we assign to a sequence)
+
+viral_gi.dat         - one gi number per line
+gid2fasta_header.dat - gid (not gi!) number, followed by header 
+viral_gi2tid.dat     - gid and tid on each line
+viral_tid2gi.dat     - tid and gid on each line
+tax_nodes.dat        - tid, parent, rank, name, on each line
+
+all_virus_with_gi.fa - the subset of all_virus that contain gi numbers
+                       (which is all except a couple of hundred)
+all_virus_with_gi.fa.int - as above, but with headers replaced by integers
+                           (so memory doesn't explode when we run jellylist_bin)
+all_virus_with_gi.fa.int.bin.loc - binary encoded output from jellylist_bin;
+                                   includes counts, genome IDs, and locations
+===============================================================================
+Source code:
+
+getGI.py
+
+  reads a fasta file and ignores sequences that lack a gi number;
+  writess: viral_gi.dat, viral_gi.dat, all_virus_with_gi.fa,
+  gid2fasta_header.dat, gid2gi.dat
+
+gid2tid.cpp
+
+  reads gi_taxid_nucl.dmp and viral_gi.dat; writes 
+  viral_gid2tid.dat and viral_tid2did.dat.
+
+tax.py
+
+  reads nodes.dmp, writes tax_nodes.dat
+

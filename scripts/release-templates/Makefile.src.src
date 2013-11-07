@@ -1,0 +1,18 @@
+include ../Makefile.inc
+
+# for now this list needs to be sync'ed manually with make_release.sh
+
+APPS = read_label kmerPrefixCounter make_db_table tax_histo rand_read_label content_summ gene_label frequency_counter
+
+OBJECTS = $(addsuffix .o,$(APPS))
+DATA = $(METAG_DIR)/dev/src/kmerdb/examples/tests/data
+
+
+all: $(APPS)
+
+
+clean: 
+	$(RM) $(OBJECTS) $(APPS)
+
+
+

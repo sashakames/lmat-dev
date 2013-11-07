@@ -1,0 +1,554 @@
+read_num: 6 >kp|1401369|674575|gi|4092658|gb|AF083132.1|AF083132 Porcine adenovirus 3 strain 6618, complete genome AF083132 Porcine adenovirus 3 strain 6618, complete genome
+AGGGCTTCTTCXXCCGGCGTGTATGACTTCCCGGAGCAGGACGAGGGGGAGGAGCGGCCCTGGGACGCCTTTGACAGCGAC
+read_num: 73 >kp|2952741|740381|gb|FJ025909.1|gi|219522356|Simian adenovirus 27.1, complete genome Simian adenovirus 27.1, complete genome
+TCCAGGGCACAGTTTTCCCCCCCCCCCCCCAAAAAAAAATAGTCAAGGGTCTCTTGGATGATGTCATAACCTGGTTGGTTTTTCTTTTCCCACAGCTCGCGGTTGAG
+read_num: 136 >kp|737021|471918|gi|57115621|gb|AY803294.1| Human adenovirus type 14 strain de Wit, complete genome Human adenovirus type 14 strain de Wit, complete genome
+CTGCGCCGCAGCGCTCTTGCTACCAAGGACCGCTGTATTACGCTGGAAAAATCTACCCAGACCGTGCAGGGCCCCCGTTC
+read_num: 226 >kp|1578627|693543|ref|NC_010295.1|gnl|NCBI_GENOMES|21883|gi|166197717|Phaius virus X, complete genome Phaius virus X, complete genome
+GACAGTGCCCGGACTTTCCAAAGCAACAAATCGCCCTCTTCTTGAAGTCACAGTGGGTCAAGAAGACTGAGAAGATAGGA
+read_num: 740 >kp|1182277|654081|gb|EF535999.1|gi|156617460|Porcine respiratory and reproductive syndrome virus MFF_Before, complete genome Porcine respiratory and reproductive syndrome virus MFF_Before, complete genome
+GTGCTGGGAAAACATACTGGCTCCTTCAACAGGTCCAGGATGGTGATGTCATATACACACCGACCCATCAGACCATGCTT
+read_num: 1036 >kp|2495788|726140|ref|NC_004117.1|gnl|NCBI_GENOMES|16568|gi|22549402|Mamestra configurata NPV-B, complete genome Mamestra configurata NPV-B, complete genome
+TAACAGCGTGTGTAATTACATATGTGCTAATTGCGGTTGGTGTTTAGCAGTTGTCGACCCCTACGAAGTGCTGGACGAGG
+read_num: 1054 >kp|890038|594340|ref|NC_004690.1|gnl|NCBI_GENOMES|16988|gi|29567085|Adoxophyes honmai NPV, complete genome Adoxophyes honmai NPV, complete genome
+GCTTTTTTTTGTCGTGATATTCCACATTTAATATTTGATAAAATTAGAAATGACGAAAACAATGCTATTATGCAAAGCAA
+read_num: 1145 >kp|2957092|744732|ref|NC_003604.2|gnl|NCBI_GENOMES|16099|gi|86515321|Grapevine virus A, complete genome Grapevine virus A, complete genome
+GGCTTAGATCTGAAAGCACTGACACTACAAGAAGCTACTGTGATACAGGCTATGCACTCTCGCCTCTTTCGTACGGAAGG
+read_num: 1618 >kp|1436046|685056|gi|209978733|gb|FJ268744.1| Cucumber mosaic virus isolate Cah1 segment RNA1, complete sequence Cucumber mosaic virus isolate Cah1 segment RNA1, complete sequence
+CAAGGTGTAATACCTGAACTTAACTGCCAGTGGAGAAAGATCAGGAGTGCTTTCTCTGAAACTGAGGACGTCACGCCGCT
+read_num: 2174 >kp|1542431|689862|ref|NC_005233.1|gnl|NCBI_GENOMES|17440|gi|38505523|Dobrava virus segment S, complete sequence Dobrava virus segment S, complete sequence
+TCACCTCAAAGAGAAGTCAATGCTCAGTTATGGAAATGTCATTGACCTCAACCATCTTGACATTGATGAACCTACAGGGC
+read_num: 2633 >kp|778900|504466|gi|3116154|emb|Y13980.1|TV667NP Tula virus genomic RNA for nucleocapsid protein, strain (Tula/Kosice667/Ma/95) TV667NP Tula virus genomic RNA for nucleocapsid protein, strain (Tula/Kosice667/Ma/95)
+GGGGTAGGTAAGTTTACTAATCGTAAGGTAGCTACTAAGTTGATTATTGCACTACAGCTTGGTCATTGACCACTCAGGTA
+read_num: 2669 >kp|778958|504524|gi|27948864|gb|AY184354.1| Peanut bud necrosis virus nucleocapsid protein mRNA, complete cds Peanut bud necrosis virus nucleocapsid protein mRNA, complete cds
+TTGAAATTGAAACAGAAGATTCCACTCCCGGATTTAGCTTTAAAGCTTTCTATGACACTAACAAAAGTCTTGAAATAACT
+read_num: 3017 >kp|899082|603383|gb|AY533120.2|gi|66932913|Dobrava virus strain Esl/81Aa/01 segment S, complete sequence Dobrava virus strain Esl/81Aa/01 segment S, complete sequence
+CCTGGTGATCATCTTAAAGAAAAATCAATGCTCAGTTATGGGAATGTTATCGATCTCAACCACCTTGACATTGATGAACC
+read_num: 3037 >kp|901441|605742|gb|DQ188971.1|gi|76577656|Murutucu virus strain IQU-126 segment S RNA, complete sequence Murutucu virus strain IQU-126 segment S RNA, complete sequence
+GTCATCCGAACTTCTGGTTTCACTTACACTTGGAGGTGTTAACCTTGCGGTACTTAACACGCATTTCCCTGGAACCCAGT
+read_num: 3535 >kp|2752747|736770|dbj|AB541235.1|gi|302128350|Norovirus Hu/GII-4/Chiba5/2008/JP genomic RNA, complete genome Norovirus Hu/GII-4/Chiba5/2008/JP genomic RNA, complete genome
+CTGCCAGGAAGAATCAATCCCAGGACTTCTACCCCCGCTCGGGGCTCCTCCAGCATATCTTCTAATGCTTCTACTGCTAC
+read_num: 5999 >kp|1436781|685791|gi|1066074|gb|U39292.1|TEU39292 Tick-borne encephalitis virus Hypr polyprotein gene, complete cds TEU39292 Tick-borne encephalitis virus Hypr polyprotein gene, complete cds
+CTTACATCATCCACCAACTGCAGACCAAAATCCAACAACTTGTCAACAGTGCCGTGGCATCTGGTGCACAGGCCATGAGA
+read_num: 6023 >kp|1437141|686108|dbj|AB154206.1|gi|56342242|Hepatitis C virus subtype 1b gene for polyprotein, partial cds, isolate: No. 31 Hepatitis C virus subtype 1b gene for polyprotein, partial cds, isolate: No. 31
+ATCCCCTTCTATGGTAAAGCCATCCCCATTGAGACCATCAAGGGGGGGAGGCACCTCATATTCTGCCATTCCAAGAAAAA
+read_num: 6172 >kp|1578310|693226|gnl|broad-virus|Dengue-2_BID_V1868|gb|FJ547064.1|gi|221070197|Dengue virus 2 isolate DENV-2/VN/BID-V1868/2007, complete genome Dengue virus 2 isolate DENV-2/VN/BID-V1868/2007, complete genome
+GGGAGTCATGGTGCAGGCCGATAGTGGTTGCGTTGTGAGCTGGAAAAACAAAGAACTGAAATGTGGCAGTGGGATTTTCA
+read_num: 6236 >kp|1578427|693343|gnl|broad-virus|Dengue-1_BID_V2251|gb|FJ639813.1|gi|221070444|Dengue virus 1 isolate DENV-1/VE/BID-V2251/2005, complete genome Dengue virus 1 isolate DENV-1/VE/BID-V2251/2005, complete genome
+GAGCCTGAACATGCTCTATTGGCTACGTCAATTTTTAAGCTGACTTATCAAAACAAGGTGGTGAGGGTGCAAAGACCAGC
+read_num: 6368 >kp|1589553|694183|gnl|broad-virus|Dengue-2_BID_V2042|gb|FJ639708.1|gi|221071245|Dengue virus 2 isolate DENV-2/KH/BID-V2042/2005, complete genome Dengue virus 2 isolate DENV-2/KH/BID-V2042/2005, complete genome
+GTGCTATAGCCCAAACTGAAAAAAGCATTGAAGACAACCCCGAGATCGAAGATGACATTTTCCGAAAGAGAAGACTGACC
+read_num: 6820 >kp|1703295|703414|gnl|broad-virus|Dengue-2_BID_V2993|gb|FJ906969.1|gi|228543057|Dengue virus 2 isolate DENV-2/Harvard/BID-V2993/2009, complete genome Dengue virus 2 isolate DENV-2/Harvard/BID-V2993/2009, complete genome
+GGAGTCTTGGGAATGGCATTGTTCCTGGAAGAAATGCTCAGGACCCGAGTAGGAACGAAACATGCAATACTACTAGTTGC
+read_num: 7096 >kp|1704224|704298|gnl|broad-virus|Dengue-2_BID_V688|gb|EU482745.1|gi|169144275|Dengue virus 2 isolate DENV-2/US/BID-V688/1989, complete genome Dengue virus 2 isolate DENV-2/US/BID-V688/1989, complete genome
+ACAACTTTTCACTAGGAGTCTTGGGAATGGCACTGTTCCTGGAAGAAATGCTCAGGACCCGAGTAGGAACGAAACATGCA
+read_num: 7101 >kp|1704229|704303|gnl|broad-virus|Dengue-2_BID_V1412|gb|EU596490.1|gi|180164945|Dengue virus 2 isolate DENV-2/US/BID-V1412/2007, complete genome Dengue virus 2 isolate DENV-2/US/BID-V1412/2007, complete genome
+AAAAATAAAGAACTGAAATGTGGCAGCGGGATCTTCATTACAGATAACGTGCACACATGGACAGAACAATACAAGTTCCA
+read_num: 7138 >kp|1704281|704355|gnl|broad-virus|Dengue-2_BID_V1469|gb|EU687229.1|gi|187610198|Dengue virus 2 isolate DENV-2/US/BID-V1469/2001, complete genome Dengue virus 2 isolate DENV-2/US/BID-V1469/2001, complete genome
+TGCGTTGTGAGCTGGAAAAATAAAGAACTGAAATGTGGCAGCGGGATCTTCATTACAGATAACGTGCACACATGGACAGA
+read_num: 7513 >kp|1746704|705562|gb|EU781804.1|gi|212675048|Hepatitis C virus subtype 1a isolate 02-46, complete genome Hepatitis C virus subtype 1a isolate 02-46, complete genome
+TGATTGCCCCAACTCGAGTATTGTGTACGAGGCGGCCGATGCCATCCTGCACACTCCGGGGTGTATCCCTTGCGTTCGTG
+read_num: 8546 >kp|2212255|719484|gnl|broad-virus|HCV-1a_BID_V389|gb|EU482842.1|gi|169244714|Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V389/2006, complete genome Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V389/2006, complete genome
+CCTGCAGGAACATGTGGAATGGGAGCTTCCCCATCAACGCCTACACCACGGGCCCTTGCACCCCCCTTCCTGCGCCGAAC
+read_num: 8571 >kp|2212284|719513|gnl|broad-virus|HCV-1a_BID_V101|gb|EU155213.2|gi|169218851|Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V101/2004, complete genome Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V101/2004, complete genome
+CCAGGATGCTGTCTCCCGCACTCAACGTCGGGGCAGGACTGGCAGGGGGAAGCCAGGCATCTACAGATTTGTGGCACCGG
+read_num: 8595 >kp|2212311|719540|gnl|broad-virus|HCV-1a_BID_V321|gb|EU256096.1|gi|190171137|Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V321/2001, complete genome Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V321/2001, complete genome
+TCAGCCTACCAAGTGCGCAACTCCACGGGGCTTTACCATGTCACCAATGATTGCCCCAACTCGAGTATTGTGTACGAGGC
+read_num: 8626 >kp|2212350|719579|gnl|broad-virus|HCV-1b_BID_V158|gb|EU155228.2|gi|169218879|Hepatitis C virus subtype 1b isolate HCV-1b/US/BID-V158/2003, complete genome Hepatitis C virus subtype 1b isolate HCV-1b/US/BID-V158/2003, complete genome
+ATTTGCAAGTGTGGATTCCCCCTCTTAATGTTCGGGGGGGCCGCGACGCCATCATCCTTCTCACATGTGCAGTCCATCCA
+read_num: 8790 >kp|2212590|719819|gnl|broad-virus|HCV-1a_BID_V392|gb|EU256046.1|gi|190684337|Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V392/2006, complete genome Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V392/2006, complete genome
+GCCGCAGGGCTCCGGGACTGCACCATGCTCGTGTGTGGCGATGACCTAGTCGTTATCTGTGAAAGTGAGGGAGTCCAGGA
+read_num: 8797 >kp|2212599|719828|gnl|broad-virus|HCV-1b_BID_V1749|gb|FJ390397.1|gi|209976587|Hepatitis C virus subtype 1b isolate HCV-1b/US/BID-V1749/2008, complete genome Hepatitis C virus subtype 1b isolate HCV-1b/US/BID-V1749/2008, complete genome
+CAACGTGGGTATAAGGGGGTCTGGCGGGGGGACGGCATCATGCAAACCACCTGCCCATGTGGAGCACAGATCACCGGACA
+read_num: 8832 >kp|2212646|719875|gnl|broad-virus|HCV-1a_BID_V356|gb|EU155309.2|gi|169249171|Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V356/2003, complete genome Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V356/2003, complete genome
+TTGAGACAACCACGCTTCCCCAGGATGCTGTCTCCCGCACTCAACGTCGGGGCAGGACTGGCAGGGGGAAGCCAGGCATC
+read_num: 8844 >kp|2212659|719888|gnl|broad-virus|HCV-1a_BID_V167|gb|EU255964.1|gi|190684420|Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V167/1992, complete genome Hepatitis C virus subtype 1a isolate HCV-1a/US/BID-V167/1992, complete genome
+TCTCCAGGTGAAATCAATAGGGTGGCTACATGCCTCAGGAAACTTGGGGTCCCGCCCTTGCGAGCTTGGAGACACCGGGC
+read_num: 9376 >kp|2925290|738941|gb|GQ398311.1|gi|300828865|Dengue virus 2 strain DENV-2/PR/6780DN/1994, complete genome Dengue virus 2 strain DENV-2/PR/6780DN/1994, complete genome
+GTTCCTGGAAGAAATGCTCAGGACCCGAGTAGGAACGAAGCATGCAATGCTGCTAGTTGCAGTATCCTTTGTGACATTGA
+read_num: 9871 >kp|4588|4588|gi|1314241|gb|U21055.1|YFU21055 Yellow fever virus French neurotropic strain, complete genome Yellow fever virus French neurotropic strain, complete genome
+GAGATCTTGAACTACATGAGCCCACATCACAAAAAACTGGCACAAGCAGTGATGGAAATGACATACAAGAACAAAGTGGT
+read_num: 9959 >kp|758865|490772|gi|77024332|gb|DQ181802.1| Dengue virus type 2 strain ThD2_0026_88, complete genome Dengue virus type 2 strain ThD2_0026_88, complete genome
+TGGTGAGCATTTTAGCCAGTTCTCTCCTAAAAAATGATATTCCCATGACAGGACCACTAGTGGCTGGAGGGCTCCTCACT
+read_num: 9989 >kp|796724|518762|SLE-9-79V-2533_Argen79|CDC Ft. Collins St. Louis encephalitis virus 9=79V-2533_Argen79 complete genome from CDC on Oct 23 2006 11:59AM
+AGGAGGAGCATTGTGGGACGTGCCGTCACCAAAAGTATATCCAAAATGTGAGACAAAACCAGGAATCTATCGAATCATGA
+read_num: 10133 >kp|1133511|642154|gb|EF547090.1|gi|146428263|Maize streak virus isolate UNak-120, complete genome Maize streak virus isolate UNak-120, complete genome
+TGTGAAATAATGTCTCGCATTATTTCATCTTTGGAAGGCTTCTTTTCCTTAACTTCTGAATCAGATTTTCCTAGGAAGGG
+read_num: 10281 >kp|1401676|674882|emb|FM210034.1|gi|198446601|Wheat dwarf virus H07 complete genome, barley strain Wheat dwarf virus H07 complete genome, barley strain
+ATTATGTGCCATCGCTTAGCTTATAAGGAAGTGTCGGGGAAGGTATCTCGATGGATCAGGTCTTTACCCCGCCGCGTTCT
+read_num: 10459 >kp|1432162|681172|gi|148897803|emb|AM502335.1| East African cassava mosaic virus DNA-A, clone wcass1-2 East African cassava mosaic virus DNA-A, clone wcass1-2
+CATTGTTTTGCCGGTTCGGCTATCACCTTCTAGAACAATACTGATCGGTCTCCATGGCCGCGCAGCGGGACTGCATATAT
+read_num: 10529 >kp|1432795|681805|gi|95140130|emb|AJ704962.1| East African cassava mosaic virus-Uganda variant segment DNA B, complete sequence, isolate EACMV-UG[K90] East African cassava mosaic virus-Uganda variant segment DNA B, complete sequence, isolate EACMV-UG[K90]
+CGATGGTAATGGGGGTAGGTCTGTTGATCATATAAAATTATTAAGTTTGAGGGTGTCTGGGACCGTCAATATCAGTCAAT
+read_num: 10573 >kp|1432839|681849|gi|89330804|emb|AJ717554.1| East African cassava mosaic virus segment DNA A, complete sequence, isolate EACMV-[K36] East African cassava mosaic virus segment DNA A, complete sequence, isolate EACMV-[K36]
+GGTTCGGCTATCACCTTCTAGAACAATACTGATCGGTCTCCATGGCCGCGCAGCGGGACTGCATATATTTTCGGATACCC
+read_num: 10590 >kp|1432856|681866|gi|89330685|emb|AJ717537.1| East African cassava mosaic virus-KE2 segment DNA A, complete sequence, isolate EACMV-KE2[K27] East African cassava mosaic virus-KE2 segment DNA A, complete sequence, isolate EACMV-KE2[K27]
+TATGTGGTCCCAATGACCTGGCCCACATGGTCTTCCCTGTACGACTATCACCTTCTAGAACAATACTGTTGGGTCTCCAA
+read_num: 10700 >kp|1433475|682485|gi|61191707|gb|AY795986.1| East African cassava mosaic virus isolate TZM segment A, complete sequence East African cassava mosaic virus isolate TZM segment A, complete sequence
+TATCACCTTCTAGAACAATACTGATCGGTCTCCATGGCCGCGCAGCGGGACTGCATATATTTTCGGAGACCCATACTTCA
+read_num: 10783 >kp|1434549|683559|gi|2230833|emb|Z83256.1| East African cassava mosaic virus-[Tanzania] segment A, complete sequence East African cassava mosaic virus-[Tanzania] segment A, complete sequence
+CACATAGATAATTATGGGGTCCTAGCGAACGAGCCCACATGGTTTTCCCGGTTCGGCTATCACCTTCTAGAACAATACTG
+read_num: 10983 >kp|1543876|691307|ref|NC_005032.1|gnl|NCBI_GENOMES|17306|gi|32493271|Tomato leaf curl Philippines virus, complete genome Tomato leaf curl Philippines virus, complete genome
+AAATAATTATGTGGACCCATAGACCTAGCCCACATCGTCTTCCCCGTCCTGCTATCTCCTTCTATGACAATACTCATGGG
+read_num: 11380 >kp|2189052|718722|gb|FJ882110.1|gi|268374091|Maize streak virus isolate MSV-A_ZA_Hec2_O11-1989, complete genome Maize streak virus isolate MSV-A_ZA_Hec2_O11-1989, complete genome
+TAATGTCTCGCATTATTTCATCTTTAGAAGGTTTTTTTTCCTTTACCTCTGAATCAGATTTTCCTAGGAAGGGGGACTTC
+read_num: 11532 >kp|2497397|727649|gb|GU723742.1|gi|291508489|Tomato yellow leaf curl Thailand virus isolate LY5 segment DNA-A, complete sequence Tomato yellow leaf curl Thailand virus isolate LY5 segment DNA-A, complete sequence
+TTTTGGACTTAAATCTAAATGGCCACACAGATAATTATGTGGTCCCAATGACCTAGCCCACATCGTCTTCCCCGTTCTGC
+read_num: 12084 >kp|2979622|746695|emb|FR837933.1|gi|325994887|Cotton leaf curl Burewala virus complete genome, clone MV14A Cotton leaf curl Burewala virus complete genome, clone MV14A
+TCCGCACAAATAGTTATGTGGTCCCAATGATCTAGCCCACATCGTCTTCCCCGTTCGACTATCTCCCTCAATTACTATAC
+read_num: 12172 >kp|3309301|749459|gb|EU487032.2|gi|303292928|Tomato leaf curl Philippines virus isolate P77, complete genome Tomato leaf curl Philippines virus isolate P77, complete genome
+TCAGGTCCAGATGTCCACATAAATAATTATGTGGTCCCAGTGATCTAGCCCACATCGTCTTCCCCGTTCGACTATAGCCC
+read_num: 12190 >kp|3460486|750548|ref|NC_010441.2|gnl|NCBI_GENOMES|22036|gi|303308462|Tomato leaf curl Cotabato virus DNA-A, complete genome Tomato leaf curl Cotabato virus DNA-A, complete genome
+ACTTAAGTCCAGATGTCCACATAAATAATTGTGTGGACCCAGTGACCTAGCCCACATCGTCTTCCCTGTCCTACTATCAC
+read_num: 12325 >kp|880447|584749|emb|AJ314739.1|gi|18073911|Indian cassava mosaic virus-[Maharashtra] DNA-A, complete genome, isolate ICMV-Mah Indian cassava mosaic virus-[Maharashtra] DNA-A, complete genome, isolate ICMV-Mah
+ATGTTCTTCCTTGTAAGGGATCGTAGGCCTGTTGATAAGCCTCAGGATTTTGGTGAAGTATTTAATATGTTTGATAATGA
+read_num: 15136 >kp|2956461|744101|emb|FN545828.1|gi|291555662|Hepatitis B virus complete genome, strain 34015 Hepatitis B virus complete genome, strain 34015
+TTGGGCATACATTTAAACCCTAACAAAACCAAAAGATGGGGTTATTCCCTAAACTTCATGGGATACATAATTGGAAGTTG
+read_num: 16959 >kp|2980106|747179|ref|NC_015157.1|gnl|NCBI_GENOMES|27128|gi|325170966|Vibrio phage ICP1, complete genome Vibrio phage ICP1, complete genome
+AATTTCTCCTTGACACTACGTGTAGTATAATCCATAATCCTCCTCAGACAGATGAAATTGTTTGATGGAGGATTAATTTT
+read_num: 16973 >kp|3809153|753052|dbj|AP011113.1|gi|291290213|Enterobacteria phage AR1 DNA, complete genome Enterobacteria phage AR1 DNA, complete genome
+ACCCATCTTCCTTTGTCAGAATGTAATCAACATCATTTAAATCGATATTCATCGTGAATGGATTTTCATTCAAGTTAAAA
+read_num: 17373 >kp|1002729|633608|gnl|NIGSP|NIGSP-IT-00036.NA|gb|CY022079.1|gi|148897917|Influenza A virus (A/poultry/Italy/367/1997(H5N2)) segment 6, complete sequence Influenza A virus (A/poultry/Italy/367/1997(H5N2)) segment 6, complete sequence
+CAAGTGGTGCCATGTGAGCCAATCATAATAGAAAGGAACATAACAGAGATAGTGTATTTGAATAATACTACCATAGAAAA
+read_num: 17508 >kp|1002889|633768|gnl|NIGSP|NIGSP-CDC-00096.NA|gb|CY022239.1|gi|148904968|Influenza B virus (B/California/02/1995) segment 6, complete sequence Influenza B virus (B/California/02/1995) segment 6, complete sequence
+TTTGTTCATCAAAGAATGGCATCCAAGATTGGAAGGTGGTACTCTCGAACGATGTCTAAAACTAAAAGGATGGGGATGGG
+read_num: 17621 >kp|1029581|634239|gnl|NIGSP|NIGSP-SJ-00308.NA|gb|CY022391.1|gi|149779948|Influenza A virus (A/swine/Ontario/7/1981(H1N1)) segment 6, complete sequence Influenza A virus (A/swine/Ontario/7/1981(H1N1)) segment 6, complete sequence
+ATTCAAAATGGAGAAAGGGAAGATTATTAAATCGATTGAACTGGATGCACCTAATTACCACTATGAGGAATGCTCCTGTT
+read_num: 17876 >kp|1029935|634593|gnl|NIGSP|NIGSP-DB-00008.PB1|gb|CY022715.1|gi|149930046|Influenza A virus (A/emu/New South Wales/775/1997(H7N4)) segment 2, complete sequence Influenza A virus (A/emu/New South Wales/775/1997(H7N4)) segment 2, complete sequence
+ACACAAAGAACAATAGGAAAGAAGAAGCAAAGGCTGAATAAGAGGAGCTATTTGATAAGAGCACTGACACTGAACACAAT
+read_num: 18103 >kp|1100918|636672|gnl|NIGSP|NIGSP-SJ-00306.NA|gb|CY022980.1|gi|152963196|Influenza A virus (A/swine/Ontario/1/1981(H1N1)) segment 6, complete sequence Influenza A virus (A/swine/Ontario/1/1981(H1N1)) segment 6, complete sequence
+GATTGAACTGGATGCACCTAATTACCACTATGAGGAATGCTCCTGTTACCCTGATACAGGCAAAGTGGTGTGTGTGTGCA
+read_num: 18153 >kp|1100982|636736|gnl|NIGSP|NIGSP-NZ-00600.NA|gb|CY023044.1|gi|152963349|Influenza A virus (A/Auckland/600/2000(H3N2)) segment 6, complete sequence Influenza A virus (A/Auckland/600/2000(H3N2)) segment 6, complete sequence
+ATCGGACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCA
+read_num: 18293 >kp|1110266|637658|gnl|NIGSP|NIGSP-DW-00018.HA|gb|CY024842.1|gi|155016642|Influenza A virus (A/chukar/New York/21211-7/2005(H7N2)) segment 4, complete sequence Influenza A virus (A/chukar/New York/21211-7/2005(H7N2)) segment 4, complete sequence
+GAAAACAACTGAGGGAGAATGCTGAAGAAGATGGGACTGGATGTTTCGAAATATTCCATAAGTGTGATGATCATTGTATG
+read_num: 18454 >kp|1130721|639373|gnl|NIGSP|NIGSP-SJ-00283.NA|gb|CY024952.1|gi|156536151|Influenza A virus (A/swine/Tennessee/96/1977(H1N1)) segment 6, complete sequence Influenza A virus (A/swine/Tennessee/96/1977(H1N1)) segment 6, complete sequence
+AAGAATAATAACCATTGGGACAATCTGTCTAATAGTTGGAATAATTAGTCTATTATTGCAGATAGGAAATATAATCTCGT
+read_num: 18558 >kp|1130962|639614|gnl|NIGSP|NIGSP-OH-00224.PA|gb|CY025090.1|gi|157012066|Influenza A virus (A/environment/Maryland/1174/2005(H3N6)) segment 3, complete sequence Influenza A virus (A/environment/Maryland/1174/2005(H3N6)) segment 3, complete sequence
+AAGAATCAAAACCAGGCTGTTCACTATAAGACAAGAGATGGCCAGCAGGGGTCTATGGGATTCCTTTCGTCAGTCCGAAA
+read_num: 18573 >kp|1130977|639629|gnl|NIGSP|NIGSP-OH-00239.NS|gb|CY025105.1|gi|157012101|Influenza A virus (A/environment/Maryland/1101/2006(H4N6)) segment 8, complete sequence Influenza A virus (A/environment/Maryland/1101/2006(H4N6)) segment 8, complete sequence
+AAGCAGAAACGGAAAATGGCGAGAACAATTGAGTCAGAAGTTTGAAGAAATAAGGTGGCTGATTGAGGAAGTGCGACATA
+read_num: 18879 >kp|1131430|640082|gnl|NIGSP|NIGSP-SDI-00257.NP|gb|CY025488.1|gi|157281911|Influenza A virus (A/New York/UR06-0515/2007(H3N2)) segment 5, complete sequence Influenza A virus (A/New York/UR06-0515/2007(H3N2)) segment 5, complete sequence
+AAGAACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGG
+read_num: 18894 >kp|1131445|640097|gnl|NIGSP|NIGSP-SDI-00277.NA|gb|CY025503.1|gi|157281947|Influenza A virus (A/Vermont/UR06-0484/2007(H3N2)) segment 6, complete sequence Influenza A virus (A/Vermont/UR06-0484/2007(H3N2)) segment 6, complete sequence
+GCGAGAAGTCACGCTTAGGGTATGAAACCTTCAAAGTCATTGAAGGCTGGTCCAACCCTAAGTCCAAATTGCAGATAAAT
+read_num: 19091 >kp|1131689|640341|gnl|NIGSP|NIGSP-SDI-00765.PB1|gb|CY025753.1|gi|157282526|Influenza A virus (A/Texas/UR06-0480/2007(H3N2)) segment 2, complete sequence Influenza A virus (A/Texas/UR06-0480/2007(H3N2)) segment 2, complete sequence
+CTTGAACAGTCCGGACTTCCGGTTGGGGGTAATGAAAAGAAGGCCAAACTGGCAAATGTTGTGAGAAAAATGATGACTAA
+read_num: 19210 >kp|1131846|640498|gnl|NIGSP|NIGSP-SDI-01288.NP|gb|CY025910.1|gi|157282899|Influenza A virus (A/Kentucky/UR06-0370/2007(H3N2)) segment 5, complete sequence Influenza A virus (A/Kentucky/UR06-0370/2007(H3N2)) segment 5, complete sequence
+CTGCTTTTGATGAAAGAAGGAATAAATACCTGGAAGAACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCC
+read_num: 19399 >kp|1132115|640767|gnl|NIGSP|NIGSP-SDI-01158.NP|gb|CY026246.1|gi|157368190|Influenza A virus (A/California/UR06-0547/2007(H3N2)) segment 5, complete sequence Influenza A virus (A/California/UR06-0547/2007(H3N2)) segment 5, complete sequence
+TGATGAAAGAAGGAATAAATACCTGGAAGAACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACA
+read_num: 19473 >kp|1133156|641799|gb|EU084947.1|gi|156255055|Influenza A virus (A/chukar/MN/14591-7/1998(H5N2)) segment 3, complete sequence Influenza A virus (A/chukar/MN/14591-7/1998(H5N2)) segment 3, complete sequence
+ATCCGAGAAGACACACATTCACATTTTTTCATTCACTGGAGAGGAAATGGCCACCAAAGCGGATTACACCCTTGATGAAG
+read_num: 19530 >kp|1133278|641921|emb|AM410043.1|gi|157886794|Influenza C virus (C/Johannesburg/1/66) segment 7, complete sequence, genomic RNA Influenza C virus (C/Johannesburg/1/66) segment 7, complete sequence, genomic RNA
+GGTACTTTTTCAAAATGTCCGACAAAACAGTCAAATCAACAAACCTAATGGCATTTGTAGCCACAAAAATGTTAGAGAGA
+read_num: 19848 >kp|1133978|642621|gnl|NIGSP|NIGSP-SDI-00989.NP|gb|CY026670.1|gi|158453388|Influenza A virus (A/Colorado/UR06-0279/2007(H3N2)) segment 5, complete sequence Influenza A virus (A/Colorado/UR06-0279/2007(H3N2)) segment 5, complete sequence
+CCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGGGAACTCGTC
+read_num: 20053 >kp|1134233|642876|gnl|NIGSP|NIGSP-SDI-01897.NA|gb|CY026925.1|gi|158453994|Influenza A virus (A/Ohio/UR06-0494/2007(H3N2)) segment 6, complete sequence Influenza A virus (A/Ohio/UR06-0494/2007(H3N2)) segment 6, complete sequence
+CTAAGTCCAAATTGCAGATAAATAGGCAAGTCATAGTTGACAGAGGTAATAGGTCCGGTTATTCTGGTATTTTCTCTGTT
+read_num: 20287 >kp|1134568|643211|gnl|NIGSP|NIGSP-SJ-00300.PB1|gb|CY022339.1|gi|149785197|Influenza A virus (A/swine/Iowa/17672/1988(H1N1)) segment 2, complete sequence Influenza A virus (A/swine/Iowa/17672/1988(H1N1)) segment 2, complete sequence
+AAGGGGGTTCGTATATTTCGTTGAGACACTAGCAAGGAGTATTTGTGAAAAACTTGAACAATCAGGACTGCCAGTTGGAG
+read_num: 20288 >kp|1134569|643212|gnl|NIGSP|NIGSP-SJ-00300.PB2|gb|CY022340.1|gi|149785199|Influenza A virus (A/swine/Iowa/17672/1988(H1N1)) segment 1, complete sequence Influenza A virus (A/swine/Iowa/17672/1988(H1N1)) segment 1, complete sequence
+ATGCTAAAATCCTCTTTCAAAATTGGGGGATTGAATCTATAGACAACGTTATGGGAATGATTGGGATACTCCCTGACTTA
+read_num: 20297 >kp|1134585|643228|gnl|NIGSP|NIGSP-SJ-00295.PB2|gb|CY022324.1|gi|149785321|Influenza A virus (A/swine/Iowa/1/1985(H1N1)) segment 1, complete sequence Influenza A virus (A/swine/Iowa/1/1985(H1N1)) segment 1, complete sequence
+AGGATGCTAAAATCCTCTTTCAAAATTGGGGGATTGAATCTATAGACAACGTTATGGGAATGATTGGGATACTCCCTGAC
+read_num: 21662 >kp|1139140|647772|gnl|NIGSP|NIGSP-SJ-00352.NA|gb|CY028437.1|gi|163964664|Influenza A virus (A/swine/Tennessee/7/1978(H1N1)) segment 6, complete sequence Influenza A virus (A/swine/Tennessee/7/1978(H1N1)) segment 6, complete sequence
+GAATAATTAGTCTATTATTGCAGATAGGAAATATAATCTCGTTATGGATAAGCCATTCAATTCAGACTGGAGAAAAAAGC
+read_num: 21920 >kp|1151060|650022|gnl|NIGSP|NIGSP-SJ-00233.PB2|gb|CY028731.1|gi|166079312|Influenza A virus (A/California/45/1978(H1N1)) segment 1, complete sequence Influenza A virus (A/California/45/1978(H1N1)) segment 1, complete sequence
+AGATTTCTCCCAGTTGCTGGTGGAACAAGCAGTATGTACATTGAAGTGTTGCATTTGACTCAAGGAACGTGTTGGGAACA
+read_num: 22086 >kp|1155626|650617|gnl|NIGSP|NIGSP-OH-00240.PB1|gb|CY024824.1|gi|155016337|Influenza A virus (A/blue-winged teal/Ohio/566/2006(H7N9)) segment 2, complete sequence Influenza A virus (A/blue-winged teal/Ohio/566/2006(H7N9)) segment 2, complete sequence
+AACAACATACTGGTGGGACGGACTCCAATCCTCTGATGACTTTGCTCTCATAGTGAATGCTCCGAATCATGAGGGAATAC
+read_num: 22113 >kp|1176015|651130|gnl|NIGSP|NIGSP-SDI-01408.NP|gb|CY030200.1|gi|168481173|Influenza A virus (A/Illinois/UR06-0600/2007(H3N2)) segment 5, complete sequence Influenza A virus (A/Illinois/UR06-0600/2007(H3N2)) segment 5, complete sequence
+GAATAAATATCTGGAAGAACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATG
+read_num: 22265 >kp|1176440|651555|gnl|NIGSP|NIGSP-SJ-00410.PA|gb|CY030178.1|gi|168481140|Influenza A virus (A/equine/Kentucky/1/1991(H3N8)) segment 3, complete sequence Influenza A virus (A/equine/Kentucky/1/1991(H3N8)) segment 3, complete sequence
+CTGCAACAGATTGAAAGCATGATCGAAGCTGAGTCCTCAGTCAAAGAAAAGGACATGACCAAAGAATTCTTTGAGAACAA
+read_num: 22267 >kp|1176444|651559|gnl|NIGSP|NIGSP-SJ-00403.PB2|gb|CY030172.1|gi|168481126|Influenza A virus (A/equine/Tennessee/5/1986(H3N8)) segment 1, complete sequence Influenza A virus (A/equine/Tennessee/5/1986(H3N8)) segment 1, complete sequence
+GTAAGGACCCTGTTTCAGCAAATGCGAGATGTACTTGGAACATTTGATACTGCTCAAATAATAAAACTCCTCCCTTTTGC
+read_num: 22358 >kp|1176645|651760|gnl|NIGSP|NIGSP-SJ-00388.PA|gb|CY030098.1|gi|168480950|Influenza A virus (A/equine/Kentucky/1/1986(H3N8)) segment 3, complete sequence Influenza A virus (A/equine/Kentucky/1/1986(H3N8)) segment 3, complete sequence
+GATTGAAAGCATGATCGAAGCTGAGTCCTCAGTCAAAGAAAAGGACATGACCAAAGAATTCTTTGAGAACAAATCAGAGA
+read_num: 22522 >kp|1180751|652555|gnl|NIGSP|NIGSP-SDI-04374.HA|gb|CY030799.1|gi|169822726|Influenza B virus (B/Tennessee/UR06-0319/2007) segment 4, complete sequence Influenza B virus (B/Tennessee/UR06-0319/2007) segment 4, complete sequence
+AGTAAAGAATCTTCAAAGACTAAGCGGTGCCATGGATGAACTCCACAACGAAATACTAGAACTAGACGAGAAAGTGGATG
+read_num: 22547 >kp|1180833|652637|gnl|NIGSP|NIGSP-SDI-00970.MP|gb|CY030642.1|gi|169731700|Influenza B virus (B/Mississippi/UR06-0348/2007) segment 7, complete sequence Influenza B virus (B/Mississippi/UR06-0348/2007) segment 7, complete sequence
+AGCAAAAACAATGAATGGAATGGGAAAAGGAGAAGACGTCCAAAAACTGGCAGAAGAACTGCAAAGCAACATTGGAGTAT
+read_num: 22574 >kp|1180957|652761|gnl|NIGSP|NIGSP-SDI-04099.NA|gb|CY030683.1|gi|169731798|Influenza B virus (B/Tennessee/UR06-0451/2007) segment 6, complete sequence Influenza B virus (B/Tennessee/UR06-0451/2007) segment 6, complete sequence
+TTGTGAATCTAATGGGGACAAAGGGAGTGGAGGCATCAAGGGAGGATTTGTTCATCAAAGAATGGCATCCAAGATTGGAA
+read_num: 23685 >kp|1315041|658615|gnl|SJIGP|SJIGP-00100.HA|gb|CY004482.1|gi|78095799|Influenza A virus (A/pintail duck/ALB/238/1979(H1N1)) segment 4, complete sequence Influenza A virus (A/pintail duck/ALB/238/1979(H1N1)) segment 4, complete sequence
+AGGACTCTGGACTTTCATGACTCCAATGTGAGAAATTTATATGAGAAGGTCAAATCACAATTGAGGAATAATGCCAAAGA
+read_num: 23955 >kp|1315604|659178|gnl|NIGSP|NIGSP-NYS-00151.NA|gb|CY000603.1|gi|61970598|Influenza A virus (A/New York/151/1999(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/151/1999(H3N2)) segment 6, complete sequence
+CTATTCATTGAGGAGGGGAAAATCGTTCATACTAGCCTATTGTCAGGAAGTGCTCAGCATGTCGAGGAGTGCTCCTGTTA
+read_num: 24071 >kp|1315823|659397|gnl|SJIGP|SJIGP-00156.PA|gb|CY004795.1|gi|82652894|Influenza A virus (A/mallard duck/ALB/106/1979(H4N2)) segment 3, complete sequence Influenza A virus (A/mallard duck/ALB/106/1979(H4N2)) segment 3, complete sequence
+TCTGAAGACAACACCACGCCCTCTCAGATTACCGGATGGGCCTCCCTGCTCCCAACGTTCAAAATTCCTTCTGATGGATG
+read_num: 24099 >kp|1315882|659456|gnl|NIGSP|NIGSP-NYS-00078.NA|gb|CY001682.2|gi|73665630|Influenza A virus (A/New York/78/2002(H1N2)) segment 6, complete sequence Influenza A virus (A/New York/78/2002(H1N2)) segment 6, complete sequence
+GATAGGACCCCTTATCGGACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGC
+read_num: 24363 >kp|1316462|660036|gnl|SJIGP|SJIGP-00067.NS|gb|CY004297.1|gi|78095607|Influenza A virus (A/mallard/Alberta/130/2003(H1N1)) segment 8, complete sequence Influenza A virus (A/mallard/Alberta/130/2003(H1N1)) segment 8, complete sequence
+ATGCTCCCTTTGATGATAGACTCAGAAGAGATCAAAAGGCATTAAAGGGAAGAGGCAGCACACTTGGACTCGACCTGCGA
+read_num: 24897 >kp|1317574|661148|gnl|SJIGP|SJIGP-00079.PA|gb|CY004357.1|gi|82623678|Influenza A virus (A/mallard/Alberta/209/2003(H10N7)) segment 3, complete sequence Influenza A virus (A/mallard/Alberta/209/2003(H10N7)) segment 3, complete sequence
+GAAAGTGGACTTTGAAGATTGCAAGGATGTCAGCGATTTGAGACAGTATGACAGCGATGAGCCTGAGCAAAGATCACTAG
+read_num: 24942 >kp|1352539|661744|gnl|NIGSP|NIGSP-SJ-00430.PA|gb|CY032298.1|gi|189230567|Influenza A virus (A/equine/Sao Paulo/6/1963(H3N8)) segment 3, complete sequence Influenza A virus (A/equine/Sao Paulo/6/1963(H3N8)) segment 3, complete sequence
+GATCATAGAGTCTGGTGATCCAAATGCTCTCTTGAAGCACAGGTTTGAGATAATTGAAGGGAGAGATCGAGCAATGGCAT
+read_num: 25050 >kp|1352694|661899|gnl|NIGSP|NIGSP-EH-00016.NP|gb|CY032536.1|gi|189231075|Influenza A virus (A/Managua/28/2007(H3N2)) segment 5, complete sequence Influenza A virus (A/Managua/28/2007(H3N2)) segment 5, complete sequence
+AGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGGGAACTCGTCCT
+read_num: 25278 >kp|1381115|667804|ref|NC_002209.1|gnl|NCBI_GENOMES|15300|gi|8486156|Influenza B virus RNA 6, complete sequence Influenza B virus RNA 6, complete sequence
+AGCAGAAGCAGAGCATATTCTTAGAACTGAAGTGAACAGGCCAAAAATGAACAATGCTACCTTCAACTGTACAAACATTA
+read_num: 25390 >kp|1384313|669190|gnl|NIGSP|NIGSP-EH-00012.HA|gb|CY034084.1|gi|194352256|Influenza A virus (A/Managua/17/2007(H3N2)) segment 4, complete sequence Influenza A virus (A/Managua/17/2007(H3N2)) segment 4, complete sequence
+ACTCTGAAATTGGCAACAGGGATGCGAAATGTACCAGAGAAACAAACTAGAGGCATATTTGGTGCAATCGCGGGTTTCAT
+read_num: 25407 >kp|1384427|669304|gnl|NIGSP|NIGSP-NY-00091.HA|gb|CY033876.1|gi|194351731|Influenza B virus (B/Florida/4/2006) segment 4, complete sequence Influenza B virus (B/Florida/4/2006) segment 4, complete sequence
+GGATGAACTCCACAACGAAATACTCGAGCTGGATGAGAAAGTGGATGATCTCAGAGCTGACACTATAAGCTCGCAAATAG
+read_num: 25531 >kp|1385130|670007|gnl|NIGSP|NIGSP-SS-00058.NA|gb|CY033966.1|gi|194351945|Influenza B virus (B/Taiwan/71523/2007) segment 6, complete sequence Influenza B virus (B/Taiwan/71523/2007) segment 6, complete sequence
+ACAAAGGGAGTGGAGGCATCAAGGGAGGATTTGTTCATCAAAGAATGGCATCCAAGATTGGAAGGTGGTACTCTCGAACG
+read_num: 25682 >kp|1385948|670825|gnl|NIGSP|NIGSP-DW-00098.NS|gb|CY034330.1|gi|194590507|Influenza A virus (A/environment/New York/26792-2/2005(H7N2)) segment 8, complete sequence Influenza A virus (A/environment/New York/26792-2/2005(H7N2)) segment 8, complete sequence
+TCCCTTTGATGATAGACTCAGAAGAGATCAAAGGGCATTAAAGGGAAGAAGCAGCACACTTGGGCTCGACCTGCGAGTGG
+read_num: 25872 >kp|1387066|671943|gnl|NIGSP|NIGSP-SJ-00455.PA|gb|CY033486.1|gi|194304586|Influenza A virus (A/equine/Kascakew/1/1978(H3N8)) segment 3, complete sequence Influenza A virus (A/equine/Kascakew/1/1978(H3N8)) segment 3, complete sequence
+GAGCATTGAGGACCCAAGTCACGAGGGAGAGGGAATACCGCTGTATGATGCCATCAAATGCATGAAAACCTTCTTTGGAT
+read_num: 26144 >kp|1396951|674270|gnl|NIGSP|NIGSP-SJ-00366.PB2|gb|CY032944.1|gi|193804969|Influenza A virus (A/equine/Kentucky/2/1980(H3N8)) segment 1, complete sequence Influenza A virus (A/equine/Kentucky/2/1980(H3N8)) segment 1, complete sequence
+TTTGACACTGCTCAAATAATAAAACTCCTCCCTTTTGCCGCTGCTCCTCCGGAACAGAGTAGAATGCAGTTCTCTTCTTT
+read_num: 26671 >kp|1420510|676675|gnl|NIGSP|NIGSP-PIT-00005.NP|gb|CY035153.1|gi|208344147|Influenza A virus (A/Pennsylvania/PIT05/2008(H3N2)) segment 5, complete sequence Influenza A virus (A/Pennsylvania/PIT05/2008(H3N2)) segment 5, complete sequence
+TCTGCTTTTGATGAAAGAAGGAATAAATACCTGGAAGAACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCC
+read_num: 26829 >kp|1430570|679644|gnl|NIGSP|NIGSP-DW-00199.NS|gb|CY036006.1|gi|211593887|Influenza A virus (A/Muscovy duck/New York/19495-7/2006(H7N2)) segment 8, complete sequence Influenza A virus (A/Muscovy duck/New York/19495-7/2006(H7N2)) segment 8, complete sequence
+TCTATGGCACATAAGAAAGCTACTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGAGATCAAA
+read_num: 28139 >kp|1603180|694789|gnl|SJIGP|SJIGP-00410.PB1|gb|CY015004.1|gi|115279127|Influenza A virus (A/environment/Canada/av41/2004(H7N3)) segment 2, complete sequence Influenza A virus (A/environment/Canada/av41/2004(H7N3)) segment 2, complete sequence
+AACAACATACTGGTGGGACGGACTCCAATCCTCCGATGACTTTGCTCTCATAGTGAATGCTCCGAATCATGAGGGAATAC
+read_num: 28162 >kp|1623624|695521|gb|AY738452.1|gi|56785887|Influenza A virus (A/turkey/Givat Haim/965/02 (H9N2)) hemagglutinin precursor, gene, complete cds Influenza A virus (A/turkey/Givat Haim/965/02 (H9N2)) hemagglutinin precursor, gene, complete cds
+TGTGACACATGCCAAAGAATTACTCCACACAGAGCACAATGGAATGCTGTGTGCAACAAATCTGGGACATCCCCTCATTC
+read_num: 28718 >kp|643644|416622|gi|53829805|gb|AY582012.1| Influenza B virus (B/Maryland/1/01) NB glycoprotein (NB) and NA glycoprotein (NA) genes, complete cds Influenza B virus (B/Maryland/1/01) NB glycoprotein (NB) and NA glycoprotein (NA) genes, complete cds
+ATTTGTTCATCAAAGAATGGCATCCAAGATTGGAAGGTGGTACTCTCGAACAATGTCTAAAACCAAAAGGATGGGGATGG
+read_num: 28755 >kp|643699|416677|gi|53829660|gb|AY581960.1| Influenza B virus (B/Nanchang/7/98) pre-hemagglutinin (HA) gene, complete cds Influenza B virus (B/Nanchang/7/98) pre-hemagglutinin (HA) gene, complete cds
+TTAGACAGGATAGCTGCTGGCACCTTTAATGCAGGAGAATTTTCTCTCCCCACTTTTGATTCACTGAATATTACTGCTGC
+read_num: 28862 >kp|644241|417219|gi|49357404|gb|AY633136.1| Influenza A virus (A/mallard/Alberta/117/97(H3N8)) nonstructural protein (NS) gene, complete cds Influenza A virus (A/mallard/Alberta/117/97(H3N8)) nonstructural protein (NS) gene, complete cds
+TAGATTGCTATCTATGGCACATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGG
+read_num: 28965 >kp|644571|417549|gi|53748354|emb|AJ842117.1| Influenza B virus (B/Roma/2/03) partial NA gene for neuraminidase, genomic RNA Influenza B virus (B/Roma/2/03) partial NA gene for neuraminidase, genomic RNA
+CTGTGAATCCAATGGGGACAAAGGGAGTGGAGGCATCAAGGGAGGATTTGTTCATCAAAGAATGGCATCCAAGATTGGAA
+read_num: 29720 >kp|649197|422175|gi|29838039|gb|AY241656.1| Influenza A virus (A/Quail/PA/20304/98(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds Influenza A virus (A/Quail/PA/20304/98(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds
+GGCACATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTAAGAAGAGATCAAAAGGCA
+read_num: 29920 >kp|652322|425300|gi|6006999|gb|AF156380.1|AF156380 Influenza A virus (A/Chicken/Beijing/1/94(H9N2)) segment 4 hemagglutinin precursor, gene, partial cds AF156380 Influenza A virus (A/Chicken/Beijing/1/94(H9N2)) segment 4 hemagglutinin precursor, gene, partial cds
+CTAACAGAAACCAATGTTCCTGTGACACATGCCAAAGAATTGCTCCACACAGAGCACAATGGAATGCTGTGTGCAACAAA
+read_num: 30051 >kp|653572|426550|gi|5732334|gb|AF156433.1|AF156433 Influenza A virus (A/Duck/Hong Kong/Y280/97(H9N2)) segment 1 PB2 polymerase subunit (PB2) gene, partial cds AF156433 Influenza A virus (A/Duck/Hong Kong/Y280/97(H9N2)) segment 1 PB2 polymerase subunit (PB2) gene, partial cds
+GTTCACAATGGTTGGACGGAGGGCAACAGCTATCCTGAGGAAAGCAACTAAAAGGCTGATTCAGTTGATAGTAAGTGGAA
+read_num: 30438 >kp|841922|546223|gi|27531684|dbj|AB086805.1| Influenza C virus (C/Miyagi/9/96) NS1 and NS2 genes for nonstructural protein 1 and nonstructural protein 2, complete cds Influenza C virus (C/Miyagi/9/96) NS1 and NS2 genes for nonstructural protein 1 and nonstructural protein 2, complete cds
+GTCCGACAAAACAGTCAAATCAACAAATTTAATGGCATTTGTAGCCACAAAAATGTTAGAGAGACAAGAAGATTTAGACA
+read_num: 30617 >kp|842772|547073|gi|4566259|gb|AF074273.1|AF074273 Influenza A virus (A/Chicken/New York/3112-1/95 (H7N2NSB)) nonstructural protein 1 (NS1) and nonstructural protein 2 (NS2) genes, complete cds AF074273 Influenza A virus (A/Chicken/New York/3112-1/95 (H7N2NSB)) nonstructural protein 1 (NS1) and nonstructural protein 2 (NS2) genes, complete cds
+TTGCTATCTATGGCACATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGAG
+read_num: 31087 >kp|844708|549009|gi|21636426|gb|AF457700.1| Influenza A virus (A/chicken/California/431/00(H6N2)) NS1 and NS2 genes, complete cds Influenza A virus (A/chicken/California/431/00(H6N2)) NS1 and NS2 genes, complete cds
+TTGCTATTTATGGCATATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGAG
+read_num: 31134 >kp|844832|549133|gi|28194359|gb|AF474060.1| Influenza A virus (A/Chicken/California/465/2000(H6N2)) nonstructural protein 1 (NS1) and nonstructural protein 2 (NS2) genes, complete cds Influenza A virus (A/Chicken/California/465/2000(H6N2)) nonstructural protein 1 (NS1) and nonstructural protein 2 (NS2) genes, complete cds
+ATGCTCCCTTTGATGATAGACTCAGAAGAGATCAAAAGGCATTAAAGGGAAGAGGCAGCACACTTGGGCTCGACCTGCGA
+read_num: 31470 >kp|846499|550800|gi|20126596|gb|AY044171.1| Influenza B virus (B/Shangdong/7/97) matrix protein (M) and BM2 protein genes, complete cds Influenza B virus (B/Shangdong/7/97) matrix protein (M) and BM2 protein genes, complete cds
+AAAACTGGCAGAAGAACTGCAAAGCAACATTGGAGTATTGAGATCTCTTGGAGCAAGTCAAAAGAATGGGGAAGGAATTG
+read_num: 31802 >kp|847956|552257|gi|29837991|gb|AY241640.1| Influenza A virus (A/chicken/NY/1387-8/98(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds Influenza A virus (A/chicken/NY/1387-8/98(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds
+AAAGCTACTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGAGATCAAAAGGCATTAAAGGGAA
+read_num: 31805 >kp|847960|552261|gi|29838003|gb|AY241644.1| Influenza A virus (A/chicken/NY/22409-4/99(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds Influenza A virus (A/chicken/NY/22409-4/99(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds
+AGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGAGATCAAAAAGCATTAAAGGGAAGAAGCAGCAC
+read_num: 31809 >kp|847967|552268|gi|29838015|gb|AY241648.1| Influenza A virus (A/Chicken/PA/9701027B/97(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds Influenza A virus (A/Chicken/PA/9701027B/97(H7N2)) nonstructural protein 1 and nonstructural protein 2 genes, complete cds
+AGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGAGATCAAAAGGCATTAAAGGGAAGAAGCAGCACACTTGG
+read_num: 31838 >kp|848226|552527|gi|37813185|gb|AY342424.1| Influenza A virus (A/chicken/Netherlands/1/03(H7N7)) non-structural protein gene, complete cds Influenza A virus (A/chicken/Netherlands/1/03(H7N7)) non-structural protein gene, complete cds
+GTGTGGTTTTTGACCGGCTGGAAACCCTAATACTACTTAGAGCTTTCACAGAAGAAGGAGCAATTGTGGGAGAAATCTCA
+read_num: 32184 >kp|870665|574966|gi|2618614|dbj|D49361.1| Influenza C virus (C/Yamagata/10/89) HE gene for hemagglutinin esterase, partial cds Influenza C virus (C/Yamagata/10/89) HE gene for hemagglutinin esterase, partial cds
+AATTGGACTGACATCAAACTGAATTTCCAGAAAAGCATTTATGAATTGGCTTCACAATCACATTGCATGAGCTTGGTGAA
+read_num: 32187 >kp|870676|574977|gi|66730134|dbj|D87394.1| Influenza C virus (C/Miyagi/9/91) HE gene for hemagglutinine esterase, partial cds Influenza C virus (C/Miyagi/9/91) HE gene for hemagglutinine esterase, partial cds
+ACAGAAAAAATTGGACTGACATCAAACTGAATTTCCAGAAAAGCATTTATGAATTGGCTTCACAATCACATTGCATGAGC
+read_num: 32272 >kp|870796|575097|gi|68349438|gb|DQ021636.1| Influenza A virus (A/northern pintail/TX/828187/02(H6)) nonstructural protein gene, complete cds Influenza A virus (A/northern pintail/TX/828187/02(H6)) nonstructural protein gene, complete cds
+TAGATTGCTATCTATGGCACATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGA
+read_num: 32282 >kp|870806|575107|gi|68349458|gb|DQ021646.1| Influenza A virus (A/mallard/MN/351/99(H3N4)) nonstructural protein gene, complete cds Influenza A virus (A/mallard/MN/351/99(H3N4)) nonstructural protein gene, complete cds
+ATTGCTATCTATGGCACATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGA
+read_num: 33507 >kp|876292|580594|gi|325317|gb|M17868.1|FLCHAJO Influenza C/Johannesburg/66 hemagglutinin esterase RNA (seg 4), complete cds FLCHAJO Influenza C/Johannesburg/66 hemagglutinin esterase RNA (seg 4), complete cds
+AAGGAGTTAACTGGAGTCCACATGCTGCTATAAATTGTTACAGAAAAAATTGGACTGATATCAAACTGAATTTCCAGAAA
+read_num: 33618 >kp|876591|580893|gi|324201|gb|M27970.1|FLAHANENJ8 Influenza A virus (A/NJ/8/1976(H1N1)) hemagglutinin/neuraminidase precursor, gene, complete cds FLAHANENJ8 Influenza A virus (A/NJ/8/1976(H1N1)) hemagglutinin/neuraminidase precursor, gene, complete cds
+ATTAGTCTATTATTGCAGATAGGAAATATAATCTTGTTATGGATGAGCCATTCAATTCAGACTGGAGAAAAAAGCCATCC
+read_num: 34024 >kp|896492|600793|gnl|NIGSP|NIGSP-SJ-00033.MP|gb|CY003721.1|gi|77863340|Influenza A virus (A/Hong Kong/26/83(H3N2)) segment 7, complete sequence Influenza A virus (A/Hong Kong/26/83(H3N2)) segment 7, complete sequence
+GATGGGGGCTGTAACCACTGAAGTGGCCTTTGGCCTGGTATGTGCGACATGTGAACAGATTGCTGACTCTCAGCACAGGT
+read_num: 34306 >kp|896961|601262|gnl|NIGSP|NIGSP-NYS-00563.NA|gb|CY010006.1|gi|90571731|Influenza A virus (A/New York/563/1996(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/563/1996(H3N2)) segment 6, complete sequence
+TGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGAT
+read_num: 34587 >kp|897439|601740|gnl|NIGSP|NIGSP-NYScg-00491.NA|gb|CY006189.1|gi|80974085|Influenza A virus (A/New York/491/2003(H1N2)) segment 6, complete sequence Influenza A virus (A/New York/491/2003(H1N2)) segment 6, complete sequence
+CTTATAGGACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGC
+read_num: 35070 >kp|898205|602506|gnl|NIGSP|NIGSP-NZ-00177.NP|gb|CY008559.1|gi|87043046|Influenza A virus (A/Canterbury/105/2005(H3N2)) segment 5, complete sequence Influenza A virus (A/Canterbury/105/2005(H3N2)) segment 5, complete sequence
+GAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGGGAACTCGTCCTTTATGACA
+read_num: 35082 >kp|898224|602525|gnl|NIGSP|NIGSP-NYS-00739.NA|gb|CY012994.1|gi|110733768|Influenza A virus (A/New York/739/1994(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/739/1994(H3N2)) segment 6, complete sequence
+ATGATAGGACCCCTTATCGAACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATA
+read_num: 35083 >kp|898225|602526|gnl|NIGSP|NIGSP-NYS-00631.NA|gb|CY010718.1|gi|91130379|Influenza A virus (A/New York/631/1996(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/631/1996(H3N2)) segment 6, complete sequence
+TGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGA
+read_num: 35319 >kp|898635|602936|gnl|NIGSP|NIGSP-NYS-00799.NA|gb|CY013767.1|gi|112789321|Influenza A virus (A/New York/799/1993(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/799/1993(H3N2)) segment 6, complete sequence
+AACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTT
+read_num: 35384 >kp|898742|603043|gnl|NIGSP|NIGSP-IT-00022.PB2|gb|CY016866.1|gi|115952810|Influenza A virus (A/chicken/Viet Nam/9/2005(H5N1)) segment 1, complete sequence Influenza A virus (A/chicken/Viet Nam/9/2005(H5N1)) segment 1, complete sequence
+ACATTGTTAGGAGAGCAACGGTATCAGCGGATCCACTGGCATCACTGCTGGAGATGTGTCACAGCACACAGATTGGTGGG
+read_num: 35796 >kp|899400|603701|gnl|NIGSP|NIGSP-CDC-00058.HA|gb|CY018693.1|gi|119516528|Influenza B virus (B/Moscow/16/2002) segment 4, complete sequence Influenza B virus (B/Moscow/16/2002) segment 4, complete sequence
+CACCTTTAATGCAGGAGAATTTTCTCTCCCCACTTTTGATTCACTGAACATCACTGCTGCATCTTTAAATGATGATGGAT
+read_num: 35986 >kp|899716|604017|gnl|NIGSP|NIGSP-NYS-00771.NA|gb|CY012746.1|gi|110629733|Influenza A virus (A/New York/771/1993(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/771/1993(H3N2)) segment 6, complete sequence
+TGATAGGACCCCTTATCGAACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAG
+read_num: 36045 >kp|899823|604124|gnl|NIGSP|NIGSP-TM-00008.HA|gb|CY017997.1|gi|119515026|Influenza B virus (B/Houston/B65/1998) segment 4, complete sequence Influenza B virus (B/Houston/B65/1998) segment 4, complete sequence
+ATCTTCAAAGACTAAGTGGTGCCATGGATGAACTCCACAACGAAATACTCGAGCTGGATGAGAAAGTGGATGATCTCAGA
+read_num: 36140 >kp|899986|604287|gnl|NIGSP|NIGSP-IT-00013.PB2|gb|CY016818.1|gi|115609313|Influenza A virus (A/chicken/Cote d'Ivoire/1787-34/2006(H5N1)) segment 1, complete sequence Influenza A virus (A/chicken/Cote d'Ivoire/1787-34/2006(H5N1)) segment 1, complete sequence
+GCAACGGTATCAGCGGATCCACTGGCATCACTGCTGGAGATGTGTCACAGCACACAAATTGGTGGGATAAGGATGGTGGA
+read_num: 36247 >kp|900162|604463|gnl|NIGSP|NIGSP-NYS-00188.NA|gb|CY001530.1|gi|67051352|Influenza A virus (A/New York/188/1999(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/188/1999(H3N2)) segment 6, complete sequence
+TGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGAT
+read_num: 36346 >kp|900313|604614|gnl|NIGSP|NIGSP-OH-00158.NA|gb|CY017863.1|gi|119369497|Influenza A virus (A/northern shoveler/Ohio/454/1987(H3N8)) segment 6, complete sequence Influenza A virus (A/northern shoveler/Ohio/454/1987(H3N8)) segment 6, complete sequence
+AGTGGAGTGTGTTTGTAGAGACAACTGGACTGGAACCAACAGGCCAGTATTGGTTATTTCTCCAGATTTGTCTTACAGAG
+read_num: 36601 >kp|900710|605011|gnl|NIGSP|NIGSP-CDC-00059.HA|gb|CY018701.1|gi|119516547|Influenza B virus (B/Brisbane/32/2002) segment 4, complete sequence Influenza B virus (B/Brisbane/32/2002) segment 4, complete sequence
+GAAGTAAAGAATCTTCAAAGACTAAGCGGTGCCATGGATGAACTCCACAACGAAATACTAGAACTAGACGAGAAAGTGGA
+read_num: 36903 >kp|901191|605492|gnl|SJIGP|SJIGP-00419.NP|gb|CY015060.1|gi|115279263|Influenza A virus (A/starling/Victoria/5156/1985(H7N7)) segment 5, complete sequence Influenza A virus (A/starling/Victoria/5156/1985(H7N7)) segment 5, complete sequence
+GGCGAAAATGGACGAAGAACAAGGATTGCATATGAGAGAATGTGCAACATCCTCAAAGGAAAATTCCAAACAGCAGCACA
+read_num: 36951 >kp|901271|605572|gnl|NIGSP|NIGSP-SJ-00006.NA|gb|CY003066.1|gi|76464389|Influenza A virus (A/Memphis/1/90(H3N2)) segment 6, complete sequence Influenza A virus (A/Memphis/1/90(H3N2)) segment 6, complete sequence
+CCCCTTATCGAACCCTCTTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATGGCATGGTCC
+read_num: 37079 >kp|901457|605758|gnl|NIGSP|NIGSP-NYS-00187.NA|gb|CY001367.1|gi|66353974|Influenza A virus (A/New York/187/2000(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/187/2000(H3N2)) segment 6, complete sequence
+GGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTGTAACGG
+read_num: 37083 >kp|901462|605763|gnl|NIGSP|NIGSP-CDC-00005.NA|gb|CY018367.1|gi|119515773|Influenza B virus (B/Florida/02/2006) segment 6, complete sequence Influenza B virus (B/Florida/02/2006) segment 6, complete sequence
+ATCAAGGGAGGATTTGTTCATCAAAGAATGGCATCCAAGATTGGAAGGTGGTACTCTCGAACGATGTCTAAAACTGAAAG
+read_num: 37282 >kp|901763|606064|gnl|SJIGP|SJIGP-00005.NS|gb|CY003883.1|gi|78058712|Influenza A virus (A/mallard duck/ALB/376/1985(H2N3)) segment 8, complete sequence Influenza A virus (A/mallard duck/ALB/376/1985(H2N3)) segment 8, complete sequence
+ATCTATGGCACATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGAGATCAA
+read_num: 37413 >kp|901974|606275|gnl|NIGSP|NIGSP-NYS-00113.NA|gb|CY000235.1|gi|59940517|Influenza A virus (A/New York/113/2002(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/113/2002(H3N2)) segment 6, complete sequence
+TCAAAGTCATCGAAGGCTGGTCCAAACCTAACTCCAAATTACAGACAAATAGGCAAGTCATAGTTGAAAGAGGTAACAGG
+read_num: 37563 >kp|902215|606516|gnl|NIGSP|NIGSP-NYS-00760.NA|gb|CY012146.1|gi|109915305|Influenza A virus (A/New York/760/1993(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/760/1993(H3N2)) segment 6, complete sequence
+ATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTT
+read_num: 37604 >kp|902274|606575|gnl|NIGSP|NIGSP-NZ-00161.NA|gb|CY007773.1|gi|84094837|Influenza A virus (A/Canterbury/80/2002(H3N2)) segment 6, complete sequence Influenza A virus (A/Canterbury/80/2002(H3N2)) segment 6, complete sequence
+AACCTAACTCCAAATTACAGACAAATAGGCAAGTCATAGTTGAAAGAGGTAACAGGTCCGGTTATTCTGGTATTTTCTCC
+read_num: 37665 >kp|902367|606668|gnl|NIGSP|NIGSP-NYS-00777.NA|gb|CY012762.1|gi|110629771|Influenza A virus (A/New York/777/1993(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/777/1993(H3N2)) segment 6, complete sequence
+AATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAA
+read_num: 37836 >kp|902642|606943|gnl|NIGSP|NIGSP-CDC-00060.NA|gb|CY018711.1|gi|119516571|Influenza B virus (B/Hong Kong/330/2001) segment 6, complete sequence Influenza B virus (B/Hong Kong/330/2001) segment 6, complete sequence
+GTATCAAGGGAGGATTTGTCCATCAAAGAATGGCATCCAAGATTGGAAGATGGTACTCTCGAACGATGTCTAAAACTAAA
+read_num: 37938 >kp|902804|607105|gnl|SJIGP|SJIGP-00180.PB1|gb|CY004945.1|gi|78096752|Influenza A virus (A/mallard/Alberta/30/2001(H4N8)) segment 2, complete sequence Influenza A virus (A/mallard/Alberta/30/2001(H4N8)) segment 2, complete sequence
+TTTGCTCTCATAGTGAATGCTCCGAATCATGAGGGAATACAAGCAGGAGTAGACAGATTCTATAGAACCTGCAAGCTGGT
+read_num: 38256 >kp|903293|607594|gnl|NIGSP|NIGSP-NYS-00351.NP|gb|CY003035.1|gi|76366075|Influenza A virus (A/New York/351/2004(H3N2)) segment 5, complete sequence Influenza A virus (A/New York/351/2004(H3N2)) segment 5, complete sequence
+ACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGGGAAC
+read_num: 38300 >kp|903363|607664|gnl|NIGSP|NIGSP-CDC-00024.NA|gb|CY018431.1|gi|119515925|Influenza B virus (B/Kouchi/193/1999) segment 6, complete sequence Influenza B virus (B/Kouchi/193/1999) segment 6, complete sequence
+GGGAGTGGGGGCATCAAGGGAGGATTTGTTCATCAAAGAATGGCATCCAAGATTGGAAGGTGGTACTCTCGAACGATGTC
+read_num: 38534 >kp|903706|608007|gnl|NIGSP|NIGSP-AP-00014.NA|gb|CY015686.1|gi|115289714|Influenza A virus (A/Western Australia/14/2001(H3N2)) segment 6, complete sequence Influenza A virus (A/Western Australia/14/2001(H3N2)) segment 6, complete sequence
+ATAGGACCCCTTACCGGACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCA
+read_num: 38679 >kp|903920|608221|gnl|NIGSP|NIGSP-NYS-00327.NA|gb|CY001882.1|gi|68509734|Influenza A virus (A/New York/327/1999(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/327/1999(H3N2)) segment 6, complete sequence
+TTTGGGAACCAAGCAAGTGTGTATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTGTAA
+read_num: 38692 >kp|903940|608241|gnl|NIGSP|NIGSP-NZ-00302.NA|gb|CY009590.1|gi|89781837|Influenza A virus (A/Canterbury/140/2001(H3N2)) segment 6, complete sequence Influenza A virus (A/Canterbury/140/2001(H3N2)) segment 6, complete sequence
+TGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTGTAACG
+read_num: 38764 >kp|904038|608339|gnl|NIGSP|NIGSP-CDC-00062.NA|gb|CY018719.1|gi|119516590|Influenza B virus (B/Ulan-Ude/6/2003) segment 6, complete sequence Influenza B virus (B/Ulan-Ude/6/2003) segment 6, complete sequence
+TTGCGAATCTAATGGGGACAAAGGGAGTGGAGGCATCAAGGGAGGATTTGTTCATCAAAGAATGGCATCCAAGATTGGAA
+read_num: 38873 >kp|904176|608477|gnl|NIGSP|NIGSP-SJ-00121.NA|gb|CY011290.1|gi|109159414|Influenza A virus (A/Memphis/5/1986(H3N2)) segment 6, complete sequence Influenza A virus (A/Memphis/5/1986(H3N2)) segment 6, complete sequence
+TCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTA
+read_num: 39004 >kp|904365|608666|gnl|SJIGP|SJIGP-00115.NS|gb|CY004576.1|gi|78095992|Influenza A virus (A/mallard duck/ALB/25/1976(H3N1)) segment 8, complete sequence Influenza A virus (A/mallard duck/ALB/25/1976(H3N1)) segment 8, complete sequence
+AGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGGAGAGATCAAAAGGCATTAAAGGGAAGA
+read_num: 39327 >kp|904829|609130|gnl|NIGSP|NIGSP-CDC-00017.HA|gb|CY018413.1|gi|119515882|Influenza B virus (B/Auckland/01/2000) segment 4, complete sequence Influenza B virus (B/Auckland/01/2000) segment 4, complete sequence
+TTCAAAGACTAAGTGGTGCCATGGATGAACTCCACAACGAAATTCTCGAGCTGGATGAGAAAGTGGATGATCTCAGAGCT
+read_num: 39972 >kp|905787|610088|gnl|NIGSP|NIGSP-OH-00059.NA|gb|CY011250.1|gi|110733339|Influenza A virus (A/wigeon/Ohio/379/1988(H5N2)) segment 6, complete sequence Influenza A virus (A/wigeon/Ohio/379/1988(H5N2)) segment 6, complete sequence
+GGAACATAACAGAGATAGTGTATTTGAATAATACTACCATAGAGAAAGAGATTTGTCCTAAAGCAGTAGACTACAGGAAT
+read_num: 40036 >kp|905877|610178|gnl|NIGSP|NIGSP-NYScg-00481.NA|gb|CY006389.1|gi|82561124|Influenza A virus (A/New York/481/2003(H1N2)) segment 6, complete sequence Influenza A virus (A/New York/481/2003(H1N2)) segment 6, complete sequence
+CATGATAGGACCCCTTATCGGACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCAT
+read_num: 40065 >kp|905925|610226|gnl|SJIGP|SJIGP-00140.NS|gb|CY004689.1|gi|78096138|Influenza A virus (A/mallard/ALB/129/1991(H3N6)) segment 8, complete sequence Influenza A virus (A/mallard/ALB/129/1991(H3N6)) segment 8, complete sequence
+ATCTATGGCATATAAGAAAGCTACTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAGAAGGGATCAA
+read_num: 40276 >kp|906248|610549|gnl|NIGSP|NIGSP-BK-00016.PA|gb|CY009361.1|gi|91125687|Influenza A virus (A/England/72(H3N2)) segment 3, complete sequence Influenza A virus (A/England/72(H3N2)) segment 3, complete sequence
+GGGCCTCCTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAATTAAGCATTGAAGACCCAAGTCACGAAGG
+read_num: 40930 >kp|907224|611525|gnl|NIGSP|NIGSP-NYS-00746.NA|gb|CY012570.1|gi|110629302|Influenza A virus (A/New York/746/1994(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/746/1994(H3N2)) segment 6, complete sequence
+TTATCGAACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCT
+read_num: 41058 >kp|907411|611712|gnl|NIGSP|NIGSP-NYS-00679.PA|gb|CY011565.1|gi|109675772|Influenza A virus (A/New York/679/1995(H3N2)) segment 3, complete sequence Influenza A virus (A/New York/679/1995(H3N2)) segment 3, complete sequence
+TATCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAATTAAGCATTGAAGACCCAAGTCACGAAGGAGAAGGGATACC
+read_num: 41223 >kp|907622|611923|gnl|NIGSP|NIGSP-NYS-00502.NP|gb|CY008183.1|gi|85816123|Influenza A virus (A/New York/502/1998(H3N2)) segment 5, complete sequence Influenza A virus (A/New York/502/1998(H3N2)) segment 5, complete sequence
+CTCTCCCTAGAAGATCCGGAGCTGCAGGTGCTGCAGTCAAAGGAATCGGGACAATGGTGATGGAGCTGATCAGAATGGTC
+read_num: 41272 >kp|907691|611992|gnl|NIGSP|NIGSP-NYS-00395.NP|gb|CY003059.1|gi|76381542|Influenza A virus (A/New York/395/2005(H3N2)) segment 5, complete sequence Influenza A virus (A/New York/395/2005(H3N2)) segment 5, complete sequence
+TCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGGGAACTCGTCCTTTATGACAAAGAAG
+read_num: 41321 >kp|907761|612062|gnl|NIGSP|NIGSP-SJ-00018.PA|gb|CY008161.1|gi|85816063|Influenza A virus (A/Beijing/1/68(H3N2)) segment 3, complete sequence Influenza A virus (A/Beijing/1/68(H3N2)) segment 3, complete sequence
+CAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAGTTAAGCATTGAGGATCCAAGTCACGAGGGGGAGGGAATACCACT
+read_num: 41483 >kp|907989|612290|gnl|NIGSP|NIGSP-SJ-00034.MP|gb|CY006316.1|gi|82494348|Influenza A virus (A/Hong Kong/14/83(H3N2)) segment 7, complete sequence Influenza A virus (A/Hong Kong/14/83(H3N2)) segment 7, complete sequence
+GGCCTCATATACAACAGGATGGGGGCTGTAACCACTGAAGTGGCCTTTGGCCTGGTATGTGCGACATGTGAACAGATTGC
+read_num: 41680 >kp|908259|612560|gnl|NIGSP|NIGSP-SJ-00017.PA|gb|CY007976.1|gi|84873044|Influenza A virus (A/Guandong/243/72(H3N2)) segment 3, complete sequence Influenza A virus (A/Guandong/243/72(H3N2)) segment 3, complete sequence
+CAATCAAACTTCCGGATGGGCCTCCTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAATTAAGCATTGAA
+read_num: 42043 >kp|908773|613074|gnl|NIGSP|NIGSP-NYS-00697.PA|gb|CY011349.1|gi|109159602|Influenza A virus (A/New York/697/1995(H3N2)) segment 3, complete sequence Influenza A virus (A/New York/697/1995(H3N2)) segment 3, complete sequence
+ACAACACCAAGACCAATCAAACTTCCGAATGGACCTCCTTGTTATCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAA
+read_num: 42086 >kp|908838|613139|gnl|NIGSP|NIGSP-OH-00143.NS|gb|CY017079.1|gi|116070121|Influenza A virus (A/bufflehead/Ohio/246/1986(H11N2)) segment 8, complete sequence Influenza A virus (A/bufflehead/Ohio/246/1986(H11N2)) segment 8, complete sequence
+GTAGATTGCTATCTATGGCACATAAGAAAGCTGCTCAGCATGAGAGACATGTGTGATGCTCCCTTTGATGATAGACTCAG
+read_num: 42382 >kp|909231|613532|gnl|NIGSP|NIGSP-AP-00026.NA|gb|CY015718.1|gi|115289790|Influenza A virus (A/Western Australia/26/2002(H3N2)) segment 6, complete sequence Influenza A virus (A/Western Australia/26/2002(H3N2)) segment 6, complete sequence
+GAAACCTTCAAAGTCATCGAAGGCTGGTCCAAACCTAACTCCAAATTACAGACAAATAGGCAAGTCATAGTTGAAAGAGG
+read_num: 42508 >kp|909429|613730|gnl|NIGSP|NIGSP-SJ-00049.NA|gb|CY009014.1|gi|89112208|Influenza A virus (A/Nanchang/12/93(H3N2)) segment 6, complete sequence Influenza A virus (A/Nanchang/12/93(H3N2)) segment 6, complete sequence
+TGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTGTAACT
+read_num: 42710 >kp|909736|614037|gb|AY950279.1|gi|61698123|Influenza A virus (A/chicken/Henan/01/2004(H5N1)) segment 1, complete sequence Influenza A virus (A/chicken/Henan/01/2004(H5N1)) segment 1, complete sequence
+TGTTAGGAGAGCAACGGTATCAGCGGATCCACTGGCATCACTGCTGGAGATGTGTCACAGCACACAAATTGGTGGGATAA
+read_num: 42852 >kp|909949|614250|gnl|NIGSP|NIGSP-SJ-00042.NA|gb|CY006325.1|gi|82494370|Influenza A virus (A/Hong Kong/4/84(H3N2)) segment 6, complete sequence Influenza A virus (A/Hong Kong/4/84(H3N2)) segment 6, complete sequence
+CATGATAGGACCCCTTATCGAACCCTCTTAATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCAT
+read_num: 43002 >kp|910180|614481|gnl|NIGSP|NIGSP-CDC-00011.HA|gb|CY018557.1|gi|119516205|Influenza B virus (B/Osaka/547/1997) segment 4, complete sequence Influenza B virus (B/Osaka/547/1997) segment 4, complete sequence
+CCTTTGATGCAGGAGAATTTTCTCTCCCCACTTTTGATTCACTGAATATTACTGCTGCATCTTTAAATGACGATGGATTG
+read_num: 43006 >kp|910185|614486|gnl|NIGSP|NIGSP-NYScg-00450.NA|gb|CY003578.1|gi|77747155|Influenza A virus (A/New York/450/1999(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/450/1999(H3N2)) segment 6, complete sequence
+TTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTGTAAC
+read_num: 43154 >kp|910408|614709|gb|AY950285.1|gi|61698134|Influenza A virus (A/swan/Guangxi/307/2004 (H5N1)) segment 1, complete sequence Influenza A virus (A/swan/Guangxi/307/2004 (H5N1)) segment 1, complete sequence
+AACATTGTTAGGAGAGCAACGGTATCAGCGGATCCACTGGCATCACTGCTGGAGATGTGTCACAGCACACAAATTGGTGG
+read_num: 43284 >kp|910606|614907|gnl|NIGSP|NIGSP-IT-00016.PB2|gb|CY016826.1|gi|115608085|Influenza A virus (A/cygnus olor/Croatia/1/2005(H5N1)) segment 1, complete sequence Influenza A virus (A/cygnus olor/Croatia/1/2005(H5N1)) segment 1, complete sequence
+GATCATTGCTGCCAGAAACATTGTTAGGAGAGCAACGGTATCAGCGGATCCACTGGCATCACTGCTGGAGATGTGTCACA
+read_num: 43399 >kp|910776|615077|gnl|NIGSP|NIGSP-NYS-00098.NP|gb|CY002283.1|gi|72597928|Influenza A virus (A/New York/98/2004(H3N2)) segment 5, complete sequence Influenza A virus (A/New York/98/2004(H3N2)) segment 5, complete sequence
+GGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGGGAACTCGTCCTTTATGA
+read_num: 43836 >kp|911471|615772|gnl|NIGSP|NIGSP-NYS-00185.NA|gb|CY000747.2|gi|68251826|Influenza A virus (A/New York/185/1999(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/185/1999(H3N2)) segment 6, complete sequence
+TTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTGTAAC
+read_num: 43988 >kp|911709|616010|gnl|SJIGP|SJIGP-00068.HA|gb|CY005917.1|gi|82623211|Influenza A virus (A/mallard duck/ALB/31/1976(H3N8)) segment 4, complete sequence Influenza A virus (A/mallard duck/ALB/31/1976(H3N8)) segment 4, complete sequence
+AGAAACAGACCAGGGGTCTGTTCGGTGCAATAGCAGGATTTATAGAAAATGGATGGGAAGGAATGATAGACGGCTGGTAT
+read_num: 44081 >kp|911862|616163|gnl|SJIGP|SJIGP-00300.HA|gb|CY006027.1|gi|82654683|Influenza A virus (A/duck/Hong Kong/365/1978(H4N6)) segment 4, complete sequence Influenza A virus (A/duck/Hong Kong/365/1978(H4N6)) segment 4, complete sequence
+AATTGGAGACTGCCCCAAGTATGTCAAACAGGGCTCTCTGAAACTTGCAACAGGAATGAGGAACATTCCTGAAAAGGCAT
+read_num: 44407 >kp|912378|616679|gnl|NIGSP|NIGSP-AP-00001.NA|gb|CY017325.1|gi|117572962|Influenza A virus (A/Western Australia/1/2000(H3N2)) segment 6, complete sequence Influenza A virus (A/Western Australia/1/2000(H3N2)) segment 6, complete sequence
+GTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTG
+read_num: 44456 >kp|912455|616756|gnl|NIGSP|NIGSP-NYS-00520.NA|gb|CY006493.1|gi|82502805|Influenza A virus (A/New York/520/1998(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/520/1998(H3N2)) segment 6, complete sequence
+CCTTATCGAACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAG
+read_num: 44563 >kp|912623|616924|gnl|NIGSP|NIGSP-AS-00025.NA|gb|CY016086.1|gi|115291164|Influenza A virus (A/New South Wales/25/2000(H3N2)) segment 6, complete sequence Influenza A virus (A/New South Wales/25/2000(H3N2)) segment 6, complete sequence
+CATGATAGGACCCCTTATCGAACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCAT
+read_num: 44705 >kp|912822|617123|gnl|NIGSP|NIGSP-CDC-00018.MP|gb|CY018574.1|gi|119516245|Influenza B virus (B/Ann Arbor/1994) segment 7, complete sequence Influenza B virus (B/Ann Arbor/1994) segment 7, complete sequence
+AAACAAAAGATGCCTAACCGATATACAAAAAGCACTAATTGGTGCCTCTATCTGCTTTCTAAAGCCCAAAGACCAAGAAA
+read_num: 44713 >kp|912832|617133|gnl|NIGSP|NIGSP-SDI-00183.NA|gb|CY013234.1|gi|110734349|Influenza A virus (A/New York/5/2006(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/5/2006(H3N2)) segment 6, complete sequence
+GACAAATAGGCAAGTCATAGTTGACAGAGGTAATAGGTCCGGTTATTCTGGTATTTTCTCTGTTGAAGGCAAAAGCTGCA
+read_num: 44873 >kp|913058|617359|gnl|NIGSP|NIGSP-SDI-00065.NA|gb|CY013799.1|gi|112791763|Influenza A virus (A/New York/3/2006(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/3/2006(H3N2)) segment 6, complete sequence
+TGGTCCAACCCTAATTCCAAATTGCAGACAAATAGGCAAGTCATAGTTGACAGAGGTAATAGGTCCGGTTATTCTGGCAT
+read_num: 45141 >kp|913417|617718|gnl|NIGSP|NIGSP-SJ-00060.PA|gb|CY006840.1|gi|83314208|Influenza A virus (A/Memphis/110/76(H3N2)) segment 3, complete sequence Influenza A virus (A/Memphis/110/76(H3N2)) segment 3, complete sequence
+TCCGGATGGGCCCCCTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAATTAAGCATTGAAGACCCAAGTC
+read_num: 45263 >kp|913575|617876|gnl|NIGSP|NIGSP-NYS-00370.NP|gb|CY002211.1|gi|72562584|Influenza A virus (A/New York/370/2004(H3N2)) segment 5, complete sequence Influenza A virus (A/New York/370/2004(H3N2)) segment 5, complete sequence
+AATAAATACCTGGAAGAACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGG
+read_num: 45382 >kp|913730|618031|gnl|NIGSP|NIGSP-NYS-00528.NA|gb|CY006541.1|gi|82502824|Influenza A virus (A/New York/528/1998(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/528/1998(H3N2)) segment 6, complete sequence
+TGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGTTTGTGTAACT
+read_num: 45670 >kp|914115|618416|gnl|NIGSP|NIGSP-CDC-00019.HA|gb|CY018581.1|gi|119516262|Influenza B virus (B/Georgia/04/1998) segment 4, complete sequence Influenza B virus (B/Georgia/04/1998) segment 4, complete sequence
+GAGCTAGAAGTAAAGAATCTTCAAAGACTAAGTGGTGCCATGGATGAACTCCACAACGAAATACTCGAGCTGGATGAGAA
+read_num: 45792 >kp|914283|618584|gnl|NIGSP|NIGSP-SJ-00071.PA|gb|CY006896.1|gi|83658824|Influenza A virus (A/Memphis/9/80(H3N2)) segment 3, complete sequence Influenza A virus (A/Memphis/9/80(H3N2)) segment 3, complete sequence
+AACTTCCGGATGGGCCTCCTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAATTAAGCATTGAAGACCCA
+read_num: 45846 >kp|914352|618653|gnl|NIGSP|NIGSP-NYScg-00490.NA|gb|CY006405.1|gi|82561371|Influenza A virus (A/New York/490/2003(H1N2)) segment 6, complete sequence Influenza A virus (A/New York/490/2003(H1N2)) segment 6, complete sequence
+CCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGT
+read_num: 45937 >kp|914471|618772|gnl|NIGSP|NIGSP-SJ-00098.NA|gb|CY008718.1|gi|87043652|Influenza A virus (A/Memphis/11/86(H3N2)) segment 6, complete sequence Influenza A virus (A/Memphis/11/86(H3N2)) segment 6, complete sequence
+TATCGAACCCTATTGATGAATGAGTTGGGGGTCCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTC
+read_num: 45941 >kp|914475|618776|gnl|NIGSP|NIGSP-SJ-00084.PA|gb|CY008697.1|gi|87043718|Influenza A virus (A/Memphis/106/76(H3N2)) segment 3, complete sequence Influenza A virus (A/Memphis/106/76(H3N2)) segment 3, complete sequence
+TGGGCCTCCTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAATTAAGCATTGAAGACCCAAGTCACGAAG
+read_num: 46492 >kp|915207|619508|gnl|NIGSP|NIGSP-CDC-00042.NA|gb|CY018639.1|gi|119516400|Influenza B virus (B/Hong Kong/123/2001) segment 6, complete sequence Influenza B virus (B/Hong Kong/123/2001) segment 6, complete sequence
+TTGCGAATCTAATGGGGACAAAGGGAGTGGAGGTATCAAGGGAGGATTTGTCCATCAAAGAATGGCATCCAAGATTGGAA
+read_num: 46663 >kp|915436|619737|gnl|NIGSP|NIGSP-NYS-00723.PA|gb|CY012949.1|gi|110733661|Influenza A virus (A/New York/723/1994(H3N2)) segment 3, complete sequence Influenza A virus (A/New York/723/1994(H3N2)) segment 3, complete sequence
+GAAGACAACACCAAGACCAATCAAACTTCCGAATGGACCTCCTTGTTATCAGCGGTCCAAATTCCTTCTGATGGATGCTT
+read_num: 46865 >kp|915694|619995|gnl|NIGSP|NIGSP-SJ-00005.NA|gb|CY002754.1|gi|75200344|Influenza A virus (A/Memphis/1/86(H3N2)) segment 6, complete sequence Influenza A virus (A/Memphis/1/86(H3N2)) segment 6, complete sequence
+TACATGATAGGACCCCTTATCGAACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGC
+read_num: 47041 >kp|915923|620224|gnl|NIGSP|NIGSP-NYS-00182.NA|gb|CY001279.1|gi|63053613|Influenza A virus (A/New York/182/2000(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/182/2000(H3N2)) segment 6, complete sequence
+GACCCCTTATCGAACCCTATTGATGAATGAGTTGGGTGTTCCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGT
+read_num: 47150 >kp|916059|620360|gnl|NIGSP|NIGSP-NYS-00792.NA|gb|CY013727.1|gi|112789226|Influenza A virus (A/New York/792/1993(H3N2)) segment 6, complete sequence Influenza A virus (A/New York/792/1993(H3N2)) segment 6, complete sequence
+CCATTTCATTTGGGAACCAAGCAAGTGTGCATAGCATGGTCCAGCTCAAGTTGTCACGATGGAAAAGCATGGCTGCATGT
+read_num: 47216 >kp|916142|620443|gnl|NIGSP|NIGSP-NYScg-00469.NP|gb|CY006182.1|gi|80974068|Influenza A virus (A/New York/469/2004(H3N2)) segment 5, complete sequence Influenza A virus (A/New York/469/2004(H3N2)) segment 5, complete sequence
+GAACACCCCAGCGCGGGGAAAGATCCCAAGAAAACTGGGGGGCCCATATACAGGAGAGTAGATGGAAAATGGATGAGGGA
+read_num: 47236 >kp|916167|620468|gnl|NIGSP|NIGSP-TM-00044.MP|gb|CY018310.1|gi|119515637|Influenza B virus (B/Houston/B745/2005) segment 7, complete sequence Influenza B virus (B/Houston/B745/2005) segment 7, complete sequence
+ACAATGAATGGAATGGGAAAAGGAGAAGACGTCCAAAAACTGGCAGAAGAACTGCAAAGCAACATTGGAGTATTGAGATC
+read_num: 47556 >kp|919296|620970|gb|DQ376752.1|gi|87247216|Influenza A virus (A/chicken/Taiwan/0706/03(H6N1)) nucleoprotein (NP) gene, complete cds Influenza A virus (A/chicken/Taiwan/0706/03(H6N1)) nucleoprotein (NP) gene, complete cds
+ACCGGAATTTCTGGAGAGGTGAAAATGGACGAAGAACGAGGATTGCATATGAGAGAATGTGCAACATCCTCAAAGGAAAA
+read_num: 47803 >kp|923684|623111|gb|DQ683045.1|gi|110559647|Influenza A virus (A/chicken/Israel/1953/2004(H9N2)) nonstructural protein NS2 (NS2) and nonstructural protein NS1 (NS1) genes, complete cds Influenza A virus (A/chicken/Israel/1953/2004(H9N2)) nonstructural protein NS2 (NS2) and nonstructural protein NS1 (NS1) genes, complete cds
+AGCGAATTTCAGTGTAATTTTTGATCGACTAGAAGCTCTAATACTACTCAGAGCTTTTACAGAAGAAGGAGCAATTGTGG
+read_num: 47897 >kp|924232|623659|gnl|NIGSP|NIGSP-CDC-00009.HA|gb|CY019483.1|gi|125662986|Influenza B virus (B/Georgia/09/2005) segment 4, complete sequence Influenza B virus (B/Georgia/09/2005) segment 4, complete sequence
+TCTCAATTCTTTGAGTGAGCTAGAAGTAAAGAATCTTCAAAGACTAAGTGGTGCCATGGATGAACTCCACAACGAAATAC
+read_num: 48061 >kp|924410|623837|gnl|NIGSP|NIGSP-CDC-00088.NA|gb|CY019685.1|gi|125663409|Influenza B virus (B/Bangkok/143/1994) segment 6, complete sequence Influenza B virus (B/Bangkok/143/1994) segment 6, complete sequence
+TCATCAAAGAATGGCATCCAAGATTGGAAGGTGGTACTCTCGAACGATGTCTAAAACCAAAAGGATGGGGATGGAACTGT
+read_num: 48067 >kp|924416|623843|gnl|NIGSP|NIGSP-CDC-00089.HA|gb|CY019691.1|gi|125663423|Influenza B virus (B/California/02/1994) segment 4, complete sequence Influenza B virus (B/California/02/1994) segment 4, complete sequence
+GTAAAGAATCTTCAAAGACTAAGTGGTGCCATGGATGAACTCCACAACGAAATACTCGAGCTGGATGAGAAAGTGGATGA
+read_num: 48284 >kp|924662|624089|gnl|NIGSP|NIGSP-AP-00034.NA|gb|CY019933.1|gi|125664294|Influenza A virus (A/Western Australia/34/2002(H3N2)) segment 6, complete sequence Influenza A virus (A/Western Australia/34/2002(H3N2)) segment 6, complete sequence
+AGTCATCGAAGGCTGGTCCAAACCTAACTCCAAATTACAGACAAATAGGCAAGTCATAGTTGAAAGAGGTAACAGGTCCG
+read_num: 48568 >kp|925129|624556|gnl|NIGSP|NIGSP-WA-00030.PA|gb|CY020226.1|gi|131060683|Influenza A virus (A/Albany/14/1978(H3N2)) segment 3, complete sequence Influenza A virus (A/Albany/14/1978(H3N2)) segment 3, complete sequence
+CTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAAAATTAAGCATTGAAGACCCAAGTCACGAAGGAGAGGGG
+read_num: 48852 >kp|925479|624906|gnl|NIGSP|NIGSP-WA-00003.PA|gb|CY020530.1|gi|133982249|Influenza A virus (A/Albany/18/1968(H3N2)) segment 3, complete sequence Influenza A virus (A/Albany/18/1968(H3N2)) segment 3, complete sequence
+TTCTGAAAACAACACCAAGACCAATTAGACTTCCGGATGGGCCTCCTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGAT
+read_num: 48903 >kp|925544|624971|gnl|NIGSP|NIGSP-IT-00050.PB1|gb|CY020595.1|gi|133982684|Influenza A virus (A/turkey/Italy/251/2003(H7N3)) segment 2, complete sequence Influenza A virus (A/turkey/Italy/251/2003(H7N3)) segment 2, complete sequence
+GAAGATTACCAGGGCAGGCTGTGTAATCCTCTGAACCCGTTTGTCAGTCATAAGGAAATTGAGTCCGTAAACAATGCTGT
+read_num: 49261 >kp|926085|625512|gnl|NIGSP|NIGSP-WA-00044.PA|gb|CY021114.1|gi|134047629|Influenza A virus (A/Albany/17/1968(H3N2)) segment 3, complete sequence Influenza A virus (A/Albany/17/1968(H3N2)) segment 3, complete sequence
+AACAACACCAAGACCAATTAGACTTCCGGATGGGCCTCCTTGTTTTCAGCGGTCCAAATTCCTTCTGATGGATGCTTTAA
+read_num: 49303 >kp|926128|625555|gnl|NIGSP|NIGSP-OH-00175.HA|gb|CY021157.1|gi|134047753|Influenza A virus (A/environment/Delaware/245/2005(H3N6)) segment 4, complete sequence Influenza A virus (A/environment/Delaware/245/2005(H3N6)) segment 4, complete sequence
+TCTGTTTGGTGCAATAGCCGGATTTATAGAAAATGGATGGGAAGGAATGATAGACGGCTGGTATGGTTTCAGACACCAGA
+read_num: 49461 >kp|926381|625808|gnl|NIGSP|NIGSP-IT-00079.PA|gb|CY021410.1|gi|134048403|Influenza A virus (A/turkey/Italy/4580/1999(H7N1)) segment 3, complete sequence Influenza A virus (A/turkey/Italy/4580/1999(H7N1)) segment 3, complete sequence
+TCTCACTGTAGGGCTACTGAATACATGATGAAGGGAGTGTACATAAACACAGCTCTGTTGAATGCATCCTGTGCAGCCAT
+read_num: 49529 >kp|927375|626802|gnl|NIGSP|NIGSP-OH-00087.NA|gb|CY013865.1|gi|113170525|Influenza A virus (A/green-winged teal/Ohio/178/1999(H6N2)) segment 6, complete sequence Influenza A virus (A/green-winged teal/Ohio/178/1999(H6N2)) segment 6, complete sequence
+AATAGAGAGGAATATAACAGAAATAGTGTATTTGAATAATACTGTCATAGAGAAAGAGATTTGTCCTAAAGCAGTGGACT
+read_num: 49529 >kp|927375|626802|gnl|NIGSP|NIGSP-OH-00087.NA|gb|CY013865.1|gi|113170525|Influenza A virus (A/green-winged teal/Ohio/178/1999(H6N2)) segment 6, complete sequence Influenza A virus (A/green-winged teal/Ohio/178/1999(H6N2)) segment 6, complete sequence
+AATAGAGAGGAATATAACAGAAATAGTGTATTTGAATAATACTGTCATAGAGAAAGAGATTTGTCCTAAAGCAGTGGACT
+read_num: 49579 >kp|927451|626878|gnl|NIGSP|NIGSP-OH-00145.NA|gb|CY017839.1|gi|119365485|Influenza A virus (A/green-winged teal/Ohio/466/1987(H3N8)) segment 6, complete sequence Influenza A virus (A/green-winged teal/Ohio/466/1987(H3N8)) segment 6, complete sequence
+AAAGTGGAATGTGTTTGTAGAGACAACTGGACTGGAACCAACAGGCCAGTATTGGTTATTTCTCCAGATTTGTCTTACAG
+read_num: 49598 >kp|927470|626897|gnl|NIGSP|NIGSP-OH-00015.PA|gb|CY018004.1|gi|119502422|Influenza A virus (A/blue-winged teal/Ohio/31/1999(H3N2)) segment 3, complete sequence Influenza A virus (A/blue-winged teal/Ohio/31/1999(H3N2)) segment 3, complete sequence
+CAGGGCAAGAATCAAAACCAGGCTGTTCACTATAAGACAAGAGATGGCCAGCAGAGGTCTATGGGATTCCTTTCGTCAGT
+read_num: 49630 >kp|927522|626949|gnl|NIGSP|NIGSP-OH-00031.NA|gb|CY011030.2|gi|134044352|Influenza A virus (A/blue-winged teal/Ohio/926/2002(H3N8)) segment 6, complete sequence Influenza A virus (A/blue-winged teal/Ohio/926/2002(H3N8)) segment 6, complete sequence
+TATAGAAGAATGCTCGTGCTACCCCAATGAAGGTAAAGTGGAATGTGTTTGTAGGGACAACTGGACTGGAACCAACAGGC
+read_num: 49713 >kp|927666|627093|gnl|NIGSP|NIGSP-OH-00194.PB1|gb|CY021459.1|gi|138393086|Influenza A virus (A/mallard/Maryland/615/2005(H3N2)) segment 2, complete sequence Influenza A virus (A/mallard/Maryland/615/2005(H3N2)) segment 2, complete sequence
+TCTCATAGTGAATGCTCCGAATCATGAGGGAATACAAGCAGGAGTAGACAGATTCTATAGAACATGCAAGCTGGTCGGAA
+read_num: 49913 >kp|928320|627747|gnl|NIGSP|NIGSP-SJ-00221.PA|gb|CY021714.1|gi|145278821|Influenza A virus (A/AA/Huston/1945(H1N1)) segment 3, complete sequence Influenza A virus (A/AA/Huston/1945(H1N1)) segment 3, complete sequence
+GAAGACAACACCACGACCACTTAAACTTCCGGATGGGCCTCCTTGTTCTCAGCGGTCCAAATTCCTTCTGATGGATGCTT
+read_num: 50936 >kp|1435111|684121|gi|5851809|dbj|AB032167.1| Measles virus genomic RNA, complete sequence of Ichinose-Vero strain, viral complementary sequence Measles virus genomic RNA, complete sequence of Ichinose-Vero strain, viral complementary sequence
+CAGGGAAATATCAGATGGGTGAGCTGTTGTCTTCGTTCCTTTCTAGAATGAGCAAAGGAGTGTTTAAGGTGCTTGTCAAT
+read_num: 51338 >kp|1133107|641750|gb|EF450732.1|gi|149389681|Human bocavirus isolate HK16, complete genome Human bocavirus isolate HK16, complete genome
+GGACGTGGTCCGTGGGAACATCTTCCTGAGGTAGGAGATCAGCGCCTAGCTGCGTCTTCTGTTAGCACTACTTATAAACC
+read_num: 51598 >kp|1040249|634868|gb|DQ473512.1|gi|95102539|Human rhinovirus 30, complete genome Human rhinovirus 30, complete genome
+GCAAATTTTTGCCACTATATGCAAGTGAGGCAAAAAGAATAAAGAATCTTCACATCAAATGCAACAATATTATTAAACAA
+read_num: 51764 >kp|1431263|680273|gi|157677471|gb|EF682352.1| Human poliovirus 1 strain USA10770 polyprotein gene, complete cds Human poliovirus 1 strain USA10770 polyprotein gene, complete cds
+AGGAGGCGGCTAATTCAGTAGTCGCTTATGGGCGTTGGCCTGAATATCTGAGGGACAGCGAAGCCAATCCAGTGGACCAG
+read_num: 52790 >kp|887905|592207|gb|AY751783.1|gi|53987041|Human rhinovirus 39, complete genome Human rhinovirus 39, complete genome
+CACAGGATCCAAGCAAATTCACAGACCCAGTTAAAGATGTATTGGAGAAAGGTATACCAACACTACAATCACCAACAGTG
+read_num: 52870 >kp|996379|632365|gb|DQ464062.1|gi|92430416|Encephalomyocarditis virus strain BJC3, complete genome Encephalomyocarditis virus strain BJC3, complete genome
+ACAGATGGAGGAGTCTGTTCTGGTAGTAGTGCAGTCACTGGCACAACGCGTTACCCGGTAAGCCAATCGGGTGTACACGG
+read_num: 52949 >kp|2498833|729085|ref|NC_011201.1|gnl|NCBI_GENOMES|22860|gi|197935853|Ralstonia phage RSB1, complete genome Ralstonia phage RSB1, complete genome
+CAAGGTCTTCGGCGGTGACGGCGGCGAGAACGCTGCGGCCACCCGCGAGGCAGCGGATAAGCAGGCAGCAGTGCTGCGTG
+read_num: 52956 >kp|2499513|729765|ref|NC_011802.1|gnl|NCBI_GENOMES|23577|gi|219681191|Salmonella enterica bacteriophage SE1, complete genome Salmonella enterica bacteriophage SE1, complete genome
+TGTGATGTTTACTGCCGTTGACGATCTGGCGGTCTGCTTGAAAAACTCAAGCTCTGAATGCCATATTGAAATTGTCTCGG
+read_num: 53362 >kp|1401334|674540|gi|333282|gb|M30540.1|PPMCG Monkey B-lymphotropic papovavirus complete genome PPMCG Monkey B-lymphotropic papovavirus complete genome
+TTGGTTTCCTGGTTTCATATTTTTAATAGCAACTACATCATCAGGATAGGTAGCTGTAGAGCTAGCAACTAGGCCTTGGA
+read_num: 54585 >kp|2954884|742524|gb|GU170807.1|gi|310814148|Chilli veinal mottle virus isolate ChiVMV-Ch-Jal, complete genome Chilli veinal mottle virus isolate ChiVMV-Ch-Jal, complete genome
+ACAGCAATCCTGGAATCCAAGCATATTTCGTTAAAGACAAAGTATCCCCTGTTCTCAAAGTCGATCTCACACATCATGTG
+read_num: 54724 >kp|757971|489955|gi|88954063|gb|DQ399708.1| Watermelon mosaic virus strain WMV-CHN, complete genome Watermelon mosaic virus strain WMV-CHN, complete genome
+TCCACATTACAGGTCAACAGGTGAGTTTTTAGAATTTTCACGGGAGACTGCAGCCAAGATTGCAAATTTGATAGCAACCT
+read_num: 54733 >kp|873651|577953|dbj|AB194802.1|gi|55771285|Turnip mosaic virus (isolate UK1) genomic RNA, complete genome, variant: B2212 Turnip mosaic virus (isolate UK1) genomic RNA, complete genome, variant: B2212
+CACGAGATACGCAAGTTCTACGCGTGGATGATTGAACAAGCTCCATTTAGCTCCCTAGCACAAGAAGGGAAAGCTCCTTA
+read_num: 54770 >kp|890766|595068|dbj|AB194796.1|gi|55771273|Turnip mosaic virus (isolate UK1) genomic RNA, complete genome, variant: B111 Turnip mosaic virus (isolate UK1) genomic RNA, complete genome, variant: B111
+TGATGGACGGCGACGATCAGGTGGAATTCCCGATCAAACCGCTCATTGACCACGCCAAACCCACATTTAGGCAGATAATG
+read_num: 54773 >kp|890886|595188|emb|AJ312438.1|gi|18621101|Bean common mosaic virus cowpea isolate Y, complete genome Bean common mosaic virus cowpea isolate Y, complete genome
+CAAAAGGGATGGGAAGAAAGACAAGGAACTTCATACACATGTATGGGGTCGAGCCTGAGAACTACAGTATGATACGTTTT
+read_num: 54904 >kp|788459|512945|gi|94484050|gb|DQ441418.1| Variola virus strain Botswana 1973 (v73-225), complete genome Variola virus strain Botswana 1973 (v73-225), complete genome
+TTCTGATGGAGTCACTAAAATATTTTTATTCTCATTCTGATGCATCAACTATTTCTTAAACAATAACGTTCAACAACATA
+read_num: 54910 >kp|788488|512977|gi|94484657|gb|DQ441421.1| Variola virus strain Bangladesh 1974 (Shahzaman), complete genome Variola virus strain Bangladesh 1974 (Shahzaman), complete genome
+CATAGATGAACCAAATGATATAAGACTAACAGTATGCATTATCCAAAATATTAATAACATTACATATTATATCAATATCA
+read_num: 54917 >kp|788524|513014|gi|94487685|gb|DQ441436.1| Variola virus strain South Africa 1965 (103 Tprimevaal, Nelspruit), complete genome Variola virus strain South Africa 1965 (103 T'vaal, Nelspruit), complete genome
+GAACGGAGAATTGTTGTCGGTAAACGATTTTGACAAAGATGGTCTAAAATTCCATCTAGACTATATTATCAAAATTTGGA
+read_num: 54920 >kp|788547|513038|gi|109726279|gb|DQ437591.1| Variola virus strain Sumatra 1970 V70-222, complete genome Variola virus strain Sumatra 1970 V70-222, complete genome
+CAACGTAACTTAACAGTGCAACCTCTATTGGATATAAACTAATATGGATCCGGTTAATTTTATCAAGACATATGCACCTA
+read_num: 54924 >kp|788573|513065|gi|94489896|gb|DQ441447.1| Variola virus strain United Kingdom 1952 Butler, complete genome Variola virus strain United Kingdom 1952 Butler, complete genome
+ACCTCAACGTAACTTAACAGTGCAACCTCTATTGGATATAAACTAATATGGATCCGGTTAATTTTATCAAGACATATGCA
+read_num: 55089 >kp|1380989|667678|ref|NC_003771.1|gnl|NCBI_GENOMES|16260|gi|20428612|Rice ragged stunt virus segment 4, complete sequence Rice ragged stunt virus segment 4, complete sequence
+GCAAAGACTTCGAAGACGCAGCCATCGCAACTATGACGCGAACCATTCAACGAGTGGCGAAGAAGAGAATAGTGGCAGCA
+read_num: 55147 >kp|1401409|674615|gi|9971834|gb|AF260513.1|AF260511S3 Grass carp reovirus segment 3, complete sequence AF260511S3 Grass carp reovirus segment 3, complete sequence
+GTACATCATGCTCCTCCGCTCAATGCATCAAGACCCCACCCAGATCGTCCAAATCGTCAACGAATGTGCCAACAATTTAT
+read_num: 55213 >kp|1430995|680005|gi|195972623|emb|AM498055.2| Bluetongue virus 8 complete viral segment 5 Bluetongue virus 8 complete viral segment 5
+GGCAACCACCAAACATGGAGCGCTTTTTGAGAAAATACAACATCAGTGGGGATTACGCAAATGCCACGAGAACTTTTTTG
+read_num: 55409 >kp|1432290|681300|gi|144601463|gb|EF495126.1| Human rotavirus G3 isolate Rus-67 outer capsid protein VP7 gene, complete cds Human rotavirus G3 isolate Rus-67 outer capsid protein VP7 gene, complete cds
+GTGAATCAAATTGTGCAAGCAATGTCCAAAAGATCGAGATCATTAAATTCTGCTGCATTTTACTACAGAGTATAGATATA
+read_num: 55658 >kp|1433708|682718|gi|45643604|gb|AY493685.1| Bluetongue virus nonstructural protein 3 (NS3) mRNA, complete cds Bluetongue virus nonstructural protein 3 (NS3) mRNA, complete cds
+AATCAGGAGAGAGTCGAAGAGCTAAGTCTGGTTCGTGTGGATGATACAATTTCGCAACCACCGAGATATGCTCCGAGTGC
+read_num: 55936 >kp|1434523|683533|gi|2598893|dbj|D86279.1| Human rotavirus G3 RNA for VP7, complete cds Human rotavirus G3 RNA for VP7, complete cds
+GATGTCCAAAAGATCGAGATCATTAAATTCTGCTGCATTTACTACAGGGGTATAGGTATAGCTTAGGTTAGAATTGTATG
+read_num: 56364 >kp|1435691|684701|gi|294756|gb|L11599.1|ROTVP4X Lamb rotavirus Lp14 (VP4) gene ROTVP4X Lamb rotavirus Lp14 (VP4) gene
+ATGGCTTCGCTCATTTACAGACAATTACTTACGAATTCATATACAGTGAATCTTTCAGATGAAATACAGTTAATTGGATC
+read_num: 56983 >kp|1573935|692252|dbj|AB081791.1|gi|29122614|Rotavirus A gene for VP7, complete cds, strain: AU801 Rotavirus A gene for VP7, complete cds, strain: AU801
+GTAGATTATATTAATCAGATTGTACAGGTAATGTCCAAAAGATCAAGATCATTAAATTCTGCTGCGTTTTATTATAGAGT
+read_num: 56993 >kp|1574429|692319|dbj|AB081774.1|gi|29122580|Rotavirus A gene for VP7, complete cds, strain: 87H140 Rotavirus A gene for VP7, complete cds, strain: 87H140
+AGATTATATTAATCAGATTGTACAGGTAATGTCCAAAAGATCAAGATCATTAAATTCTGCTGCGTTTTATTATAGAGTAT
+read_num: 57312 >kp|2188806|718476|gb|U10031.1|ROU10031|gi|806694|Rotavirus CN86 major capsid protein (VP6) RNA, complete cds Rotavirus CN86 major capsid protein (VP6) RNA, complete cds
+ACATTACGTATTGAATCTGCGGTTTGTGAATCTGTGCTTGCGGACGCTTCTGAAACTTTGTTGGCAAATGTAACAGCAGT
+read_num: 57981 >kp|2500528|730347|gb|EF174159.1|gi|121483562|Bluetongue virus isolate BTV12/PT/2003 nonstructural protein NS3/NS3A mRNA, complete cds Bluetongue virus isolate BTV12/PT/2003 nonstructural protein NS3/NS3A mRNA, complete cds
+TCTGGTTCGTGTGGATGATACAATTTCGCAACCACCGAGATATGCTCCGAGTGCCCCAACGCCGTCATCAATGCCAACCG
+read_num: 57990 >kp|2606897|734204|gb|AY999079.1|gi|62798736|Rice gall dwarf virus strain Deqin outer capsid protein gene, complete cds Rice gall dwarf virus strain Deqin outer capsid protein gene, complete cds
+ACTAACAATTAATGACATTTCTACTTTATCTAATTTAATGAACCAAATTTCCGTAGCGTCAGTGGGATTCCTGAATGACC
+read_num: 58011 >kp|2606980|734287|gb|GQ506536.1|gi|297655639|Bluetongue virus strain USA2006/01 segment 1, complete sequence Bluetongue virus strain USA2006/01 segment 1, complete sequence
+GGAAGAGATGTATGTTGATTCAATCATGATCTCAAAGCTGGACGAGATTATGGCGCCGATAAGGAGGATTGTGCACGATA
+read_num: 58723 >kp|2953801|741441|gb|EU679394.1|gi|188484503|Human rotavirus A isolate CAU 219 VP7 gene, complete cds Human rotavirus A isolate CAU 219 VP7 gene, complete cds
+GTTATGTCCAAAAGATCAAGATCATTAAATTCTGCTGCGTTTTATTATAGAGTATAGATATATCTTAGATTAGAATTGTA
+read_num: 58734 >kp|2953834|741474|gnl|RTVSP|RTVSP_JP_00200.VP6.3101.rtv|gb|HM773914.1|gi|300895211|Rotavirus A human/Bethesda/DC4613/1980/G4P[8] segment 6 inner capsid protein VP6 (VP6) gene, complete cds Rotavirus A human/Bethesda/DC4613/1980/G4P[8] segment 6 inner capsid protein VP6 (VP6) gene, complete cds
+ACTTTGGTCTACTAGGTACTACACTTTTAAATCTTGATGCTAATTATGTTGAGACTGCAAGAACTACAATTGAGTATTTT
+read_num: 59202 >kp|3240065|748524|gb|JF490732.1|gi|329135375|Rotavirus A human/Vanderbilt/VU05-06-47/2005/G1P[8] segment 1 RNA-dependent RNA polymerase (VP1) gene, complete cds Rotavirus A human/Vanderbilt/VU05-06-47/2005/G1P[8] segment 1 RNA-dependent RNA polymerase (VP1) gene, complete cds
+AATTTATGCCAACACTACCTGATAACGTCCAATATGTTATACAATGTATAGGATCAAGGACGTACCAGATAGAAGATAGT
+read_num: 59207 >kp|3240073|748532|gb|JF490258.1|gi|329134470|Rotavirus A human/Victoria/CK00018/2005/G1P[8] segment 2 RNA viral genome binding protein VP2 (VP2) gene, complete cds Rotavirus A human/Victoria/CK00018/2005/G1P[8] segment 2 RNA viral genome binding protein VP2 (VP2) gene, complete cds
+GACAACAATTTCCGACCATGCCAGTTGATTATAAAAGATCAATCCAAAGAGGAATATTGTTATTGTCTAACAGATTAGGT
+read_num: 59273 >kp|3240176|748635|gb|JF490897.1|gi|329135405|Rotavirus A human/Vanderbilt/VU06-07-10/2006/G1P[8] segment 1 RNA-dependent RNA polymerase (VP1) gene, complete cds Rotavirus A human/Vanderbilt/VU06-07-10/2006/G1P[8] segment 1 RNA-dependent RNA polymerase (VP1) gene, complete cds
+CCAACACTACCTGATAACGTCCAATATGTTATACAATGTATAGGATCAAGGACGTACCAGATAGAAGATAGTGGGTTGAA
+read_num: 59420 >kp|3240509|748968|gb|JF490321.1|gi|329134740|Rotavirus A human/Victoria/CK00024/2005/G1P[8] segment 5 non-structural protein NSP1 (NSP1) gene, complete cds Rotavirus A human/Victoria/CK00024/2005/G1P[8] segment 5 non-structural protein NSP1 (NSP1) gene, complete cds
+GAATTATCTTCTGATTGGAACGGAGCATGTAAACTTGTTAAAGATATGAGTACTTATTTTAATGTGCTAAAAACATCACA
+read_num: 59442 >kp|3240549|749008|gb|JF490250.1|gi|329134728|Rotavirus A human/Victoria/CK00018/2005/G1P[8] segment 5 non-structural protein NSP1 (NSP1) gene, complete cds Rotavirus A human/Victoria/CK00018/2005/G1P[8] segment 5 non-structural protein NSP1 (NSP1) gene, complete cds
+TTATCTTCTGATTGGAACGGAGCATGTAAACTTGTTAAAGATATGAGTACTTATTTTAATGTGCTAAAAACATCACATAT
+read_num: 59473 >kp|3529757|750767|gb|HM583669.1|gi|332656217|Rice black-streaked dwarf virus 2 isolate Nghe An segment S10 P10 protein gene, complete cds Rice black-streaked dwarf virus 2 isolate Nghe An segment S10 P10 protein gene, complete cds
+AATTAAGAAAGCTACCACTGCAAATTCATCTACCAGTAATTCAAATTCAGAACATGGTCAAAAGGTTGTGTTAAATAAAG
+read_num: 59475 >kp|3529763|750773|gb|HM583666.1|gi|332656211|Rice black-streaked dwarf virus 2 isolate Hunan segment S10 P10 protein gene, complete cds Rice black-streaked dwarf virus 2 isolate Hunan segment S10 P10 protein gene, complete cds
+ATTAAGAAAGCTACCACTGCAAATTCATCTACCAGTAATTCAAATTCAGAACATGGTCAAAAGATTGTGTTAAATAAAGT
+read_num: 59519 >kp|3669600|751521|gb|EF554144.1|gi|156118485|Rotavirus A strain RVA/Human-wt/ITA/111-05-27/2005/G6P[14] NSP2 gene, complete cds Rotavirus A strain RVA/Human-wt/ITA/111-05-27/2005/G6P[14] NSP2 gene, complete cds
+AGTATCACAAGTAGGAATTTAATTCGTTATCGATTTGAGGATGGGTATGACGAAGCAAGAATAGAAAGCGCTTATGTGAC
+read_num: 59599 >kp|3669784|751705|gb|DQ146638.1|gi|75994309|Rotavirus A strain RVA/Human-wt/BEL/B4633/2003/G12P[8] VP1 gene, complete cds Rotavirus A strain RVA/Human-wt/BEL/B4633/2003/G12P[8] VP1 gene, complete cds
+TTCAATACAGAAAATTTATGCCAACACTACCTGATAACGTCCAATATGTTATACAATGTATAGGATCAAGGACGTATCAG
+read_num: 59837 >kp|3670337|752258|gb|EF554155.1|gi|156118487|Rotavirus A strain RVA/Sheep-tc/ESP/OVR762/2002/G8P[14] NSP2 gene, complete cds Rotavirus A strain RVA/Sheep-tc/ESP/OVR762/2002/G8P[14] NSP2 gene, complete cds
+TTTAAAGGACTGTCAACTGATAGAAAGATGGATGAAGTCTCTCAAGTAGGAATTTAATTCGTTATCGATTTGAGGATGGG
+read_num: 59958 >kp|3670623|752544|gb|EF554150.1|gi|156118417|Rotavirus A strain RVA/Sheep-tc/ESP/OVR762/2002/G8P[14] VP3 gene, complete cds Rotavirus A strain RVA/Sheep-tc/ESP/OVR762/2002/G8P[14] VP3 gene, complete cds
+TATAGATATAATTATTCATTTGACCTTAAACGATGGATATATTTACATTCAACAGGTAAAGCTAGTATTGAAGGTGGTAA
+read_num: 61417 >kp|2825590|737405|gb|FJ744147.1|gi|261735388|Ovine enzootic nasal tumor virus isolate ENTV-1NA8, complete genome Ovine enzootic nasal tumor virus isolate ENTV-1NA8, complete genome
+CTTATGCTTTGGAACAACAAGATTGGCTTTTTCAATTTTCAGATAATTGGGCCATAGCGTTTGCAAATTACCCTGGACGA
+read_num: 62719 >kp|2182305|714507|gb|FJ460591.1|gi|253971340|Viral hemorrhagic septicemia virus isolate SE-SVA-1033, complete genome Viral hemorrhagic septicemia virus isolate SE-SVA-1033, complete genome
+TTTCAGAATGAGGCCACCCGGAGACAGGTCAGGTCGCAGGGAATCCTTCTTCAGAAGGGGGAGTCCACAATGGTCCACAA
+read_num: 63068 >kp|1699478|699604|ref|NC_009878.1|gnl|NCBI_GENOMES|21460|gi|157786475|Mycobacterium phage Bethlehem, complete genome Mycobacterium phage Bethlehem, complete genome
+GAGATCTTCTCCCGCGTCCAGTCCGTCAGGTCGTACGGATACGTCGGCTTACCGGTCTTCGCCATGAAGTACACACCGCG
+read_num: 63240 >kp|890863|595165|gb|DQ222855.1|gi|76564093|Bacillus anthracis phage Gamma isolate 53, complete genome Bacillus anthracis phage Gamma isolate 53, complete genome
+ACATTGCAGGGATTCAAGGAGTAGGAAAAAGCCATTTAGCGTATGCGATGCTGTATGAATTAGTTAAACACTATTGGGTA

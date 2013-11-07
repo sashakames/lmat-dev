@@ -1,0 +1,21 @@
+To build:
+
+dumpKmerNodes_no_locations
+sortKmerNodes_no_locations
+
+cd ../src
+make clean ; make WITH_GENOME_LOCATIONS=0 -j8 lib
+cd ../drivers
+make WITH_GENOME_LOCATIONS=0 all
+
+----------------------------------------------------------------------
+To build:
+sortKmerNodes 
+stripLocations 
+fixOffsetError
+dumpKmerNodesWithLocations 
+
+cd ../src
+make clean ; make WITH_GENOME_LOCATIONS=1 -j8 lib
+cd ../drivers
+make WITH_GENOME_LOCATIONS=1 all

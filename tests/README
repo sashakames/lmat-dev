@@ -1,0 +1,13 @@
+As of this writing, most of the drivers don't work,
+due to changes in the code.  The ones that should work:
+
+test_read_search : prototype for "mapping" reads to k-mer database, (simple starting point)
+
+  example usage:
+  test_read_search -i fake_reads_80.fa -l 80 -d one.fa.bin.loc
+
+gen_loc_histo : compute simple histogram counts for # of genomes per k-mer and average # of positions in genome per k-mer
+   example usage:
+
+ gen_loc_histo -d one.fa.bin.loc -h one.fa.bin.loc.hist
+ gen_loc_histo -d vbonly.fasta.int.18.bin.loc.fixed -h vbonly.fasta.int.18.bin.loc.fixed.hist

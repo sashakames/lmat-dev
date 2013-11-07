@@ -1,0 +1,17 @@
+sort_tax_histo_nodes.cpp
+
+  sorts one or more tax histo output files; 
+  writes a separate output file for each
+
+  Each file is read to a vector in memory,
+  then sorted.
+
+merge_sorted_tax_histo_files.cpp
+
+  input is a list of sorted tax histo files;
+  there should be no repeated kmers (the code
+  doesn't check for this, you must ensure this);
+  merges the data into a single output file.
+
+  This uses an out-of-core merge sort, so memory
+  usage is small

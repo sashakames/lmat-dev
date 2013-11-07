@@ -1,0 +1,90 @@
+### ONE DAY THIS README COULD BE CONVERTED INTO AN AUTOMATED SCRIPT
+
+
+
+##Step 1 Get the fasta genome files for the database
+Database retrieval instructions from Marisa
+------------------------------------------------------------------------------------
+From: Torres, Marisa Wailam
+Sent: Monday, July 29, 2013 2:39 PM
+Here are the flatfile sizes on instdb.
+In /kpath1/KPATH/flatfiles:
+849118838 Jul 21 17:57 all_archaea
+48949732229 Jul 29 12:00 all_bacteria
+49482907719 Jul 29 12:06 all_flatfiles (bacteria + virus)
+484578360 Jul 21 17:57 all_other
+533175490 Jul 21 17:55 all_virus
+The all_fungi and all_protozoa in /kpath1/KPATH/flatfiles are not being updated by the new bioproject approach, so need to use the files in /scratch02/kpath/flatfiles/bioproject/.
+12865177029 Jul 29 12:02 all_fungi
+6842949629 Jul 29 12:02 all_protozoa
+I updated the LC flatfiles in /usr/mic/bio/kpathSequenceCache/flatfiles/update.
+------------------------------------------------------------------------------------
+
+#############################
+## Step 2 Retrieve headers from fasta files
+#############################
+dir=/usr/mic/bio/kpathSequenceCache/flatfiles/update
+cd $dir
+grep ^">" $dir/all_archaea $dir/all_bacteria $dir/all_other $dir/all_virus $dir/all_fungi $dir/all_protozoa > microbe2.fasta.headers
+cat microbe2.fasta.headers | perl -ne 's/\/usr\/mic\/bio\/kpathSequenceCache\/flatfiles\/update\/(\w+)_(\w+)://g; print;'  > t
+mv t microbe2.fasta.headers
+
+#############################
+## Step 3 map gids to tax ids
+#############################
+## There is one KPATH step here that maps seq ids to tax ids that must be run on instdb-a
+## This may be deprecated as I see the tax seems to be included in most headers now
+to generate microbe2.fasta.headers.mapping (ok to delete *.headers file now)
+scp microbe2.fasta.headers instdb-a:/data03/kpath6/allen99/taxmap
+The following must now be done on instdb-a
+(instdb-a:/data03/kpath6/allen99/taxmap used now)
+The scripts are provided here for completeness (gid_to_tid.pl and bulkLookupTaxNodeBySeqDataID.pl)
+cat microbe2.fasta.headers | gid_to_tid.pl > microbe2.fasta.headers.mapping
+outputs any errors to errlog.txt and creates a tmp file : tmp.txt
+
+
+## If human data not available create as follows:
+cd /usr/mic/bio/blastdb/current
+blastdbcmd -db human_genomic -outfmt '%f' -entry all > ! /p/lscratchc/allen99/human.genomic
+grep ">" /p/lscratchc/allen99/human.genomic > human.genomic.headers
+
+## REMOVE GENOMES WITHOUT an NCBI TAXONOMY ID PLUS SOME SEQUENCES with KEYWORDS identifying private sequences
+cat microbe2.fasta.headers.mapping | filter_public.pl > microbe2.fasta.headers.mapping.ncbionly
+
+## CREATE A "WORKING TAXID" for EACH SEGMENT when multiple segments map to the same NCBI taxonomy id.
+cat microbe2.fasta.headers.mapping.ncbionly | remap_multiple_segments.pl > microbe2.headers.mapping.ncbionly.multi
+
+
+### ADD file that includes all human genomic assemblies
+add_human_genomic.pl human.genomic.headers > human.genomic.headers.mapping
+cat microbe2.headers.mapping.ncbionly.multi human.genomic.headers.mapping > microbe3.headers.mapping.ncbionly.multi
+
+#### Create updated NCBI taxid tree
+wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
+
+parse_ncbi_taxonomy.py .
+
+### NOTE THIS has to be run twice, first time identifies a handful of 
+## tax ids that are out of sync with what we have in our local database
+remap_segments.py microbe3.headers.mapping.ncbionly.multi
+
+## these are put into remap_segments.py as a dictionary and the script is rerun to get the final output
+shows old, new tax id
+ailed to find name entry for tid= 647653
+failed to find name entry for tid= 1204472
+failed to find name entry for tid= 1115514
+failed to find name entry for tid= 710469
+
+647653 862751
+1203226 1204472
+1115514 630626
+710469 983544
+1204472 1203226
+
+
+## Identify plasmids with their own NCBI taxonomy id
+## used by content summary step to identify plasmids to allow for distinct thresholding
+grep -i plasmid microbe3.headers.mapping.ncbionly.multi | perl -ne 'if(/^(\d+)/) { if($1 <10000000) { print; }}' | cut -f1 > low_numid_plasmids.txt
+## another support file used
+cat  ncbi_taxonomy_rank.segment.txt | perl -ne '@t=split(/\t/); @t1=split(/,/,$t[$#t]); $t1[0]=~ s/ /_/g; if(/taxid=(\d+)/) { print "$1 $t1[0]\n";}' > ncbi_taxid_to_rank.txt
+

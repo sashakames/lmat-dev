@@ -1,0 +1,1 @@
+python gen_num.py 64 | ~/parallel-20130822/src/parallel -j24 sh run_kpc_sort.sh {.}

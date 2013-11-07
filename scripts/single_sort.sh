@@ -1,0 +1,1 @@
+sort -k1 -n $HOME/scratch/microbe2.20.tax_histo/microbe2.20.tax_histo_$1 >  $HOME/scratch/microbe2.20.tax_histo/microbe2.20.tax_histo_$1.sorted   

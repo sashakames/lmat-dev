@@ -1,0 +1,8 @@
+This directory contains third party codes that
+are freely available and/or released under gnu
+or similar open source licenses. Our release includes
+prebuilt binaries that were compiled under linux redhat.
+Our hope is that these will work for you out-of-the-box.
+
+Should you need to (re)build the libraries/executables for
+your system, try running 'make all.' 

@@ -1,0 +1,11 @@
+TARGET = test_kencode
+OBJ = $(TARGET).o
+#CXXFLAGS =  -O2 -g -Wall
+CXXFLAGS = -O3 -g -Wall -I../include
+
+
+$(TARGET):$(OBJ) 
+	g++ -o $@ $(OBJ)
+
+clean:
+	rm $(OBJ) $(TARGET)

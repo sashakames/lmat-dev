@@ -1,0 +1,239 @@
+#!/bin/tcsh 
+
+# Example run command: 
+#  Variant_finder -r <pulled_reads_directory>  -o <output_directory> -f <fastq>  -l <long|short>  -p <num_processors> -q <min_base_quality> -m <min_mapping_quality> -s <log_odds_score_pulled_reads> -c <min_coverage>
+
+
+# long if any reads over 70 bp
+# short if all reads under 70 bp
+
+#  Variant_finder  -r /p/lscratchc/allen99/dtraalgo/Example/ex2a  -o /p/lscratchc/shea/Variants/Ex2fasta  -f /p/lscratchc/allen99/dtraalgo/Example/ex2/Example2.fq -l long  -p 12  -q 20 -m 30 -s 0 -c 2
+
+
+# output is in $output_directory/variant.*.xml
+# coverage info for each set of pulled reads is in Coverage.*
+
+######## Precompute this for your reference database (e.g. microbe2)
+##############################
+## Prep ref db and table
+#cd /usr/mic/post1/metagenomics/ref_sets/fasta/20130206update
+# /g/g15/shea/script/fasta_delete_pattern_match_header.pl  microbe2.20130207.fasta list_delete_terms4proprietary_sequence > ! microbe2.20130207.fasta.proprietary_deleted
+#set ref_db=microbe2.20130207.fasta.proprietary_deleted
+#makeblastdb -in $ref_db -dbtype nucl  
+
+## Make table of numbered headers
+#blastdbcmd -outfmt "%i %t" -db $ref_db  -entry all >! gnl.table.proprietary_deleted
+##
+## Make table with tab delimited cols of "taxid, gnl|number, fasta_header   
+# This table has anything with special taxids (i.e. plasmids) in there twice, 
+# /usr/gapps/kpath/Variant_finder/add_TaxID_fromJonathansTable.pl  microbe3.20130207.headers.mapping.ncbionly.multi.added_human gnl.table.proprietary_deleted  gnl.table4extractRefs
+
+## outputs gnl.table4extractRefs
+
+############################
+
+####### Must be in your path:
+# bwa   version bwa-0.6.1
+# blastdbcmd
+# fasta_formatter
+# samtools
+# seqtk 
+# freebayes
+# perl scripts in this directory
+
+# probably want to use the latest reference microbe database and put somewhere universal
+set ref_db=/usr/mic/post1/metagenomics/ref_sets/fasta/20130206update/microbe2.20130207.fasta.proprietary_deleted
+set gnlTable=/usr/mic/post1/metagenomics/ref_sets/fasta/20130206update/gnl.table4extractRefs
+
+if  ($#argv == 0)  then
+         echo "Usage: Variant_finder -r <pulled_reads_directory>  -o <output_directory> -f <fastq>  -l <long|short>  -p <num_processors>  -q <min_base_quality>  -m <min_mapping_quality>  -s <log_odds_score_pulled_reads> -c <min_coverage> "
+         exit
+endif
+
+while ($#argv > 0)    
+    switch ($argv[1])
+        case -r: 
+            shift
+            set read_dir=$argv[1]
+            breaksw
+        case -f:
+            shift
+            set fastq=$argv[1]
+            breaksw
+        case -o:
+            shift
+            set run_dir=$argv[1]
+            breaksw
+        case -l:
+            shift
+            set type=$argv[1]
+            breaksw
+        case -q:
+            shift
+            set min_base_quality=$argv[1]
+            breaksw
+        case -m:
+            shift
+            set min_mapping_quality=$argv[1]
+            breaksw
+        case -c:
+            shift
+            set min_coverage=$argv[1]
+            breaksw
+         case -p:
+            shift
+            set num_cpus=$argv[1]
+            breaksw
+         case -s:
+            shift
+            set los=$argv[1]
+            breaksw
+ 
+         case -h:
+             echo "Usage: Variant_finder -r <pulled_reads_directory>  -o <output_directory> -f <fastq>  -l <long|short>  -p <num_processors>  -q <min_base_quality>  -m <min_mapping_quality>  -s <log_odds_score_pulled_reads> -c <min_coverage> "
+
+     endsw
+    shift
+end
+
+if !(-e $run_dir) then 
+   mkdir $run_dir
+else 
+  rm -rf $run_dir
+  mkdir $run_dir
+endif
+
+
+# get the list of pulled reads
+cd $read_dir
+ls -1 pulled*.$los.35.fastsummary.content_call.fa >! $run_dir/z
+sed  -e 's/pulled\.id\.//' $run_dir/z | sed -e 's/\.fa$//' >! $run_dir/hit_list
+
+# for each set of pulled reads, find snps
+foreach i (`cat $run_dir/hit_list`)
+  cd $run_dir
+  echo $i
+  mkdir VarCall.$i
+  cd VarCall.$i
+  echo "tax id being processed: $i"
+   cp -f $read_dir/pulled.id.$i.fa .
+  # cp -f $read_dir/nn.$i .
+
+  set reads_fa=$read_dir/pulled.id.$i.fa
+  set nn=$read_dir/nn.$i
+
+  echo -n "" >! list
+  foreach taxid (`cat $nn`)
+    awk -F'\011' -v taxid=$taxid '$1==taxid {print $2}'  $gnlTable  >> list
+  end
+   # now "list" has the gnl|BL_ORD_ID|# that blastdbcmd needs to pull the sequences
+
+   # pull reference sequences
+   blastdbcmd  -outfmt "%f" -db $ref_db -entry_batch list >! refSeqs.$i.fa
+
+  if (-s refSeqs.$i.fa) then
+
+     # Pull the fastq for the reads
+     echo "Pulling fastq for reads"
+     grep ">" $reads_fa | awk -F";" '{print $1}' | awk '{print $1}' | sed -e 's/>>//' | sed -e 's/>//' >! fastqlist
+     seqtk subseq $fastq fastqlist >! pulled.id.$i.fastq
+
+     # If there's fastq, use that. If there isn't, use the fasta
+     if (-s pulled.id.$i.fastq) then
+       set reads=pulled.id.$i.fastq
+     else 
+       set reads=$reads_fa
+     endif
+
+
+     # Rename fasta headers in ref_seqs4variants with accession numbers
+     fasta_header_accno.pl  refSeqs.$i.fa
+     set ref_all=refSeqs.$i.fa.accno
+
+
+     # Run read mapping
+     # split reference genomes into separate files, not sure if this is necessary but i don't trust mappers to report all matches otherwise
+     echo "Splitting reference  sequences into separate fasta files."
+     split_fasta.pl  $ref_all fasta
+
+     foreach ref (fasta*[0-9])
+
+        echo "Mapping to $ref"
+
+
+        # format and index reference genomes
+        fasta_formatter -w 100 -i $ref -o $ref.formatted
+        bwa index -p $ref.formatted -a is $ref.formatted
+        samtools faidx $ref.formatted
+
+        echo "Read mapping bwa $ref"
+        date
+
+        # bwa bwasw for reads over 70 bp
+        # bwa samse for short reads
+
+        set alignout=bwa.$ref.$i
+    
+
+        if ($type == "long") then
+ 
+           # create sorted bam
+           bwa bwasw   -t $num_cpus $ref.formatted $reads | samtools view -uS -q 1 - | samtools sort  - $alignout.sorted
+        endif
+        if ($type == "short") then
+           bwa aln  -t $num_cpus $ref.formatted $reads >! $alignout.aln.sai
+
+           # create sorted bam
+           bwa samse $ref.formatted $alignout.aln.sai  $reads | samtools view -uS -q 1 - | samtools sort  - $alignout.sorted
+        endif
+
+        #create pileup
+        samtools mpileup -s -f $ref.formatted $alignout.sorted.bam >! $alignout.pileup
+
+        #create vcf with freebayes, better for haploid?
+        # -0 --standard-filters  Use stringent input base and mapping quality filters
+        # Equivalent to -m 30 -q 20 -R 0 -S 0
+ 
+        freebayes --min-base-quality  $min_base_quality --min-mapping-quality $min_mapping_quality --min-alternate-fraction 0.8 -R 0 -S 0 --min-coverage $min_coverage --ploidy 1 --fasta-reference $ref.formatted $alignout.sorted.bam  >! $alignout.vcf
+
+        parse_vcftools.pl $ref.formatted $alignout.vcf variants.$ref.xml
+
+        echo "finished Read mapping bwa $ref"
+        date
+  
+ 
+     end   # foreach ref (fasta*[0-9])
+
+     set print_variants=0
+     foreach ref (fasta*[0-9])
+        if (-s variants.$ref.xml) then
+            set print_variants=1
+        endif
+     end
+            
+     if ($print_variants == 1) then
+         echo "<variants>" >! $run_dir/variants.$i.xml
+         foreach ref (fasta*[0-9])
+            cat variants.$ref.xml >> $run_dir/variants.$i.xml
+	 end
+	 echo "</variants>" >> $run_dir/variants.$i.xml
+     endif
+
+   echo "ref\tbases_covered\tmean_coverage_coveredBases\tfraction_ref_covered" >! $run_dir/Coverage.$i
+   foreach ref (fasta*[0-9])
+      set ref_name=`grep ">" $ref | sed -e 's/>//'`
+      set bases_covered=`wc -l bwa.$ref.$i.pileup | awk  '{print $1}'`
+      set ref_len=`fl.pl $ref | awk '{print $1}'`
+      set fraction_ref_covered=`perl -e "print $bases_covered/$ref_len"`
+      set mean_coverage=`awk 'total=total+$4 {} END {print total/(NR+.0001)}' bwa.$ref.$i.pileup`
+      echo "$ref_name\t$bases_covered\t$mean_coverage\t$fraction_ref_covered"  >> $run_dir/Coverage.$i
+   end
+
+   mv $ref_all $run_dir/.
+
+  endif  # if (-s refSeqs.$i.fa) then
+
+end  # foreach i (`cat $run_dir/hit_list`)
+
+rm -f $run_dir/hit_list
+rm -f $run_dir/z

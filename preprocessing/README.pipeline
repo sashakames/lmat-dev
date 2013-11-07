@@ -1,0 +1,57 @@
+jellylist output format:
+uint64_t (kmer)
+uint32_t (genome count)
+repeating: uint32_t (genome KPATH id)
+
+===============================================================================
+Pipelines for parallel computation of taxHistDBs:
+
+1. partition fasta file into parts (partition_kmer_data_file.cpp)
+
+2. run jellylist on each partition. Note that, depending on the partition
+   size, memory requirements may be considerable, so running on a single
+   node, e.g, using an mpi-based approach, may not be practicle. 
+   Note: I've found that partitioning and running jellylist on each
+   part consumes less time than running jellylist monolithically.
+
+3. merge the jellylist outputs into a single file; this will merge
+   duplicates and also sort the output (merge_jellylist_outputs.cpp)
+
+4. partition the merged file (partition_kmer_data_file.cpp);
+   if using run_tax_histo_MPI.cpp in the next step, partition
+   into 32 blocks
+
+5. run tax_histo_fast_limited on each part (run_tax_histo_MPI.cpp)
+
+6. concatenate the tax_histo output files (concatenateTaxHistoDB.py)
+
+===============================================================================
+Codes for merging taxHistoDBs that have duplicate entries (e.g, human and microbe2):
+
+mergeTaxHistoDB_in_core.cpp
+
+   merges two or more previously computed tax_histo_DBs and writes
+   result to file; the tax_histo input files are not required to be sorted; 
+   however, the entries in the tax_histo output file are guaranteed to be sorted.
+  
+   There must be sufficent memory to hold all data; note that memory requirements
+   may be significantly larger than that required to read the merged output into 
+   a single TaxTable.
+  
+   Suggested usage: perform several merges to 
+     (1) reduce the number of files
+     (2) sort the entries 
+   then call mergeTaxHistoDB_out_of_core to perform a final out-of-core merge.
+  
+   Caveat: all tid counts will be set to '1'; this is because,
+           as of this writing, the tax_histo files do not contain
+           sufficient data (genome IDs) to correctly compute the
+           counts during a merge.
+
+mergeTaxHistoDB_out_of_core.cpp
+
+   merges two or more previously computed tax_histo_DBs and writes
+   result to file; the tax_histo input files must  be sorted; 
+   the entries in the tax_histo output file will be sorted.
+
+   Uses limited memory
