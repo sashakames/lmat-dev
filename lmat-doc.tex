@@ -53,7 +53,7 @@ Version \lmatver~includes a number of major changes, which should be described i
 This dramatically improves speed and dramatically reduces memory requirements
 \item NCBI taxonomy identifiers are used instead of our own local database representation (should simplify interpretation)
 \item The DB stores NCBI taxonomy identifiers in a 16-bit representation to substantially reduce memory requirements
-(our current Full database is XXXGB compared to the previous size of 540GB)
+(our current Full database is 372GB compared to the previous size of 540GB)
 \item The read binning step is now included in the initial database search application to increase speed.
 \item Added a content summarization step.  Output from initial read labeling is re-processed to estimate abundance profiles
 and to assign each read (including higher ranked reads) to the nearest most likely genome of origin. A more detailed description
@@ -85,7 +85,7 @@ values.
 This software package (LMAT) contains source code with the initial work described in
 "Scalable metagenomic taxonomy classification using a reference genome 
 database".   
-     The web site for LMAT is \texttt{http://computation.llnl.gov/lmat}.  
+     The web site for LMAT is \texttt{http://computation-rnd.llnl.gov/lmat}.  
      
 The basic requirement is x86_84 Linux (tested with 2.6.32-358 or later kernels).  Running on other 64-bit platforms is unconfirmed but feasible (please share your experiences).
 Our approach is divided into two steps:
@@ -108,13 +108,19 @@ Our approach is divided into two steps:
      ("Full" refers to a database that contains k-mers from
      all viral, prokaryote, fungal and protist genomes.)
 
-     Our current ``Full'' database (not yet available) is 372 GB in
-     size, smaller than what we used for our July 2013 publication in
-     Bioinformatics due to several of the key optimizations within
-     this release.  We have two smaller ``marker'' database available for 
-     ftp download, the sizes of the two databases listed below are respectively 52GB and 16GB uncompressed.  
+     Our current ``Full'' database (available for download soon) is
+     373 GB in size, smaller than what we used for our July 2013
+     publication in Bioinformatics due to several of the key
+     optimizations within this release.  We have thre smaller
+     ``marker'' database available for ftp download.
+     See the \nameref{sec:downloads} Section for more
+     information about the various LMAT databases availble for
+     download.
 
-     An additional download required for running LMAT is the collection of ``runtime-input'' files needed to go along with the database (about 300MB in total).  For convenience, we include a script to perform these ftp downloads, details below.
+     An additional download required for running LMAT is the
+     collection of ``runtime-input'' files needed to go along with the
+     database (about 300MB in total).  For convenience, we include a
+     script to perform these ftp downloads, details below.
      
 
 Our databases are available for download from the ftp site:
@@ -123,6 +129,11 @@ Our databases are available for download from the ftp site:
 
 
    First download the external datafiles needed to run LMAT, these include the required NCBI taxonomy information, gene annotation and other support data.
+
+   There are three marker libraries currently available, which are
+   roughly characterized as being small (16GB), medium (50GB) or large
+   (80GB) in size.  Generally, it is preferable to use the largest
+   library that will fit in memory.
 
 
 \begin{verbatim}
@@ -135,12 +146,12 @@ Our databases are available for download from the ftp site:
    #  set the environment variable to point to the location
    setenv LMAT_DIR=<LMAT-root-dir>/runtime_inputs
 
-   #  Download the marker libary, set <db-name> to kML.18mer.16bit (larger)
-   #  or kML.18mer.16bit.reduced (smaller) 
+   #  Download the marker libary, set <db-name> to kML-18mer-medium
+   #  or kML-18mer-small.  (Larger libraries availble)
    ./get_db.sh <db-name> <data-dir>
 
    #  Download the gene annotation libary, set <db-name> 
-   #  to gene.20mer (for gene annotation only)
+   #  to gene-20mer (for gene annotation only)
    ./get_db.sh <db-name> <data-dir>
 
    # Note that LMAT uses a .db extension for its database files,
@@ -298,7 +309,7 @@ simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.summ.lefto
 
 The purpose of having two different types of reference databases (--marker_library and --db_file) is for the convenience of tuning the cutoff values for the two database types differently. The marker libraries have a smaller range values making 0 (or values close to 0) the best cutoff.  For the full libraries the range values is larger giving the user some flexibility to choose higher cutoff values of 1 or 2 to select only the highest confidence tax calls (although 0 is still a reasonable default cutoff).
 
-Check http://computation-dev.llnl.gov/lmat/example.php for additional example information.
+Check http://computation-rnd.llnl.gov/lmat/example.php for additional example information.
 
 If the pre-built executable does not load on your system, proceed with the \nameref{sec:compile} step below.
 
@@ -365,6 +376,30 @@ If using MPI (optional; only used in some drivers when building
  Disable address space randomization (if not already set).\\
    As super-user: \texttt{echo 0 > /proc/sys/kernel/randomize\_va\_space}
 \end{enumerate}
+
+\section{Downloadable Databases}
+
+LMAT has several prebuilt databases available for download.  Use the \texttt{bin/get\_db.sh} utility to automatically perform downloads from the ftp site, mentioned above, using any of the following databases.  
+
+\begin{tabular}{| c | c | c |}
+\hline
+Database key-name (for get\_db script) & Filename & File size (GB) \\
+\hline
+kML-18mer-large & kML.18mer.no_prune.16.db & 80 \\
+\hline
+kML-18mer-medium & kML.18mer.16bit.db  & 52 \\
+\hline
+kML-18mer-small & kML.18mer.16bit.reduced.db  & 16 \\
+\hline
+kFull-20mer (available soon) & m9.20mer.16bit.g1000.db & 373 \\
+\hline
+gene-20mer & gene.20mer.db & 52 \\
+\hline
+\end{tabular}
+
+
+
+
 
 
 \section{Searchable K-mer/Taxonomy Database Preparation}
@@ -789,7 +824,7 @@ Run LMAT (read\_label) with -f <filename> option to specify the mapping table or
 The LMAT database indexes contain lists of taxonomy ids for each k-mer.  Some lists are significantly long enough to affect LMAT classification performance (read\_label).  To mitigate this issue, LMAT has the ability to prune these lists of taxids to increase classification speed at the expense of some degree of lost accuracy.
 
  LMAT supports two types of pruning: (1) reduce lists of strain IDs to species only (faster) when list length exceeds a cutoff value;  (2) prune any lower-rank taxid when list length exceeds the cutoff value.   The following options are passed to the make\_db\_table executable:
-the cutoff value specified with -g <max taxid-list length> ;  table file specified by -m <filename> ; -w toggles if the strain-species filtering.  If set then(1) above is used and then use specific ``species map'' table file for -m.  If -w is ommitted, then (2) above will be used and use the ``numeric rank'' file for -m.  Sample files are available for LMAT downloadable databases.
+the cutoff value specified with -g <max taxid-list length> ;  table file specified by -m <filename> ; -w toggles the strain-species filtering on.  If set then (1) above is used and then use specific ``species map'' table file for -m.  If -w is ommitted, then (2) above will be used and use the ``numeric rank'' file for -m.  Sample files are available for LMAT downloadable databases.
 
 The LMAT software distribution comes with scripts to generate these files.  \texttt{build_tid_numeric_rank_table.py} requires a ``taxonomy\_rank.txt'' file as input and produces the ``numeric rank'' mapping table file for (2) above.  \texttt{build\_species\_level\_map.py}  requires both the ``taxonomy\_rank.txt'' and  ``taxonomy.dat'' files to  produce the table file for (1).
 
