@@ -7,9 +7,9 @@ if (len(sys.argv) < 2):
 
 inf = open(sys.argv[1])
 
-items = ["species", "species group", "genus", "family", "order", "class"]
+items = ["species", "species group", "genus", "family", "order", "class", "phylum", "kingdom", "superkingdom"]
 
-rank = [12, 10, 8, 6, 4, 2]
+rank = [18, 16, 14, 12, 10, 8, 6, 4, 2]
 
 MAX_RANK = 1
 
