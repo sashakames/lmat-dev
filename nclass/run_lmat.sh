@@ -6,13 +6,13 @@
 ### Steps:
 ###
 ### 1) Call read_label to taxonomically label all reads, and count reads assigned to each label
-### 2) Call content_summ_mt to generate summary of organisms present using read_label output
-### 3) call tokrona.py generates human readable taxonomy lineage for input to krona, which is then run if the binary is found to produce an html file
+### 2) Call content_summ to generate summary of organisms present using read_label output
+### 3) call tolineage.py generates human readable taxonomy lineage, can be input to Krona, which is then run if the binary is found, to produce an html file
 ### 4) Call gene_label assigne gene names to each read and count the reads assigned to each label
 ###
 #####################################
 if [ -z "$LMAT_DIR" ] ; then
-   echo "Please set METAG_DIR environment variable to point to the directory where LMAT datafiles are stored"
+   echo "Please set LMAT_DIR environment variable to point to the directory where LMAT datafiles are stored"
    exit 1
 fi
 
@@ -76,7 +76,7 @@ min_read_kmer=30
 
 ## Additional user input default settings
 # 1== run content_summ, 0 = skip
-do_cs=1 
+do_cs=0 
 # 1 == run read_label, 0 = skip 
 do_rl=1 
 # 1 == run gene_label, 0 = skip
@@ -119,6 +119,7 @@ option list:
    --skipMarkSumm (default=$skipMarkSumm) : Turn off summarization of marker output (may be preferred when running the full database)
    --overwrite (default=$overwrite) : overwrite output file if it exists 
    --min_read_kmer (default=$min_read_kmer) : minimum number of valid k-mers present in read needed for analysis
+   --prune_thresh : threshold of maximum taxonomy IDs allowed per k-mer. 
 
 example usage:
 $0 --db_file=$dbfile --genedb_file=$genedbfile --query_file=HC1.fna --threads=$threads
@@ -157,6 +158,8 @@ while test -n "${1}"; do
       genedbfile=$optarg;;
    --query_file=*)
       query_file=$optarg;;
+   --prune_thresh=*)
+      PTHRESH=$optarg;;
    --threads=*)
       threads=$optarg;;
    --nullm=*)
@@ -214,10 +217,18 @@ if [ $verbose == 1 ] ; then
    vstr="-y"
 fi
 
+if [ ! $odir == '' ]; then
+    odir="$odir/"
+fi
+
 dlst="$markerdb $dbfile"
 for db in $dlst ; do 
       dbname=`basename $db`
-      rlofile="${odir}$query_file_name.$dbname.lo.rl_output" 
+      if test -z $PTHRESH; then
+	  rlofile="${odir}$query_file_name.$dbname.lo.rl_output" 
+      else
+	  rlofile="${odir}$query_file_name.$dbname.$PTHRESH.lo.rl_output"	 
+      fi
       logfile="$rlofile.log" 
       tidmap="$LMAT_DIR/m9.32To16.map"
       ## File giving a list of null models - assumes this specific naming convention
@@ -225,18 +236,19 @@ for db in $dlst ; do
       ## The higher the number the more conservative the read label call
       ## This value specifices how much higher (in standard deviation units) the score of the assigned label must be
       sdiff=0.5  
+      fstr="-f $tidmap"
+      if [ ! -z $PTHRESH ]; then
+	  pstr="-g $PTHRESH -m $LMAT_DIR/numeric_ranks"
+      fi
+      rprog=${bin_dir}read_label
       if [ $db != "$markerdb" ] ; then
          ## use full library parameters
-         rprog=${bin_dir}read_label
-         fstr="-f $tidmap"
          use_min_score=$min_score
          echo "search full db: $db"
       else 
          ## use marker library parameters
          use_min_score=$marker_min_score
-         rprog=${bin_dir}read_label
-         pstr=""
-         fstr="-f $tidmap"
+
          sdiff=1.0
          echo "search marker library: $db"
       fi
@@ -256,12 +268,10 @@ for db in $dlst ; do
                exit 0
             fi
             min_num_reads=10 ## 
-            ${bin_dir}tokrona.py $taxfile $fastsum_file $fastsum_file.krona $min_num_reads all
+            ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads all
 
-            if hash ktImportText > /dev/null ; then
-               ktImportText $fastsum_file.krona -o $fastsum_file.krona.html
-            else 
-               echo "ktImportText (Krona Tools) not found in path, could not create a Krona html file" 
+            if hash ktImportText > /dev/null 2>&1 ; then
+               ktImportText $fastsum_file.lineage -o $fastsum_file.lineage.html
             fi
             if [ $verbose == 1 ] ; then
                echo "Verbose setting is used for debuging one program at a time only"
@@ -318,8 +328,8 @@ for db in $dlst ; do
             ###########################################################################
             ## must change these settings for marker library
             ###########################################################################
-            min_wrdc=2.0
-            min_avg_wght=0.4
+            min_wrdc=0.07
+            min_avg_wght=0.03
             ## Stores the k-mer counts associated with each taxid
             kmercnt="$LMAT_DIR/tcnt.kML18"
             ## I'm noticing slight over specificity in the marker library,so consider lower this value
@@ -338,7 +348,7 @@ for db in $dlst ; do
          fi
          if [ ! -e $sumofile ] || [ $overwrite == 1 ] ; then
             echo "Summary process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$sumofile]"
-            /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -b $suspect_genomes -t "$min_thresh" -c $noprune_taxtree -l $fastsum_file -k $kcnt -f $lst -r $rankval -m $kmercnt -o $sumofile > $logfile
+            /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -b $suspect_genomes -t "$min_thresh" -c $noprune_taxtree -l $fastsum_file -k $kcnt -f $lst -r $rankval -m $kmercnt -o $sumofile >& $logfile
          fi
      fi
 
