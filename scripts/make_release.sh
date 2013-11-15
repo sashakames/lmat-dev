@@ -1,6 +1,6 @@
 #!/bin/sh
 #  set version number
-verno=1.2
+verno="dev(1.3?)"
 
 reldir=../../LMAT-$verno
 
