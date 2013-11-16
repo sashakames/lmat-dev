@@ -1,4 +1,4 @@
-#include "SortedDb.hpp"
+#include "SortedDbExp.hpp"
 
 #include <cassert>
 #include <fstream>
@@ -56,6 +56,8 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
    if (stopper == 0)
      stopper = ~0;
 
+ 
+
   uint64_t kmer;
   uint32_t tid;
   uint16_t tid_count; //, genome_count, p_count, tuple_count;
@@ -64,28 +66,40 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
   ////uint16_t genome_count;
 
+
+
   static long long int start_count;
   static long long int start_offset;
-
-  static uint16_t count_marker = 0;
+  long long int kmers_tossed = 0;
+  long int level_count = 0; 
 
   //  cout << "stopper set to: " << stopper << "\n";
 
   for  ( uint64_t i=0; i<kmer_ct; i++)  {
 
+    
     if (i > stopper)
       break;
 
     //loop exit condition
     if (ftell(in) == f) break;
 
+
+
     //read kmer, taxid count, and tuple count
     assert(fread(&kmer, 8, 1, in) == 1);        
+
+    /*    if (kmer == 17115635708) {
+      cout << "found\n";
+      } */
+
+
 
     if ((last_kmer > 0) &&  (kmer <= last_kmer)) {
       cout << "Kmers arriving out of order.  New: " << kmer << " last: " << last_kmer << "\n";
       exit(1);
     }
+
 
     if (use_tax_histo_format) {
       assert(fread(&tid_count, 2, 1, in) == 1);
@@ -96,268 +110,244 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
     }
 
-    // First get the mapping - the msb for the kmer - assuming 27 for now
-    // TODO: make this configurable at runtime 
-
-    size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
-
-
-    // check the slot if it has been written to yet
-
-    if (top_tier_block[top_index] == 0) {
-	
-
-
-      // if empty write the current offset - this will be the start of the short list within the second tier
-      start_offset = m_list_offset; 
-      start_count = 1;  
-    }
-
-    uint16_t kmer_lsb_in = MASK_2ND & kmer;
-
-    top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
     
-    kmer_table[m_list_offset].kmer_lsb = kmer_lsb_in;
-    
-    assert (top_tier_block[top_index] >> 48 == start_count);
+
 
     uint16_t tmp_tid_count = tid_count;
 
     set<uint32_t> write_set;
-    priority_queue<MyPair> taxid_q;
+
+    uint32_t assign_tid = 1;
      
-    if (tid_cutoff > 0 && tid_count > tid_cutoff) {
 
-      if (species_map.size() == 0) {
-	tmp_tid_count = 0;
-
-	for (uint16_t k=0; k<tid_count; k++) {
-	  // scan through and dump
-	  assert(fread(&tid, 4, 1, in) == 1);        
-	}
-      } else {
-
-	if (strainspecies) {
-
-	  cout << "functionality disabled!\n";
-	  exit(1);
-	  for (uint16_t k=0; k<tid_count; k++) {
-
-	    
-	    assert(fread(&tid, 4, 1, in) == 1);        
-	    
-	    if (species_map.find(tid) == species_map.end()) {
-	      // alternate version - try to not write the tid because doing so might be keeping the accuracy down 
-	      write_set.insert(tid);
-	      
-	    } else {
-
-	    uint32_t mapped_tid = species_map[tid];
-	    write_set.insert(mapped_tid);
-	    
-	    }
-	  }
-	
-	  tmp_tid_count = write_set.size();
       
-	// if not enough reduction , then we revert to the old method
-	  if (tmp_tid_count > tid_cutoff)
-	    tmp_tid_count = 0;
-	} else {
-	  	  
-	  for (uint16_t k=0; k<tid_count; k++) {
+    priority_queue<MyPair> taxid_q;
+	  
+    for (uint16_t k=0; k<tid_count; k++) {
 
-	    assert(fread(&tid, 4, 1, in) == 1);        
-
-	    const MyPair  pp(species_map[tid], tid);
-	    taxid_q.push(pp);
+	
+      assert(fread(&tid, 4, 1, in) == 1);        
 	    
+      const MyPair  pp(species_map[tid], tid);
+      taxid_q.push(pp);
 	    
-	  }
-
+      
+    }
+    write_set.clear();
+	  
 	  // iterate on taxid priority queue in batches of taxons with          
 	  // the same rank                                                  
 	
-	  while(!taxid_q.empty()) {
+    int prio_count = 0;
+    
+  
+    while(!taxid_q.empty()) {
 
 	    // get current priorty                                            
-	    int cur_priority = taxid_q.top().first;
-	      
-	    // pull out elements that match top priority                        
-	    while(taxid_q.top().first == cur_priority) {
-	      
-	      const MyPair res = taxid_q.top();
-	      taxid_q.pop();
+    
+      int cur_priority = taxid_q.top().first;
+    
+      if (cur_priority < 12 && prio_count < 2)
+	prio_count = 0;
+
+	// pull out elements that match top priority                        
+      while(taxid_q.top().first == cur_priority) {
+	if (cur_priority <= 12) 
+	  prio_count ++;
+       
+	const MyPair res = taxid_q.top();
+	taxid_q.pop();
 		
-	      //	      write_set.insert(res.second);
+	write_set.insert(res.second);
 
-	      if (taxid_q.empty())
-		break;
-	    }
+	if (taxid_q.empty())
+	  break;
+      }
 	    // if we are under the cut, then we can stop                        
-	    if (taxid_q.size() <= tid_cutoff) {
+      if (write_set.size() <= tid_cutoff) {
 	      //            cout << "Cut to rank: " << cur_priority << " org \
-	      // cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
-	      tmp_tid_count = write_set.size();
-
-	      break;
-	      
-	    }
-	    //else {
-                // prepare for next batch of element poping                     
-	    //write_set.clear();
-	    //}
-	    
-	  }
-	  if (taxid_q.size() == 0) {
-	    tmp_tid_count = 1;
-	    const MyPair pp(1, 1);
-	    taxid_q.push(pp);
-	    cut_kmers++;
-	  }
-	  
-	}
-      }
-      
-    }
-
-    if (tmp_tid_count > 1) {
-      
-      if (16+m_cur_offset+tmp_tid_count*4 > PAGE_SIZE) {
-	  
-	m_cur_page ++;
-	m_cur_offset = 0;
+	// cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
+	tmp_tid_count = write_set.size();
 	
-      }
+	break;
 	
-      kmer_table[m_list_offset].page_id = m_cur_page;
-      kmer_table[m_list_offset].page_offset = m_cur_offset;
-    }
-    else if (tid_count == 1) {
-      
-      singletons++;
-	
-      assert(fread(&tid, 4, 1, in) == 1);        
-	//	assert (tid <= MAX_TID && tid != INVALID_TID_2 );
-      
-
-      kmer_table[m_list_offset].page_id = MAX_PAGE;
-
-      if (p_br_map) {
-	uint16_t tid_16 = (*p_br_map)[tid];
-	if (!(tid_16 < p_br_map->size()+3))  // pad for starting the count at 2
-	{
-	  cout << "bad single: " << tid << " " << tid_16 << "\n";
-	  assert(0);
-	}
-	kmer_table[m_list_offset].page_offset = tid_16;
-      }
-      else {
-
-	kmer_table[m_list_offset].page_offset = tid;
-      }
-
-    } else if (tmp_tid_count == 1) {
-
-           
-      tid = taxid_q.top().second;
-      kmer_table[m_list_offset].page_id = MAX_PAGE;
-
-      if (p_br_map) {
-	uint16_t tid_16 = (*p_br_map)[tid];
-	if (!(tid_16 < p_br_map->size()+1))
-	  {
-	    cout << "bad single: " << tid << " " << tid_16 << "\n";
-	    assert(0);
-	  }
-	kmer_table[m_list_offset].page_offset = tid_16;
       } else {
-	kmer_table[m_list_offset].page_offset = tid;
-
+	// prepare for next batch of element poping                     
+	write_set.clear();
       }
-      reduced_kmers++;
-    } else {
-      assert(tmp_tid_count == 0);      
-      kmer_table[m_list_offset].page_id = MAX_PAGE;
-      kmer_table[m_list_offset].page_offset = 1;
+      
+    }
+
+    if (write_set.size() == 0) {
+      tmp_tid_count = 1;
+      write_set.insert(1);
       cut_kmers++;
     }
-    
-    
-    m_list_offset++;
-    start_count++;
+	  
+    if (prio_count > 1) {
+      kmers_tossed ++;
 
-    assert(start_count <= LENGTH_MAX_2ND );
+      
+    } else {
+      if (prio_count == 1) {
+	level_count++;
+      }
 
-	//write the kmer
+      
+
+    // First get the mapping - the msb for the kmer - assuming 27 for now
+    // TODO: make this configurable at runtime 
+
+      size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+
+    // check the slot if it has been written to yet
+
+      if (top_tier_block[top_index] == 0) {
+      
+
+	// if empty write the current offset - this will be the start of the short list within the second tier
+	start_offset = m_list_offset; 
+	start_count = 1;  
+      }
+      
+
+      
+      uint16_t kmer_lsb_in = MASK_2ND & kmer;
+      
+      top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
+      
+      kmer_table[m_list_offset].kmer_lsb = kmer_lsb_in;
+    
+      assert (top_tier_block[top_index] >> 48 == start_count);
+
+
+
+      if (tmp_tid_count > 1) {
+      
+	if (16+m_cur_offset+tmp_tid_count*4 > PAGE_SIZE) {
+	  
+	  m_cur_page ++;
+	  m_cur_offset = 0;
+	
+	}
+	
+	kmer_table[m_list_offset].page_id = m_cur_page;
+	kmer_table[m_list_offset].page_offset = m_cur_offset;
+      }
+      else if (tid_count == 1) {
+      
+	singletons++;
+	
+	assert(fread(&tid, 4, 1, in) == 1);        
+	//	assert (tid <= MAX_TID && tid != INVALID_TID_2 );
+      
+      
+	kmer_table[m_list_offset].page_id = MAX_PAGE;
+
+	if (p_br_map) {
+	  uint16_t tid_16 = (*p_br_map)[tid];
+	  if (!(tid_16 < p_br_map->size()+3))  // pad for starting the count at 2
+	    {
+	      cout << "bad single: " << tid << " " << tid_16 << "\n";
+	      assert(0);
+	    }
+	  kmer_table[m_list_offset].page_offset = tid_16;
+	}
+	else {
+	  
+	kmer_table[m_list_offset].page_offset = tid;
+	}
+	
+      } else if (tmp_tid_count == 1) {
+
+	set<uint32_t>::const_iterator it = write_set.begin();
+	
+	kmer_table[m_list_offset].page_id = MAX_PAGE;
+
+	if (p_br_map) {
+	  uint16_t tid_16 = (*p_br_map)[tid];
+	  if (!(tid_16 < p_br_map->size()+1))
+	    {
+	      cout << "bad single: " << tid << " " << tid_16 << "\n";
+	      assert(0);
+	    }
+	  kmer_table[m_list_offset].page_offset = tid_16;
+	} else {
+	  kmer_table[m_list_offset].page_offset = tid;
+
+	}
+	reduced_kmers++;
+      } else {
+
+	assert(tmp_tid_count == 0);      
+	kmer_table[m_list_offset].page_id = MAX_PAGE;
+	kmer_table[m_list_offset].page_offset = 1;
+	cut_kmers++;
+      }
+    
+      
+      m_list_offset++;
+      start_count++;
+    
+      assert(start_count <= LENGTH_MAX_2ND );
+
+      //write the kmer
       //      memcpy(m_data[m_cur_page]+m_cur_offset, &kmer, 8);
-    if (taxid_q.size() > 0 && tmp_tid_count > 0)	{
+      if (write_set.size() > 0 && tmp_tid_count > 0)	{
 
 	// check for no reduction
 
-      reduced_kmers++;
-      if (kmer % 4096 == 0) {
-	mcpyinsdb(kmer, 8);
-	m_cur_offset += 8;
+	reduced_kmers++;
+	if (kmer % 4096 == 0) {
+	  mcpyinsdb(kmer, 8);
+	  m_cur_offset += 8;
 	  
-      }	
+	}	
 	
-      mcpyinsdb(tmp_tid_count, 2);
-      m_cur_offset += 2;
+	mcpyinsdb(tmp_tid_count, 2);
+	m_cur_offset += 2;
 
-      for (int i=0; i < taxid_q.size(); i++) {
-	
-	tid = taxid_q.top().second;
-	taxid_q.pop();
-	
-	if (p_br_map) {
+	for (set<uint32_t>::const_iterator it = write_set.begin(); it != write_set.end()  ; it++) {
 
-	  uint16_t tid_16 = (*p_br_map)[tid];
-	  if (!(tid_16 < p_br_map->size()+1)) {
-	    cout << "bad set: " << tid << " " << tid_16 << "\n";
-	    assert(0);
-	  }
-	  assert (tid_16 > 0);
-	      mcpyinsdb(tid_16,2);
-	      m_cur_offset += 2;
-	}  else {
 
-	      mcpyinsdb(tid,4);
-	      m_cur_offset += 4;
+	  if (p_br_map) {
+	    
+	    uint16_t tid_16 = (*p_br_map)[*it];
+	    if (!(tid_16 < p_br_map->size()+1)) {
+	      cout << "bad set: " << tid << " " << tid_16 << "\n";
+	      assert(0);
 	    }
+	    assert (tid_16 > 0);
+	    mcpyinsdb(tid_16,2);
+	    m_cur_offset += 2;
+	  }  else {
 
-	ext_taxids++;
-      } 
-      
-      
-    }
-    // no attempt to reduce list; copy in the taxid list
-    else if (write_set.size() == 0 && tmp_tid_count > 1) {
+	    mcpyinsdb(*it,4);
+	    m_cur_offset += 4;
+	  }
 	  
-      if (kmer % 4096 == 0) {
-	mcpyinsdb(kmer, 8);
-	m_cur_offset += 8;
-      }
+	  ext_taxids++;
+	} 
       
-      mcpyinsdb(tid_count, 2);
-      m_cur_offset += 2;
-
-      uint16_t tmpcount;
-
-      if (tmpcount != count_marker) {
-
-	cout << "changed to " << tmpcount << " at " << kmer << "\n";
-	count_marker = tmpcount;
-
-      }
       
-      //write the tuples
-      for (uint16_t k=0; k<tid_count; k++) {
+      }
+    // no attempt to reduce list; copy in the taxid list
+      else if (write_set.size() == 0 && tmp_tid_count > 1) {
+	
+	if (kmer % 4096 == 0) {
+	  mcpyinsdb(kmer, 8);
+	  m_cur_offset += 8;
+	}
+	mcpyinsdb(tid_count, 2);
+	m_cur_offset += 2;
+      
+	//write the tuples
+	for (uint16_t k=0; k<tid_count; k++) {
 	
 	  ext_taxids++;
 	  assert(fread(&tid, 4, 1, in) == 1);        
 
-	if (p_br_map) {
+	  if (p_br_map) {
 
 
 	  uint16_t tid_16 = (*p_br_map)[tid];
@@ -371,17 +361,18 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  mcpyinsdb(tid_16, 2);
 	  m_cur_offset += 2;
 	} else {
+	    
+	    mcpyinsdb(tid, 4);
+	    m_cur_offset += 4;
+	  }
 
-	  mcpyinsdb(tid, 4);
-	  m_cur_offset += 4;
 	}
 
+      } else {
+	assert (tid_count == 1 || tmp_tid_count < 2);
+	
       }
-    } else {
-      assert (tid_count == 1 || tmp_tid_count < 2);
-      
-    }
-
+    }  // end else of prio_count check
     
     if (use_tax_histo_format) {
 	
@@ -390,20 +381,23 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  assert(test == sanity);
 	}  
       } else {
-	if ((i+1) % KMER_SANITY_COUNT == 0) {
-	  assert(fread(&test, sizeof(uint64_t), 1, in) == 1);
+      if ((i+1) % KMER_SANITY_COUNT == 0) {
+	assert(fread(&test, sizeof(uint64_t), 1, in) == 1);
 	  assert(test == sanity);
 	}
       }
     last_kmer = kmer;
   }
-
-  m_n_kmers += kmer_ct;
+  
+  m_n_kmers += (kmer_ct - kmers_tossed);
   
   fclose(in);
 
+  
   cout << "storage used for tax ids, counts, etc.."  << m_cur_page << " - "  << m_cur_offset << "\n";
   cout << "kmer count: " << m_n_kmers << "\n";
+  cout << "kmers tossed (too general): " << kmers_tossed << "\n";
+  cout << "Family-level: " << level_count << "\n";
   cout << "offset at: " << m_list_offset << "\n";
   cout << "singletons: " << singletons << "\n";
   cout << "taxids in storage: " << ext_taxids << "\n";
