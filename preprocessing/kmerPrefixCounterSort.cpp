@@ -28,8 +28,10 @@ void usage(char *argv[]) {
        << "                should be a few G less than max available; default\n"
        << "                is 24G, which is sufficient for 1.5G kmers\n"
        << " -f <int>     - prefix\n"
+       << " -n <int>      - pick every nth k-mer\n"
        << " -a           - output kmers in ascii format (useful for testing)\n"
        << " -h           - print help and exit\n\n";
+  
 }
 
 struct P {
@@ -68,11 +70,16 @@ int main(int argc, char *argv[]) {
   bool ascii = false;
   uint64_t mem = 24;
 
+  int n_val = 1;
+
   int count = 0;
-  const string opt_string="a i:k:h o:p:l:q:f:m:";
+  const string opt_string="a i:k:h o:p:l:q:f:m:n:";
   char c;
   while ((c = getopt(argc, argv, opt_string.c_str())) != -1) {
     switch (c) {
+    case 'n':
+      n_val = atoi(optarg);
+      break;
     case 'm' :
       mem = atoi(optarg);
       break;
@@ -165,15 +172,26 @@ int main(int argc, char *argv[]) {
       in.close();
       break;
     }
+    
+    if(gid!= 9606) {
 
-    //hash kmers and genome IDs
-    Encoder e(seq, mer_len);
-    while (e.next(kmerid)) {
-      rc = Encoder::rc(kmerid, mer_len);
-      kmer = kmerid < rc ? kmerid : rc;
-      kmerid2 = kmer >> moveme;
-      if (prefix == kmerid2) {
-        v.push_back(P(kmer,gid));
+      //hash kmers and genome IDs
+      Encoder e(seq, mer_len);
+    
+      int loopval = 0;
+
+      while (e.next(kmerid)) {
+	rc = Encoder::rc(kmerid, mer_len);
+	kmer = kmerid < rc ? kmerid : rc;
+	kmerid2 = kmer >> moveme;
+
+	// only push on the 0 val
+	if (loopval == 0 && prefix == kmerid2) {
+	  v.push_back(P(kmer,gid));
+	}
+	loopval++;
+	if (loopval == n_val)  // reset the value
+	  loopval=0;
       }
     }
   }
