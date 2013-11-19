@@ -3,8 +3,8 @@ import sys
 import os
 
 #databases = ["kML.18.noOvr.no_prune.16bit.db", "kML.18.full.16bit.db", "kML.20mer.16bit.g1000.db"  ]
-databases = ["kML.18.noOvr.no_prune.16bit.db"]
-#, "kML.18.full.16bit.db", "kML.20mer.16bit.g1000.db"  ]
+databases = ["kML.18.noOvr.no_prune.16bit.db",  "kML.20mer.16bit.g1000.db"  ]
+#[ "kML.18.full.16bit.db", 
 #sizes = [1000, 9000, 27000, 81000, 2187000]
 sizes = [2000000]
 positions = ["head", "tail"]
