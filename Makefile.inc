@@ -1,17 +1,17 @@
 CXX = g++
-INCLUDE = -I$(PJPATH)/include -I. -I$(METAG_DIR)/dev/src/kmerdb -I$(METAG_DIR)/dev/include 
+INCLUDE = -I$(PJPATH)/include -I. -I$(METAG_DIR)/src/kmerdb -I$(METAG_DIR)/include 
 
 
 CXXFLAGS = -O3  -g  -Wall -fopenmp $(INCLUDE) -D$(PJOPT)  \
             -DIDX_CONFIG=$(SDBIDX) -DTID_SIZE=$(TAXID_SIZE)  -DDBTID_T=$(TID_T) -Wno-deprecated \
 	    -DUSE_SORTED_DB=$(USE_SORTED_DB)
 
-METAG_LIB = $(METAG_DIR)/dev/src/kmerdb/lib/libmetag.a
+METAG_LIB = $(METAG_DIR)/src/kmerdb/lib/libmetag.a
 
 #note: libgzstream.a *must* appear before libz.a
 LIBS = $(METAG_LIB)  $(PJMALLOC_LIB) -lpthread \
-       $(METAG_DIR)/dev/lib/libgzstream.a -ldl \
-       $(METAG_DIR)/dev/lib/libz.a 
+       $(METAG_DIR)/lib/libgzstream.a -ldl \
+       $(METAG_DIR)/lib/libz.a 
 
 LDENV= LD_RUN_PATH=/lib:/usr/lib:$(HOME)/lib:/usr/local/lib:$(PJPATH)/lib
 RUNENV= LD_LIBRARY_PATH=/lib:/usr/lib:$(HOME)/lib:/usr/local/lib:$(PJPATH)/lib
@@ -43,7 +43,7 @@ endif
 
 #location of PJMALLOC lib
 ifndef PJPATH
-PJPATH= $(METAG_DIR)/dev
+PJPATH= $(HOME)
 endif
 
 ifndef SDBIDX
@@ -52,7 +52,7 @@ endif
 
 #default METAG_DIR
 ifndef METAG_DIR
-METAG_DIR=$(HOME)/metag_repo
+METAG_DIR=$(HOME)/lmat-git
 endif
 
 ifndef TAXID_SIZE
