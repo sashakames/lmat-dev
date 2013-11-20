@@ -135,7 +135,7 @@ cp get_db.sh $reldir/bin
 
 #copy example file from the server
 
-cp /usr/mic/post1/metagenomics/metagenomes/synthetic/example.tar.gz $reldir/example
+cp /usr/mic/post1/metagenomics/metagenomes/synthetic/example.tgz $reldir/example
 
 # copy runtime inputs (?)
 
