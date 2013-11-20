@@ -166,6 +166,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    // if we are under the cut, then we can stop                        
       if (write_set.size() <= tid_cutoff) {
 	      //            cout << "Cut to rank: " << cur_priority << " org \
+<<<<<<< HEAD
 	// cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
 	tmp_tid_count = write_set.size();
 	
@@ -177,6 +178,10 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       }
       
     }
+=======
+	      // cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
+	      tmp_tid_count = taxid_q.size();
+>>>>>>> prune-db-fix
 
     if (write_set.size() == 0) {
       tmp_tid_count = 1;
@@ -322,9 +327,19 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    m_cur_offset += 2;
 	  }  else {
 
+<<<<<<< HEAD
 	    mcpyinsdb(*it,4);
 	    m_cur_offset += 4;
 	  }
+=======
+	ext_taxids++;
+      } 
+      
+      
+    }
+    // no attempt to reduce list; copy in the taxid list
+    else if (taxid_q.size() == 0 && tmp_tid_count > 1) {
+>>>>>>> prune-db-fix
 	  
 	  ext_taxids++;
 	} 

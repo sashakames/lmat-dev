@@ -56,13 +56,13 @@ public:
 
   }
 
-  void begin(kmer_t kmer,  my_map &p_map, int tid_cut = 0, bool strainspecies = 0 ) {
+  void begin(kmer_t kmer,  my_map &p_map, int tid_cut = 0, bool strainspecies = 0,  id_convback_map_t  *pp_map = NULL) { 
+
     m_calls_to_next = 0;
     
-    mp_idmap = NULL;
     // load map file
-
-
+    mp_idmap = pp_map;
+    
     bool good = m_table->begin_(kmer, m_taxid_count, m_offset, m_page);
     if (!good) {
       m_calls_to_next = 1;
@@ -117,7 +117,12 @@ public:
       	    // lookup the rank value and put all taxids in priority queue
 	  
 	    for  (int count = 0; count < m_taxid_count; count ++) {
+
+
 	      tid_T in_taxid;
+
+
+
 	      m_table->next(m_offset, m_page, in_taxid);
 
 	      /*	      if (in_taxid == BAD_TAXID)
@@ -125,7 +130,13 @@ public:
 		  cout << "in_taxid (prefilter) " << BAD_TAXID <<  " , kmer = " << m_kmer << "\n"; 
 
 		  } */
-	      m_taxid = in_taxid;
+
+
+	      if (pp_map) 
+		m_taxid = (*pp_map)[in_taxid];
+	      else
+		m_taxid = in_taxid;
+	      
 
 	      const MyPair  pp(p_map[m_taxid], m_taxid);
 	      taxid_q.push(pp);

@@ -937,10 +937,10 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
            TaxNodeStat<DBTID_T> *h = new TaxNodeStat<DBTID_T>(*table);
            if(verbose) cout<<"lookup kmer at posit:"<<j<<endl;
 
-#if (TID_SIZE == 32)
-           h->begin(kmer_id, tid_rank_map,  max_count, tid_map_is_strain_species);
+#if (TID_SIZE == 16)
+           h->begin(kmer_id, tid_rank_map,  max_count, tid_map_is_strain_species, &conv_map);
 #else
-           h->begin(kmer_id, &conv_map);
+           h->begin(kmer_id, tid_rank_map,  max_count, tid_map_is_strain_species);
 #endif
 
            unsigned dcnt = 0, mtch = 0;
