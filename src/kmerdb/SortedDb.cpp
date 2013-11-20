@@ -198,7 +198,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    if (taxid_q.size() <= tid_cutoff) {
 	      //            cout << "Cut to rank: " << cur_priority << " org \
 	      // cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
-	      tmp_tid_count = write_set.size();
+	      tmp_tid_count = taxid_q.size();
 
 	      break;
 	      
@@ -332,7 +332,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       
     }
     // no attempt to reduce list; copy in the taxid list
-    else if (write_set.size() == 0 && tmp_tid_count > 1) {
+    else if (taxid_q.size() == 0 && tmp_tid_count > 1) {
 	  
       if (kmer % 4096 == 0) {
 	mcpyinsdb(kmer, 8);
