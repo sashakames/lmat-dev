@@ -76,7 +76,7 @@ min_read_kmer=30
 
 ## Additional user input default settings
 # 1== run content_summ, 0 = skip
-do_cs=0 
+do_cs=1 
 # 1 == run read_label, 0 = skip 
 do_rl=1 
 # 1 == run gene_label, 0 = skip
