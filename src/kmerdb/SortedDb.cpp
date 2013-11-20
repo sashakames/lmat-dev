@@ -67,7 +67,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   static long long int start_count;
   static long long int start_offset;
 
-  static uint16_t count_marker = 0;
+  long long int kmers_tossed = 0;
+  long int level_count = 0;
+
 
   //  cout << "stopper set to: " << stopper << "\n";
 
@@ -342,14 +344,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       mcpyinsdb(tid_count, 2);
       m_cur_offset += 2;
 
-      uint16_t tmpcount;
 
-      if (tmpcount != count_marker) {
-
-	cout << "changed to " << tmpcount << " at " << kmer << "\n";
-	count_marker = tmpcount;
-
-      }
       
       //write the tuples
       for (uint16_t k=0; k<tid_count; k++) {
