@@ -62,6 +62,8 @@ public:
     
     // load map file
     mp_idmap = pp_map;
+
+    m_kmer = kmer;
     
     bool good = m_table->begin_(kmer, m_taxid_count, m_offset, m_page);
     if (!good) {

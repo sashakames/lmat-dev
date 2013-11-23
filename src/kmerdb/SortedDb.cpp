@@ -87,6 +87,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       exit(1);
     }
 
+
     if (use_tax_histo_format) {
       assert(fread(&tid_count, 2, 1, in) == 1);
     } else {
@@ -291,8 +292,8 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	//write the kmer
       //      memcpy(m_data[m_cur_page]+m_cur_offset, &kmer, 8);
-    if (taxid_q.size() > 0 && tmp_tid_count > 0)	{
-
+    if (taxid_q.size() > 1 && tmp_tid_count > 1)	{
+      
 	// check for no reduction
 
       reduced_kmers++;
@@ -304,8 +305,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	
       mcpyinsdb(tmp_tid_count, 2);
       m_cur_offset += 2;
+      
 
-      for (int i=0; i < taxid_q.size(); i++) {
+      for (int i=0; i < tmp_tid_count; i++) {
 	
 	tid = taxid_q.top().second;
 	taxid_q.pop();
@@ -318,16 +320,16 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    assert(0);
 	  }
 	  assert (tid_16 > 0);
-	      mcpyinsdb(tid_16,2);
-	      m_cur_offset += 2;
+	  mcpyinsdb(tid_16,2);
+	  m_cur_offset += 2;
 	}  else {
 
-	      mcpyinsdb(tid,4);
-	      m_cur_offset += 4;
+	  mcpyinsdb(tid,4);
+	  m_cur_offset += 4;
 	    }
 
 	ext_taxids++;
-      } 
+      }
       
       
     }
