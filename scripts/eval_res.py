@@ -2,13 +2,15 @@ import sys
 
 import os
 
-#databases = ["kML.18.noOvr.no_prune.16bit.db", "kML.18.full.16bit.db", "kML.20mer.16bit.g1000.db"  ]
-databases = ["kML.18.noOvr.no_prune.16bit.db",  "kML.20mer.16bit.g1000.db"  ]
+#databases = ["kML.18.noOvr.no_prune.16bit.db", "kML.18.full.16bit.db", "kML.20mer.16bit.g1000.db"  
+databases = ["m9.20mer.16bit.g1000.db"]
+#databases = ["kML.18.noOvr.no_prune.16bit.db",  "kML.20mer.16bit.g1000.db"  ]
 #[ "kML.18.full.16bit.db", 
 #sizes = [1000, 9000, 27000, 81000, 2187000]
-sizes = [2000000]
-positions = ["head", "tail"]
-thresholds = [20, 40 ]
+#sizes = [2000000]
+#positions = ["head", "tail"]
+revs=["frdb", "orig"]
+#thresholds = [20, 40 ]
 
 
 #print "Input\tDatabase\tThreshold\tSize\tPosition\tTotal\tStrain match\tstrainotherspecies\tstrainothergenus\tWrong strain\tSpecies match\tOther species\tWrong species\tGenus match\tWrong genus"
@@ -31,18 +33,20 @@ for line in sys.stdin:
 
     for db in databases:
 
-        for thresh in thresholds:
+#        for thresh in thresholds:
             
-            for sz in sizes:
+            for sz in revs:
             
-                for pos in positions:
+#                for pos in positions:
 
+                for mink in [5, 30]:
 
-
-                    fname = sys.argv[1] + "/dir.", thresh, ".", name,".", db,".", sz, "/", name, ".", sz, ".", pos, ".", db, ".", thresh, ".lo.rl_output.0.5.fastsummary"
+                    fname = sys.argv[1] + "/dir.fc.", name,".sample.", sz, "/fc.", name, ".sample.fa.", db, ".lo.rl_output.0.", mink ,".fastsummary"
+#                    fname = sys.argv[1] + "/dir.", thresh, ".", name,".", db,".", sz, "/", name, ".", sz, ".", pos, ".", db, ".", thresh, ".lo.rl_output.0.5.fastsummary"
 
                     fname = ''.join(map(str, fname))
-                    #                    print fname
+#                    print fname
+                 
                     if not os.path.exists(fname):
                         continue
 
@@ -119,7 +123,8 @@ for line in sys.stdin:
                             else:
                                 genuswrong += count
 
-                    print name, "\t", db, "\t", thresh, "\t", sz, "\t", pos, "\t", total, "\t", strainmatch, "\t", strainotherspecies, "\t", strainothergenus, "\t", strainwrong, "\t", speciesmatch, "\t", speciesother, "\t", specieswrong, "\t", genusmatch, "\t", genuswrong
+                    if total > 0:
+                        print name, "\t", sz, "\t", total, "\t", strainmatch, "\t", strainotherspecies, "\t", strainothergenus, "\t", strainwrong, "\t", speciesmatch, "\t", speciesother, "\t", specieswrong, "\t", genusmatch, "\t", genuswrong
 
 
 #                    bigarr.append([ name, db, thresh, sz, pos, total, strainmatch, strainotherspecies, strainothergenus, strainwrong, speciesmatch, speciesother, specieswrong, genusmatch, genuswrong])
