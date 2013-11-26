@@ -19,6 +19,7 @@ then
     mkdir $reldir/bin
     mkdir $reldir/runtime_inputs
     mkdir $reldir/example
+    mkdir $reldir/third-party
 fi
 
 #copy doc, set version number
@@ -56,8 +57,7 @@ cp release-templates/Makefile.src $reldir/Makefile
 cp release-templates/Makefile.src.kmerdb $reldir/src/kmerdb/Makefile
 cp release-templates/Makefile.src.src $reldir/src/Makefile
 
-cp -r release-templates/third-party $reldir
-rm -rf release-templates/third-party/.svn
+cp release-templates/third-party/* $reldir/third-party
 
 # if we need to refer to the version number...
 #sed -i "s/VERSIONNO/$verno/g" $reldir/Makefile.inc
@@ -117,9 +117,13 @@ done
 
 #copy nclass scripts
 
-for n in run_lmat.sh tokrona.pl combine_fast.pl losummary_fast.pl losummary_fast_mc.sh pull_reads_mc.sh pull_reads.pl
+for n in run_lmat.sh tolineage.py combine_fast.pl losummary_fast.pl losummary_fast_mc.sh pull_reads_mc.sh pull_reads.pl build_taxid_lst.sh build_taxid_lst.pl
 do
-cp ../nclass/$n $reldir/bin
+    if [ ! -f ../nclass/$n ] ; then
+	echo $n not found
+    else  
+	cp ../nclass/$n $reldir/bin
+    fi
 done 
 
 #copy rmodel scripts
@@ -135,9 +139,14 @@ cp get_db.sh $reldir/bin
 
 #copy example file from the server
 
-cp /usr/mic/post1/metagenomics/metagenomes/synthetic/example.tar.gz $reldir/example
+cp /usr/mic/post1/metagenomics/metagenomes/synthetic/example.tgz $reldir/example
 
 # copy runtime inputs (?)
+
+cd ../..
+
+tar -czvf LMAT-$verno.tgz LMAT-$verno/
+mv LMAT-$verno.tgz /usr/mic/post1/metagenomics/tarballs
 
 exit 0
 
