@@ -5,7 +5,7 @@ min_kmers=30
 prog=losummary_fast.pl
 min_score=1
 num_threads=0
-taxfile="$LMAT_DIR/ncbi_taxonomy_rank.segment.txt"
+taxfile="$LMAT_DIR/ncbi_taxonomy_rank.segment.pruned.txt"
 usage="Generate bam file
 Usage: $0 options
 
@@ -46,6 +46,13 @@ while test -n "${1}"; do
    shift
 done
 
+bindir=""
+if ! hash $prog >& /dev/null; then
+   #echo "Warning could not find $prog will try $LMAT_DIR/../bin"
+   bindir="$LMAT_DIR/../bin/"
+fi
+
+
 jobstr=""
 if [ $num_threads -gt 0 ] ; then
    jobstr="--jobs $num_threads"
@@ -58,7 +65,7 @@ while read file ; do
    echo "$file $taxfile $min_score $min_kmers" >> $tfile
 done < $file_lst
 
-#${pbin}parallel --load 150% --progress $jobstr -a $tfile $prog
+${pbin}parallel --load 150% --progress $jobstr -a $tfile ${bindir}$prog
 
 lst=""
 save=""
