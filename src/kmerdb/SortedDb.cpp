@@ -67,7 +67,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   static long long int start_count;
   static long long int start_offset;
 
-  static uint16_t count_marker = 0;
+  long long int kmers_tossed = 0;
+  long int level_count = 0;
+
 
   //  cout << "stopper set to: " << stopper << "\n";
 
@@ -198,7 +200,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    if (taxid_q.size() <= tid_cutoff) {
 	      //            cout << "Cut to rank: " << cur_priority << " org \
 	      // cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
-	      tmp_tid_count = write_set.size();
+	      tmp_tid_count = taxid_q.size();
 
 	      break;
 	      
@@ -332,7 +334,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       
     }
     // no attempt to reduce list; copy in the taxid list
-    else if (write_set.size() == 0 && tmp_tid_count > 1) {
+    else if (taxid_q.size() == 0 && tmp_tid_count > 1) {
 	  
       if (kmer % 4096 == 0) {
 	mcpyinsdb(kmer, 8);
@@ -342,14 +344,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       mcpyinsdb(tid_count, 2);
       m_cur_offset += 2;
 
-      uint16_t tmpcount;
 
-      if (tmpcount != count_marker) {
-
-	cout << "changed to " << tmpcount << " at " << kmer << "\n";
-	count_marker = tmpcount;
-
-      }
       
       //write the tuples
       for (uint16_t k=0; k<tid_count; k++) {
