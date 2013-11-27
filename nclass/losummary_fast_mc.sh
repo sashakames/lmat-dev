@@ -75,4 +75,4 @@ while read file ; do
 done < $file_lst
 
 out=`echo $save | sed 's/output[0-9]*\.out/output/'`
-echo "$lst" | combine_fast.pl | sort -k1nr,1nr > $out
+echo "$lst" | ${bindir}combine_fast.pl | sort -k1nr,1nr > $out
