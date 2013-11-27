@@ -47,7 +47,17 @@
 
 \section{What's New in Version \lmatver}
 
-Version \lmatver~includes a number of major changes, which should be described in more technical detail in forthcoming publications.  Changes include:
+\begin{itemize}
+\item
+Support for full database download from the LMAT ftp site.
+\item
+read\_label no long re-prints the input filename for every execution thread.
+\end{itemize}
+
+
+{\it Earlier updates:}
+
+Version 1.2~includes a number of major changes, which should be described in more technical detail in forthcoming publications.  Changes include:
 \begin{itemize}
 \item The kmer/taxonomy search database (DB) index structure was changed from gnu\_hash to a custom designed index.
 This dramatically improves speed and dramatically reduces memory requirements
@@ -71,7 +81,7 @@ of the method is given later in the documentation.
 \item Pre-compiled binary files are no longer being provided.
 \end{itemize}
 
-{\it Earlier updates:}
+
 
 Version 1.1.2 differs from LMAT-1.1.1 in only the following:
 
@@ -108,14 +118,12 @@ Our approach is divided into two steps:
      ("Full" refers to a database that contains k-mers from
      all viral, prokaryote, fungal and protist genomes.)
 
-     Our current ``Full'' database (available for download soon) is
-     373 GB in size, smaller than what we used for our July 2013
-     publication in Bioinformatics due to several of the key
-     optimizations within this release.  We have thre smaller
-     ``marker'' database available for ftp download.
-     See the \nameref{sec:downloads} Section for more
-     information about the various LMAT databases availble for
-     download.
+     Our current ``Full'' database is 373 GB in size, smaller than
+     what we used for our July 2013 publication in Bioinformatics due
+     to several of the key optimizations within this release.  We have
+     thre smaller ``marker'' database available for ftp download.  See
+     the \nameref{sec:downloads} Section for more information about
+     the various LMAT databases availble for download.
 
      An additional download required for running LMAT is the
      collection of ``runtime-input'' files needed to go along with the
@@ -198,7 +206,10 @@ Our databases are available for download from the ftp site:
   buffer cache (from network attached or local HDD storage) prior to
   running LMAT.  LMAT uses memory mapped files so pages in the
   database are loaded on demand.  Regular system prefetching of pages
-  under the memory-mapped approach is slow unless run from an SSD.  To
+  under the memory-mapped approach is slow unless run from an SSD.
+  The effectiveness of precopy can depend on your system's buffer
+  cache policy: some evict pages early so the buffer will not hold the
+  LMAT database from the precopy to the following LMAT execution.  To
   perform the ``precopy'':
 
  \texttt{\% cat <database-filename> > /dev/null}.
@@ -391,7 +402,7 @@ kML-18mer-medium & kML.18mer.16bit.db  & 52 \\
 \hline
 kML-18mer-small & kML.18mer.16bit.reduced.db  & 16 \\
 \hline
-kFull-20mer (available soon) & m9.20mer.16bit.g1000.db & 373 \\
+kFull-20mer & m9.20mer.16bit.g1000.db & 373 \\
 \hline
 gene-20mer & gene.20mer.db & 52 \\
 \hline
