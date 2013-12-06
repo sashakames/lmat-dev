@@ -27,7 +27,7 @@
 #undef PAGE_SIZE 
 #undef MAX_PAGE
 
-#define PAGE_SIZE 4294963200
+#define PAGE_SIZE 4294701056
 #define MAX_PAGE 255  // would be 35535 for 16 bit field
 
 
@@ -172,8 +172,6 @@ typedef struct {
 
   int kmer_rec_comp(const void *a, const void *b);
 
-  //  void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool);
-
 
   template<class tid_T>
   class SortedDb {
@@ -286,10 +284,9 @@ public:
 
 
 
-  void add_data(const char *filename, size_t stopper, const int n_threads, const int thread_no);
+    void add_data(const char *filename, size_t stopper, const int n_threads, const int thread_no);
 
-  void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool);
-
+    void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool);
 
 
     bool begin_(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out, uint8_t &page_out) {
@@ -400,7 +397,7 @@ bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out
 
       // if this fails there probably is db corruption
 
-      assert (k_count < LENGTH_MAX_2ND);
+      assert (k_count < LENGTH_MAX_2ND_20);
 
       if (k_count == 1) {
 	// simple case of one kmer - no search needed to but need to
