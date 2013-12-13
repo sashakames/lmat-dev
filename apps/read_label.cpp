@@ -1347,7 +1347,8 @@ int main(int argc, char* argv[])
       return -1;
    }
 
-   ifstream ifs(query_fn.c_str());
+
+
    string line;
 
    omp_lock_t buffer_lock;
@@ -1409,21 +1410,30 @@ int main(int argc, char* argv[])
 
    bool in_finished = false;
 
+   ifstream tmpstream;
 
-#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer)  private(ifs, finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
+   istream ifs(cin.rdbuf());
+   if (query_fn != "-") {
+     tmpstream.open(query_fn.c_str());
+
+     if(!tmpstream) {
+	  cerr<<"did not open for reading: "<<query_fn<<endl;
+	  
+	  exit(-1);
+	  
+     }  
+     ifs.rdbuf(tmpstream.rdbuf());
+   }
+
+   
+
+
+
+
+#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer, ifs)  private(finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
   {
 
     finished = false;
-
-    if (omp_get_thread_num() == 0) {
-      cout<<"Read query file: "<<query_fn<<endl;                          
-      ifs.open(query_fn.c_str());
-      if(!ifs) {
-	cerr<<"did not open for reading: "<<query_fn<<endl;
-
-	exit(-1);
-      }
-    }
 
     ofname = ofbase;
     std::stringstream outs;
@@ -1449,17 +1459,10 @@ int main(int argc, char* argv[])
 
 	while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
 
+
+
+
           getline(ifs, line);
-
-	  pos = ifs.tellg();
-
-	  if (pos == -1) {
-
-	    in_finished = true;
-
-	    if(verbose) cout << read_count_in << " reads in\n";
-	    if(verbose) cout << line.size() << " line length\n";
-	  }
 
 	  if (line[0] == '>' || (fastq && line[0] == '@') ) {
 
@@ -1488,6 +1491,15 @@ int main(int argc, char* argv[])
 	    hdr_buff = "";
 	    j ++;
 	    if(fastq) getline(ifs, line); // skip quality values for now       
+
+	    if (ifs.eof()) {
+
+	      in_finished = true;
+	      
+	      if(verbose) cout << read_count_in << " reads in\n";
+	      if(verbose) cout << line.size() << " line length\n";
+	    }
+
 
 	    if (in_finished) {
 
