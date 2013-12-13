@@ -1361,6 +1361,7 @@ int main(int argc, char* argv[])
 
    ofstream ofs;
 
+
    if (rank_table_file.length() > 0) {
      if(max_count == ~0) {
        cout << "Need to set -h <tid-cutoff> to use rank file map!\n";
@@ -1443,9 +1444,14 @@ int main(int argc, char* argv[])
 
     ofs.open(ofname.c_str());
 
+
+    bool eof = false;
+
     while (!finished)   {
 
       if ((in_finished == false) && (omp_get_thread_num() == 0)) {
+
+
 
 	int j = 0 ;
 
@@ -1457,12 +1463,22 @@ int main(int argc, char* argv[])
 
 	omp_unset_lock(&buffer_lock);
 
+
+
 	while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
 
 
+	  
+	  
+          eof = !getline(ifs, line);
 
 
-          getline(ifs, line);
+	  if (eof) {
+
+	    in_finished = true;
+	    
+	    if(verbose) cout << line.size() << " line length\n";
+	  }
 
 	  if (line[0] == '>' || (fastq && line[0] == '@') ) {
 
@@ -1490,16 +1506,8 @@ int main(int argc, char* argv[])
 	    read_buff="";
 	    hdr_buff = "";
 	    j ++;
-	    if(fastq) getline(ifs, line); // skip quality values for now       
-
-	    if (ifs.eof()) {
-
-	      in_finished = true;
-	      
-	      if(verbose) cout << read_count_in << " reads in\n";
-	      if(verbose) cout << line.size() << " line length\n";
-	    }
-
+	    
+	    if(fastq) eof = !getline(ifs, line); // skip quality values for now       
 
 	    if (in_finished) {
 
@@ -1510,6 +1518,7 @@ int main(int argc, char* argv[])
 	  }
 
 	}
+
 
       }
 
