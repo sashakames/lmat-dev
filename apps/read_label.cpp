@@ -1414,13 +1414,17 @@ int main(int argc, char* argv[])
   {
 
     finished = false;
-    cout<<"Read query file: "<<query_fn<<endl;                          
-    ifs.open(query_fn.c_str());
-    if(!ifs) {
-      cerr<<"did not open for reading: "<<query_fn<<endl;
 
-      exit(-1);
+    if (omp_get_thread_num() == 0) {
+      cout<<"Read query file: "<<query_fn<<endl;                          
+      ifs.open(query_fn.c_str());
+      if(!ifs) {
+	cerr<<"did not open for reading: "<<query_fn<<endl;
+
+	exit(-1);
+      }
     }
+
     ofname = ofbase;
     std::stringstream outs;
     outs << omp_get_thread_num();

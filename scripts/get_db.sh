@@ -1,9 +1,8 @@
 if test $# = 0
 then
     echo "$0: LMAT database auto-download utility"
-    echo "Usage: $0 <kML-18mer-large|kML-18mer-medium|kML-18mer-small|gene-20mer|inputs> [Destination path for database/input files]"
+    echo "Usage: $0 <kML-18mer-large|kML-18mer-medium|kML-18mer-small|gene-20mer|kFull-20mer|inputs> [Destination path for database/input files]"
 
-#kFull-20mer|
     echo
     echo "'inputs' downloads and extracts the LMAT 'runtime_inputs' files."
     echo "Please see LMAT documentation for more details."
@@ -58,19 +57,21 @@ echo Download complete.  When running LMAT set --genedb_file=$outpath/$dbname.db
 
 elif [ $dbname == "kFull-20mer" ]
 then
-echo Coming soon!!
 
-#for suffix in `seq 0 22` ; do
-#wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/20merFullDB/m9.20mer.16bit.g1000.0$suffix.lzma | unlzma -c >> $outpath/m9.20mer.16bit.g1000.db
-#echo part $(( 1 + $suffix )) out of ?? done
-#size=`stat $outpath/m9.20mer.16bit.g1000.db | grep Size | awk '{print $2}'`
-#if [ $size -gt 400000000000 ] ; then
-#truncate -s 400GB $outpath/m9.20mer.16bit.g1000.db
-#break
-#fi
-
-#done
-#echo Download complete.  When running LMAT set --db_file=$outpath/m9.20mer.16bit.g1000.db 
+   mx=19
+   for suffix in `seq 0 $mx` ; do
+      file=kFull.20mer.g1000.part.$suffix.lzma
+      echo "Retrieve $file"
+      wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/20merFullDB/$file | unlzma -c >> $outpath/m9.20mer.16bit.g1000.db
+      #echo part $(( 1 + $suffix )) out of $mx done
+      echo part $suffix out of $mx done
+      size=`stat $outpath/m9.20mer.16bit.g1000.db | grep Size | awk '{print $2}'`
+      if [ $size -gt 400000000000 ] ; then
+         truncate -s 400GB $outpath/m9.20mer.16bit.g1000.db
+         break
+      fi
+   done
+   echo Download complete.  When running LMAT set --db_file=$outpath/m9.20mer.16bit.g1000.db 
 
 elif [ $dbname == "kML-18mer-large" ]
 then
