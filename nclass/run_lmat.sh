@@ -238,7 +238,7 @@ for db in $dlst ; do
       sdiff=0.5  
       fstr="-f $tidmap"
       if [ ! -z $PTHRESH ]; then
-	  pstr="-g $PTHRESH -m $LMAT_DIR/numeric_ranks"
+	  pstr="-g $PTHRESH -m $LMAT_DIR/numeric_ranks_coarse"
       fi
       rprog=${bin_dir}read_label
       if [ $db != "$markerdb" ] ; then
