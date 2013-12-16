@@ -1347,7 +1347,8 @@ int main(int argc, char* argv[])
       return -1;
    }
 
-   ifstream ifs(query_fn.c_str());
+
+
    string line;
 
    omp_lock_t buffer_lock;
@@ -1359,6 +1360,7 @@ int main(int argc, char* argv[])
    int64_t pos = 0 ;
 
    ofstream ofs;
+
 
    if (rank_table_file.length() > 0) {
      if(max_count == ~0) {
@@ -1409,18 +1411,31 @@ int main(int argc, char* argv[])
 
    bool in_finished = false;
 
+   ifstream tmpstream;
 
-#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer)  private(ifs, finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
+   istream ifs(cin.rdbuf());
+   if (query_fn != "-") {
+     tmpstream.open(query_fn.c_str());
+
+     if(!tmpstream) {
+	  cerr<<"did not open for reading: "<<query_fn<<endl;
+	  
+	  exit(-1);
+	  
+     }  
+     ifs.rdbuf(tmpstream.rdbuf());
+   }
+
+   
+
+
+
+
+#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer, ifs)  private(finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
   {
 
     finished = false;
-    cout<<"Read query file: "<<query_fn<<endl;                          
-    ifs.open(query_fn.c_str());
-    if(!ifs) {
-      cerr<<"did not open for reading: "<<query_fn<<endl;
 
-      exit(-1);
-    }
     ofname = ofbase;
     std::stringstream outs;
     outs << omp_get_thread_num();
@@ -1429,9 +1444,14 @@ int main(int argc, char* argv[])
 
     ofs.open(ofname.c_str());
 
+
+    bool eof = false;
+
     while (!finished)   {
 
       if ((in_finished == false) && (omp_get_thread_num() == 0)) {
+
+
 
 	int j = 0 ;
 
@@ -1443,17 +1463,20 @@ int main(int argc, char* argv[])
 
 	omp_unset_lock(&buffer_lock);
 
+
+
 	while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
 
-          getline(ifs, line);
 
-	  pos = ifs.tellg();
+	  
+	  
+          eof = !getline(ifs, line);
 
-	  if (pos == -1) {
+
+	  if (eof) {
 
 	    in_finished = true;
-
-	    if(verbose) cout << read_count_in << " reads in\n";
+	    
 	    if(verbose) cout << line.size() << " line length\n";
 	  }
 
@@ -1483,7 +1506,8 @@ int main(int argc, char* argv[])
 	    read_buff="";
 	    hdr_buff = "";
 	    j ++;
-	    if(fastq) getline(ifs, line); // skip quality values for now       
+	    
+	    if(fastq) eof = !getline(ifs, line); // skip quality values for now       
 
 	    if (in_finished) {
 
@@ -1494,6 +1518,7 @@ int main(int argc, char* argv[])
 	  }
 
 	}
+
 
       }
 
