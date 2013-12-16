@@ -13,6 +13,7 @@
 #include "TaxNodeStat.hpp"
 #include "tid_checks.hpp"
 #include <tr1/unordered_map>
+#include <tr1/unordered_set>
 #include <gzstream.h>
 
 #define MMAP_SIZE 0
@@ -54,8 +55,12 @@ vector <int> read_len_avgs(1,0);
 
 static std::tr1::unordered_map<int,string> gNum2rank;
 static std::tr1::unordered_map<string,int> gRank2num;
+static std::tr1::unordered_set<int> gLowNumPlasmid;
 
 #define _USE_KPATH_IDS 0
+
+#define isPlasmid(tid) ((tid >=10000000 || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
+
 
 
 my_map tid_rank_map;
@@ -269,17 +274,32 @@ static bool cmpCompLineage(ufpair_t cand, const vector<ufpair_t>& lineage, set<T
 }
 
 static pair<ufpair_t,match_t> 
-findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const TaxTree<TID_T>& tax_tree, const hmap_t& taxid2idx, list<ufpair_t>& cand_lin, const hmap_t& dmap, const ufmap_t& all_cand_set) {
+findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const TaxTree<TID_T>& tax_tree, const hmap_t& taxid2idx, 
+                  list<ufpair_t>& cand_lin, const hmap_t& dmap, const ufmap_t& all_cand_set, const float topScore) {
    match_t match = eNoMatch;
+   TID_T savePlasmidId;
+   bool plasmidTopHit =false;
    unsigned lowest_depth = 0, highest_depth = 0;
    ufpair_t lowest=make_pair(0,0), highest = make_pair(0,0);
    signed lidx = -1;
    assert( cand_lin.empty() );
+   bool linDone=false;
    for(signed i = rank_label.size()-1; i >= 0; --i) {
-      if( !addToCandLineage(rank_label[i],cand_lin,dmap, tax_tree) )  {
+      if(verbose) {
+         cout<<"huh? plasmid: "<<rank_label[i].first<<" "<<rank_label[i].second<<" "<< topScore<<endl;
+         if( isPlasmid(rank_label[i].first) ) {
+            cout<<"found plasmid: "<<rank_label[i].first<<" "<<rank_label[i].second<<" "<< topScore<<endl;
+         }
+      }
+      if( rank_label[i].second >= topScore && isPlasmid(rank_label[i].first) ) {
+         plasmidTopHit=true;
+         savePlasmidId=rank_label[i].first;
+         if(verbose) cout<<"Found top hit plasmid: "<<savePlasmidId<<endl;
+      } 
+      if( !linDone && !addToCandLineage(rank_label[i],cand_lin,dmap, tax_tree) )  {
          lidx = i;
-         break;
-      } else {
+         linDone=true;
+      } else if( !linDone ) {
          const hmap_t::const_iterator mtch = dmap.find(rank_label[i].first);
          if( (*mtch).second> lowest_depth || (i == (signed)rank_label.size()-1) ) {
             lowest = rank_label[i];
@@ -289,6 +309,10 @@ findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const T
             highest = rank_label[i];
             highest_depth = (*mtch).second;
          }
+      }
+      //stick around to make sure we've checked for plasmids
+      if( linDone && rank_label[i].second < topScore ) {
+         break;
       }
    }
    set<TID_T> add_set;
@@ -375,6 +399,14 @@ findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const T
          taxid_call = make_pair(lca_tid, max_val);
       }
    }
+   if( plasmidTopHit ) {
+//static bool isAncestor(const TaxTree<TID_T>& tax_tree, TID_T prev_taxid /*ancestor */, TID_T curr_taxid /* descendant */ ) {
+      if(verbose) cout<<"Check top hit plasmid to see if consistent with call: "<<endl;
+      if( isAncestor(tax_tree,taxid_call.first,savePlasmidId) ) {
+         taxid_call.first=savePlasmidId; 
+         if(verbose) cout<<"YES: siwthc to plasmid: "<<taxid_call.first<<endl;
+      }
+   }
    if(verbose) cout<<"I'm confused: "<<taxid_call.first<<" "<<taxid_call.second<<endl;
    return make_pair(taxid_call,match);
 }
@@ -456,6 +488,19 @@ struct ScoreOptions {
    u_usmap_t _rand_class; 
    bool _comp_rand_hits;
 };
+
+static void loadLowNumPlasmids(const string& file) {
+   ifstream ifs_lst(file.c_str());
+   if( !ifs_lst) {
+      cerr<<"Unexpected reading error: "<<file<<endl;
+      return;
+   }
+   TID_T pid;
+   while(ifs_lst>>pid) {
+      cout<<"debug: "<<pid<<endl;
+      gLowNumPlasmid.insert(pid);
+   }
+}
 
 static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usmap_t& rand_class_all) {
    ifstream ifs_lst(file_lst.c_str());
@@ -762,6 +807,7 @@ construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& lab
             phiXscore=log_odds;
             fndPhiX=true;
          }
+
          if( tax_idx == 0 || log_odds > top_score ) {
             top_score = log_odds;
          }
@@ -825,7 +871,7 @@ construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& lab
          ofs<<log_avg<<" "<<stdev1<<" "<<cand_kmer_cnt<<"\t";
          stdev1 *= sopt._diff_thresh;
          
-         res = findReadLabelVer2(rank_label,stdev1,tax_tree,tax2idx,valid_cand,sopt._imap,all_cand_set);    
+         res = findReadLabelVer2(rank_label,stdev1,tax_tree,tax2idx,valid_cand,sopt._imap,all_cand_set,top_score);    
          if(sopt._prn_all) {
             bool prn=false;
             for(signed i = rank_label.size()-1; i >= 0; --i) {
@@ -997,8 +1043,8 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                break;
              }
              if( last_depth == depth || last_depth == -1 ) {
-                  vector<TID_T> path;
                   TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
+                  vector<TID_T> path;
                   tax_tree_tmp.getPathToRoot(tid,path);
                   for(unsigned p = 0; p < path.size(); ++p) {
                      const TID_T ptid = path[p];
@@ -1142,6 +1188,7 @@ int main(int argc, char* argv[])
    int min_kmer = 35, min_fnd_kmer = 1;
 
    string rank_ids, kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, tax_tree_options, depth_file, rand_hits_file, rank_table_file, id_bit_conv_fn;
+   string low_num_plasmid_file;
    hmap_t imap;	
    ScoreOptions sopt(imap);
 
@@ -1150,11 +1197,14 @@ int main(int argc, char* argv[])
    uint16_t max_count = ~0;
    bool prn_read = true;
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:s:m:o:x:f:g:z:q:")) != -1) {
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q:")) != -1) {
       switch(c) {
       case 'h':
         screenPhiXGlobal=false;
          break;
+      case 'r':
+        low_num_plasmid_file = optarg;
+        break;
       case 'f':
         id_bit_conv_fn = optarg;
         break;
@@ -1219,7 +1269,7 @@ int main(int argc, char* argv[])
          k_size = atoi(optarg);
          break;
       case 'g':
-	max_count = atoi(optarg);
+	      max_count = atoi(optarg);
          break;
       case 'i':
          query_fn = optarg;
@@ -1337,6 +1387,9 @@ int main(int argc, char* argv[])
 #endif
    //cout << "End kmer DB load\n";
    //cout << "DB size is " << table->size() << endl;
+   if( low_num_plasmid_file.length() > 0 ) {
+      loadLowNumPlasmids(low_num_plasmid_file);
+   }
 
    sopt._comp_rand_hits = (rand_hits_file.length() == 0);
    if( !sopt._comp_rand_hits ) {
@@ -1414,13 +1467,17 @@ int main(int argc, char* argv[])
   {
 
     finished = false;
-    cout<<"Read query file: "<<query_fn<<endl;                          
-    ifs.open(query_fn.c_str());
-    if(!ifs) {
-      cerr<<"did not open for reading: "<<query_fn<<endl;
 
-      exit(-1);
+    if (omp_get_thread_num() == 0) {
+      cout<<"Read query file: "<<query_fn<<endl;                          
+      ifs.open(query_fn.c_str());
+      if(!ifs) {
+	cerr<<"did not open for reading: "<<query_fn<<endl;
+
+	exit(-1);
+      }
     }
+
     ofname = ofbase;
     std::stringstream outs;
     outs << omp_get_thread_num();
