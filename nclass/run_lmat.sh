@@ -262,10 +262,11 @@ for db in $dlst ; do
 
 
       if [ -z $nullm ] ; then
-	  echo no nullmodel
+	  echo Using default null model list file for $dbname
 	  nullm=$LMAT_DIR/$dbname.null_lst.txt
           nullmstr="-n $nullm"
       elif [ "$nullm" == "no" ] ; then
+	  echo Not using null model files
 	  nullmstr=""
       elif [ -e $nullm ] ; then
 	  nullmstr="-n $nullm"
