@@ -27,6 +27,8 @@ fi
 ## Location of binaries
 if hash read_label >& /dev/null ; then
    bin_dir=
+elif [ -f read_label ] ; then
+    bin_dir=./
 elif [ `basename $PWD` == "nclass" ] ; then
     bin_dir="../apps/"
  else
