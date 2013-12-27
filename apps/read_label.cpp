@@ -668,7 +668,7 @@ static float log_odds_score(float label_prob, float random_prob) {
 
 pair<ufpair_t,match_t>
 construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& label_vec, const list<TID_T>& taxid_lst, const hmap_t& tax2idx, const hmap_t& idx2taxid, 
-                 ofstream& ofs, size_t mer_len, const ScoreOptions& sopt, int bin_sel, int min_valid_kmers, int min_fnd_kmers) {
+                 ofstream& ofs, size_t mer_len, const ScoreOptions& sopt, int bin_sel, int min_valid_kmers, int min_fnd_kmers, int kmer_matches) {
    const unsigned num_tax_ids = taxid_lst.size();
    vector<bool> any_kmer_match(label_vec.size(),false) ;
    unsigned cnt_fnd_kmers=0;
@@ -868,7 +868,7 @@ construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& lab
          }
          TCmp tcmp(sopt._imap);
          sort(rank_label.begin(),rank_label.end(),tcmp);
-         ofs<<log_avg<<" "<<stdev1<<" "<<cand_kmer_cnt<<"\t";
+         ofs<<log_avg<<" "<<stdev1<<" "<<cand_kmer_cnt<<" "<<kmer_matches <<"\t";
          stdev1 *= sopt._diff_thresh;
          
          res = findReadLabelVer2(rank_label,stdev1,tax_tree,tax2idx,valid_cand,sopt._imap,all_cand_set,top_score);    
@@ -950,7 +950,7 @@ static
 
 pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, const int slen, const kmer_t klen, 
                           vector<label_info_t>& label_vec, list<TID_T>& taxid_lst, hmap_t& tax2idx, hmap_t& idx2tax, 
-                          const hmap_t& dmap, const TaxTree<TID_T>& tax_tree, uint16_t max_count) 
+				   const hmap_t& dmap, const TaxTree<TID_T>& tax_tree, uint16_t max_count, int &kmer_matches) 
    {
     int j; /* position of last nucleotide in sequence */
     int k = 0; /* count of contiguous valid characters */
@@ -961,6 +961,7 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
     kmer_t kmer_id; /* canonical k-mer */
     set<kmer_t> no_dups;
     int valid_kmers=0, gc_cnt=0;
+
     for (j = 0; j < slen; j++) {
         register int t;
         const char base=str[j];
@@ -991,7 +992,9 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
 
            unsigned dcnt = 0, mtch = 0;
            list<TID_T> obs_tids;
-           bool seenHuman=false; 
+           bool seenHuman=false;
+	   if (h->taxidCount() > 0)
+	     kmer_matches++;
            while( h->next() ) {
               TID_T tid = h->taxid();
               if(isHuman(tid) && seenHuman) continue;
@@ -1091,14 +1094,17 @@ void proc_line(const TaxTree<TID_T>& tax_tree, int ri_len, string &line, int k_s
         vector<label_info_t> label_vec(ri_len-k_size+1,make_pair(-1,tax_data_t()));
         list<TID_T> taxid_lst; 
         hmap_t tax2idx, idx2tax;
-        const pair<int,int> res = retrieve_kmer_labels(table, line.c_str(), ri_len, k_size,label_vec,taxid_lst,tax2idx,idx2tax, sopt._imap, tax_tree, max_count);
+	
+	int kmer_matches = 0;
+
+        const pair<int,int> res = retrieve_kmer_labels(table, line.c_str(), ri_len, k_size,label_vec,taxid_lst,tax2idx,idx2tax, sopt._imap, tax_tree, max_count, kmer_matches );
         const int valid_kmers = res.first;
         const int bin_sel = res.second;
         // needed to check if this is empty due to short read first!!!
         if( valid_kmers < min_kmer ) {
            ofs<<"-1 -1 -1"<<"\t-1 -1\t"<<valid_kmers<<" "<<min_kmer<<" ReadTooShort"<<endl;
         } else if( !taxid_lst.empty() ) {  
-           pair< ufpair_t, match_t> mtch = construct_labels(tax_tree,label_vec,taxid_lst,tax2idx,idx2tax,ofs,k_size,sopt,bin_sel,min_kmer,min_fnd_kmer); 
+	  pair< ufpair_t, match_t> mtch = construct_labels(tax_tree,label_vec,taxid_lst,tax2idx,idx2tax,ofs,k_size,sopt,bin_sel,min_kmer,min_fnd_kmer, kmer_matches); 
            if(mtch.second == eNoMatch && valid_kmers < min_kmer ) {
               ofs<<"-1 -1 -1"<<"\t-1 -1\t"<<valid_kmers<<" "<<min_kmer<<" ReadTooShort"<<endl;
               if( track_nomatch.find(eReadTooShort) != track_nomatch.end()) {

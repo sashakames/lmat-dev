@@ -56,11 +56,11 @@ METAG_DIR=$(HOME)/lmat-git
 endif
 
 ifndef TAXID_SIZE
-TID_T = uint32_t
-TAXID_SIZE=32
-else
-ifeq ($(TAXID_SIZE), 16)
 TID_T = uint16_t
+TAXID_SIZE=16
+else
+ifeq ($(TAXID_SIZE), 32)
+TID_T = uint32_t
 else
 TID_T = uint32_t
 endif
