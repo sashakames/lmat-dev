@@ -16,6 +16,8 @@ if [ -z "$LMAT_DIR" ] ; then
    exit 1
 fi
 
+seqtk="/usr/gapps/kpath/seqtk-master/seqtk seq -A -n N -q" 
+
 ## Some environments require explicit enabling of hyperthreading
 ## Other environments may already enable this
 if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
@@ -136,6 +138,8 @@ while test -n "${1}"; do
    optarg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
 
    case $opt in
+   --qual_filter=*)
+      qual_filter=$optarg;;
    --min_score=*)
       min_score=$optarg;;
    --marker_min_score=*)
@@ -258,12 +262,17 @@ for db in $dlst ; do
          nullmstr=""
       fi
       fastsum_file="$rlofile.$use_min_score.$min_read_kmer.fastsummary"
-      if [ -e $db ] && [ $do_rl == 1 ] ; then
+      if [ -f $db ] && [ $do_rl == 1 ] ; then
          if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
             echo "Process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$fastsum_file]"
-            cmd="cat $query_file | $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i - -d $db -c $taxtree -o $rlofile >& $logfile"
-	    echo $cmd
-	    $cmd
+
+	    if [ -n $qual_filter ] ; then
+		echo Quality filter Q$qual_filter on.
+		gunzip -c $query_file | $seqtk $qual_filter - | $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i - -d $db -c $taxtree -o $rlofile >& $logfile
+	    else
+		/usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+	    fi
+
             min_reads=1
             if [ ! -e $fastsum_file ] ; then
                echo "Error, did not create a fastsummary file [$fastsum_file]"
@@ -280,6 +289,8 @@ for db in $dlst ; do
                exit 0
             fi
          fi
+      else
+	  echo "Did not find an LMAT db at $db."
       fi
       if [ $do_cs == 1 ] && [ -e $fastsum_file ] ; then
          lst=$rlofile.flst
