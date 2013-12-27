@@ -1202,9 +1202,14 @@ int main(int argc, char* argv[])
    bool fastq=false; 
    uint16_t max_count = ~0;
    bool prn_read = true;
+   
+   bool list_mode = true;
 
    while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q:")) != -1) {
       switch(c) {
+      case 'a':
+         prn_read=false;
+         break;
       case 'h':
         screenPhiXGlobal=false;
          break;
@@ -1226,9 +1231,7 @@ int main(int argc, char* argv[])
       case 'x':
          min_score = atof(optarg);
          break;
-      case 'a':
-         prn_read=false;
-         break;
+
       case 'w':
 	      tid_map_is_strain_species = true;
 	      break;
@@ -1269,10 +1272,10 @@ int main(int argc, char* argv[])
          threshold = atof(optarg);
          break;
       case 'c':
-         tax_tree_fn = optarg;
-	      break;
+	tax_tree_fn = optarg;
+	break;
       case 'k':
-         k_size = atoi(optarg);
+         list_mode = atoi(optarg);
          break;
       case 'g':
 	      max_count = atoi(optarg);
@@ -1470,24 +1473,42 @@ int main(int argc, char* argv[])
 
    bool in_finished = false;
 
-   ifstream tmpstream;
+   bool has_query_data = true;
 
-   istream ifs(cin.rdbuf());
-   if (query_fn != "-") {
-     tmpstream.open(query_fn.c_str());
-
-     if(!tmpstream) {
-	  cerr<<"did not open for reading: "<<query_fn<<endl;
-	  
-	  exit(-1);
-	  
-     }  
-     ifs.rdbuf(tmpstream.rdbuf());
-   }
-
+   while (has_query_data) {
    
 
 
+     ifstream tmpstream;
+     istream tmpifs(cin.rdbuf());
+     if (query_fn != "-") {
+       tmpstream.open(query_fn.c_str());
+       
+       if(!tmpstream) {
+	 cerr<<"did not open for reading: "<<query_fn<<endl;
+	 
+	 exit(-1);
+	 
+       }  
+       ifs.rdbuf(tmpstream.rdbuf());
+     }
+
+   
+     istream ifs;
+
+     listeof = false;
+
+     if (list_mode) {   
+
+       listeof = getline(line, ifs)
+	 
+	 
+
+     } else {
+
+       
+
+     }
 
 
 #pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer, ifs)  private(finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
