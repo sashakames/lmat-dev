@@ -88,6 +88,9 @@ public :
     }
   }
 
+  string getName(tid_T id) const {
+    return ( this->find(id) == this->end() ) ? "" : this->find(id)->second->name();
+  } 
   void printChildren(tid_T id) const {
     const std::set<tid_T> &s = this->find(id)->second->getChildren();
     std::cout << id << " :: ";

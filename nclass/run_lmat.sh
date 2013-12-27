@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -xvf
 
 #####################################
 ### SCRIPT TO RUN THE LMAT PIPELINE
@@ -11,6 +11,7 @@
 ### 4) Call gene_label assigne gene names to each read and count the reads assigned to each label
 ###
 #####################################
+export LMAT_DIR=/p/lscratche/allen99/lmat/lmat-dev/runtime_inputs
 if [ -z "$LMAT_DIR" ] ; then
    echo "Please set LMAT_DIR environment variable to point to the directory where LMAT datafiles are stored"
    exit 1
@@ -70,6 +71,8 @@ marker_min_score=0
 #hbias=1.5
 hbias=0
 
+## number of standard deviations between best call and competing alternative
+sdiff=1.0  
 
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
@@ -119,7 +122,7 @@ option list:
    --skipMarkSumm (default=$skipMarkSumm) : Turn off summarization of marker output (may be preferred when running the full database)
    --overwrite (default=$overwrite) : overwrite output file if it exists 
    --min_read_kmer (default=$min_read_kmer) : minimum number of valid k-mers present in read needed for analysis
-   --prune_thresh : threshold of maximum taxonomy IDs allowed per k-mer. 
+   --prune_thresh: threshold of maximum taxonomy IDs allowed per k-mer. 
 
 example usage:
 $0 --db_file=$dbfile --genedb_file=$genedbfile --query_file=HC1.fna --threads=$threads
@@ -235,10 +238,9 @@ for db in $dlst ; do
       nullm=$LMAT_DIR/$dbname.null_lst.txt
       ## The higher the number the more conservative the read label call
       ## This value specifices how much higher (in standard deviation units) the score of the assigned label must be
-      sdiff=0.5  
       fstr="-f $tidmap"
       if [ ! -z $PTHRESH ]; then
-	  pstr="-g $PTHRESH -m $LMAT_DIR/numeric_ranks"
+	  pstr="-g $PTHRESH -m $LMAT_DIR/numeric_ranks_coarse"
       fi
       rprog=${bin_dir}read_label
       if [ $db != "$markerdb" ] ; then
@@ -248,8 +250,6 @@ for db in $dlst ; do
       else 
          ## use marker library parameters
          use_min_score=$marker_min_score
-
-         sdiff=1.0
          echo "search marker library: $db"
       fi
       if [ -e $nullm ] ; then
@@ -267,7 +267,7 @@ for db in $dlst ; do
                echo "Error, did not create a fastsummary file [$fastsum_file]"
                exit 0
             fi
-            min_num_reads=10 ## 
+            min_num_reads=1 ## 
             ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads all
 
             if hash ktImportText > /dev/null 2>&1 ; then
@@ -299,7 +299,7 @@ for db in $dlst ; do
          ## minimum abundance of reads required before making a summarization call
          ## note you can still check read counts with no abundance filtering
          #virus
-         min_virus_read=0.001
+         min_virus_read=0.00001
          # bacteria/archaea
          min_prok_read=0.0001
          # eukaryotes
@@ -308,7 +308,7 @@ for db in $dlst ; do
          min_plas=0.01
          # minimum weight irrespective of call type
          # Can be used to filter out an organism with lots of low scoring reads
-         min_wrdc=2
+         min_wrdc=3
          # once one strain is called, this parameter specifies the minimum number of reads
          # required to specify a second strain
          #a standard value for collapsing strains
@@ -319,7 +319,8 @@ for db in $dlst ; do
          #there's a higher chance that the variant could be mis-assigned to another species.
          same_strain=0.0
          # Can be used to filter out low scoring singleton read calls if desired
-         min_avg_wght=0.85
+         #min_avg_wght=1.7
+         min_avg_wght=1.0
          ###########################################################################
          if [ $db == "$markerdb" ] ; then
             if [ $skipMarkSumm == 1 ] ; then
@@ -333,7 +334,7 @@ for db in $dlst ; do
             ## Stores the k-mer counts associated with each taxid
             kmercnt="$LMAT_DIR/tcnt.kML18"
             ## I'm noticing slight over specificity in the marker library,so consider lower this value
-            sdiff=0.5  
+            ##sdiff=0.5  
          else 
             ## Stores the k-mer counts associated with each taxid
             kmercnt="$LMAT_DIR/tcnt.m9.20.tax_histo"
