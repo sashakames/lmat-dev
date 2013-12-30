@@ -1,8 +1,58 @@
 source $HOME/.bashrc
 
-subs=`echo $2 | awk '{print substr($1, 0, 5);}'`
+
+base_dir=$1
+threads=$4
+dbsrc=$5
+subdir=$2
+destpath=$6
+procset=$3
+
+echo args:  $*
+
+
+if [ ! -m $threads ] ; then
+    threads=40
+fi
+
+dbdest=/local/ramfs/m9.20mer.16bit.g1000.db
+
+# if [ -f $dbsrc ] ; then
+
+#     dbname=`basename $dbsrc`
+#     dbdest=$destpath/$dbname
+#     source $HOME/.bashrc
     
-odir=$1/../work/$subs/$2
+#     if [ ! -f  $dbdest ] ; then
+# 	time cp $dbsrc $dbdest 
+#     fi
+
+# else    
+
+# fi 
+
+
+
+subs=`echo $procset | awk '{print substr($1, 0, 5);}'`
+
+subgroup=$base_dir/../$subdir/$subs/
+
+if [ ! -d $subgroup ] ; then
+    mkdir $subgroup
+fi
+
+    
+
+odir=$subgroup/$n
+    
+echo Dir = $odir
+    
+if [ ! -d $odir ] ; then
+    mkdir $odir
+fi
+
+    
+odir=$basedir/../$subdir/$subs/$procset
 
 echo Dir = $odir
 
@@ -28,7 +78,7 @@ for m in $lst  ; do
 
 	    pwd
 
-	    cmd="./run_lmat.sh --query_file=$path --db_file=/local/ramfs/m9.20mer.16bit.g1000.db --prune_thresh=75 --nullm=no --cs_off --gl_off --threads=40 --odir=$odir --qual_filter=30"
+	    cmd="./run_lmat.sh --query_file=$path --db_file=$dbdest --prune_thresh=75 --nullm=no --cs_off --gl_off --threads=$threads --odir=$odir --qual_filter=30 --min_read_kmer=1"
 	    echo $cmd
 	    sh  $cmd
 	   

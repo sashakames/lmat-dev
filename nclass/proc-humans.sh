@@ -1,16 +1,16 @@
 pwd
 
-pushd $1
+
 
 source $HOME/.bashrc
 
-count=0
 
 
-for n in `cat complete-sets ` ; do  
+
+for n in `cat $1/complete-sets ` ; do  
 
     sum=0    
-    for val in `cat illum/$n.grp.szs`; do 
+    for val in `cat $1/illum/$n.grp.szs`; do 
 	sum=$(( $sum + $val )); 
 	
     done
@@ -21,7 +21,7 @@ for n in `cat complete-sets ` ; do
     
     subs=`echo $n | awk '{print substr($1, 0, 5);}'`
     
-    odir=$1/../work/$subs/$n
+    odir=$1/../work2/$subs/$n
     
     echo Dir = $odir
     
@@ -29,7 +29,7 @@ for n in `cat complete-sets ` ; do
 	mkdir $odir
 
     
-	lst=`cat illum/$n.grp`
+	lst=`cat $1/illum/$n.grp`
 
 	
 	for m in $lst  ; do
@@ -47,11 +47,7 @@ for n in `cat complete-sets ` ; do
 	    
 	    echo $path
 
-	    popd
-
-	    pwd
-
-	    cmd="./run_lmat.sh --query_file=$path --db_file=/local/ramfs/m9.20mer.16bit.g1000.db --prune_thresh=75 --nullm=no --cs_off --gl_off --threads=40 --odir=$odir --qual_filter=30"
+	    cmd="./run_lmat.sh --query_file=$path --db_file=/local/ramfs/m9.20mer.16bit.g1000.db --prune_thresh=75 --nullm=no --cs_off --gl_off --threads=40 --odir=$odir --qual_filter=30 --min_read_kmer=1"
 	    echo $cmd
 	    sh  $cmd
 	   
@@ -60,10 +56,7 @@ for n in `cat complete-sets ` ; do
 	done
 
 	time sh do_parallel.sh $odir
-	count=$(($count + 1))
-	if [ count -eq $2 ] ; then
-	    break
-	fi
+
     fi
 #    fi
 
