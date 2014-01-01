@@ -127,7 +127,7 @@ default: k = 0; continue; \
 */
 
 static
-int retrieve_kmer_labels(INDEXDB<TID_T>* table, const char* str, const int slen, const kmer_t klen, const list<TID_T>& cand_lst, map< TID_T, 
+int retrieve_kmer_labels(/*INDEXDB<TID_T>* table,*/ const char* str, const int slen, const kmer_t klen, const list<TID_T>& cand_lst, map< TID_T, 
                          kmer_cnt_t >& kmer_track) {
     int j; /* position of last nucleotide in sequence */
     int k = 0; /* count of contiguous valid characters */
@@ -787,22 +787,24 @@ int main(int argc, char* argv[])
             tab_lst[*ib] = chk;
             open.push_front(*ib);
          }
-         
          const unsigned tot_read_cnt = curr_merge_read_cnt[tid];
+         float wrdc=0,ratio=0;
+         unsigned median_kmer_cnt=0;
+         uint64_t expect_cov=0,k_mer_cnt=0;
          if( tot_read_cnt > 0 ) {
-            const float wrdc = compReadCnt(weighted_readcnt,tid);
-            const unsigned median_kmer_cnt = compKmerCov(kmer_track,tid,merge_kmer_track,merge_kmer_cnt);
-            const uint64_t expect_cov = ref_kmer_cnt[tid];
-            const uint64_t k_mer_cnt = merge_kmer_cnt[tid];
-            const float ratio = (float)k_mer_cnt / (float)expect_cov;
-            const string call_name = tax_tree.getName(tid);
-            list<char>::const_iterator tab_ib = tab_lst[tid].begin();
-            list<char>::const_iterator tab_ie = tab_lst[tid].end();
-            for( ; tab_ib != tab_ie; ++tab_ib) {
-               ofs<<*tab_ib;
-            }
-            ofs<<call_name<<"\t"<<tid<<"\t"<<median_kmer_cnt<<"\t"<<ratio<<"\t"<<k_mer_cnt<<"\t"<<expect_cov<<"\t"<<tot_read_cnt<<"\t"<<wrdc<<endl;
+            wrdc = compReadCnt(weighted_readcnt,tid);
+            median_kmer_cnt = compKmerCov(kmer_track,tid,merge_kmer_track,merge_kmer_cnt);
+            expect_cov = ref_kmer_cnt[tid];
+            k_mer_cnt = merge_kmer_cnt[tid];
+            ratio = (float)k_mer_cnt / (float)expect_cov;
          }
+         const string call_name = tax_tree.getName(tid);
+         list<char>::const_iterator tab_ib = tab_lst[tid].begin();
+         list<char>::const_iterator tab_ie = tab_lst[tid].end();
+         for( ; tab_ib != tab_ie; ++tab_ib) {
+            ofs<<*tab_ib;
+         }
+         ofs<<call_name<<"\t"<<tid<<"\t"<<median_kmer_cnt<<"\t"<<ratio<<"\t"<<k_mer_cnt<<"\t"<<expect_cov<<"\t"<<tot_read_cnt<<"\t"<<wrdc<<endl;
       }
       string to = ofbase + ".leftover";
       ofstream left_ofs(to.c_str());

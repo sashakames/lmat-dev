@@ -89,7 +89,7 @@ while read file ; do
    echo "$file $idfile $min_score $min_kmers $odir" >> $tfile
 done < $file_lst
 
-${pbin}parallel --load 150% --progress $jobstr -a $tfile $prog 
+${pbin}parallel --load 150% --progress $jobstr -a $tfile ${bindir}$prog 
 while read idlst ; do
    taxid=`echo $idlst | awk '{ print $1 }'`
    first=0
