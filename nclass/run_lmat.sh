@@ -350,6 +350,7 @@ for db in $dlst ; do
          if [ ! -e $sumofile ] || [ $overwrite == 1 ] ; then
             echo "Summary process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$sumofile]"
             /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -b $suspect_genomes -t "$min_thresh" -c $noprune_taxtree -l $fastsum_file -k $kcnt -f $lst -r $rankval -m $kmercnt -o $sumofile >& $logfile
+            ${bin_dir}csumm.sh --fsumm=$fastsum_file
          fi
      fi
 

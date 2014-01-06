@@ -119,8 +119,6 @@ def summNode(cnode,call_type,child) :
             save_strains.append( alt )
 
          if child.has_key(alt) :
-            if cnode == 1762 :
-               print "huh",alt,child[alt]
             tlst=child[alt]
             for it in range(len(tlst)) :
                nd = tlst[it]
@@ -180,13 +178,13 @@ def doPrn(save_calls,outh,names) :
       else :
          kpcnt=float(kmrcnt)/float(ck)
       tot_pcnt=float(rc)/float(rc_sum)
-      pstr=str(tot_pcnt)+"\t"+str(avg)+"\t"+str(wrc)+"\trc="+str(rc)+"\t"+str(kmrcnt)+"\t"+str(ck)+"\t"+str(kpcnt)+"\t"+str(owrc)+"\t"+str(orc)+"\t"+prnName+"\t"+str(call_id)
+      pstr=str(tot_pcnt)+"\t"+str(avg)+"\t"+str(wrc)+"\t"+str(rc)+"\t"+str(kmrcnt)+"\t"+str(ck)+"\t"+str(kpcnt)+"\t"+str(owrc)+"\t"+str(orc)+"\t"+prnName+"\t"+str(call_id)
       outh.write(pstr+"\n")
 
 fh=open(summfile)
 lchild,lname=loadTree(fh)
 for ranktype in rank_calls.split() :
    outfile=open(out_base+"."+ranktype,"w")
-   print "proces",ranktype,lchild[992401]
+   #print "proces",ranktype,lchild[992401]
    save_calls=bread_first_traverse(ranktype,lchild)
    doPrn(save_calls,outfile,lname)
