@@ -13,7 +13,6 @@
 #include "TaxNodeStat.hpp"
 #include "tid_checks.hpp"
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
 #include <gzstream.h>
 
 #define MMAP_SIZE 0
@@ -55,12 +54,8 @@ vector <int> read_len_avgs(1,0);
 
 static std::tr1::unordered_map<int,string> gNum2rank;
 static std::tr1::unordered_map<string,int> gRank2num;
-static std::tr1::unordered_set<int> gLowNumPlasmid;
 
 #define _USE_KPATH_IDS 0
-
-#define isPlasmid(tid) ((tid >=10000000 || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
-
 
 
 my_map tid_rank_map;
@@ -274,32 +269,17 @@ static bool cmpCompLineage(ufpair_t cand, const vector<ufpair_t>& lineage, set<T
 }
 
 static pair<ufpair_t,match_t> 
-findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const TaxTree<TID_T>& tax_tree, const hmap_t& taxid2idx, 
-                  list<ufpair_t>& cand_lin, const hmap_t& dmap, const ufmap_t& all_cand_set, const float topScore) {
+findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const TaxTree<TID_T>& tax_tree, const hmap_t& taxid2idx, list<ufpair_t>& cand_lin, const hmap_t& dmap, const ufmap_t& all_cand_set) {
    match_t match = eNoMatch;
-   TID_T savePlasmidId;
-   bool plasmidTopHit =false;
    unsigned lowest_depth = 0, highest_depth = 0;
    ufpair_t lowest=make_pair(0,0), highest = make_pair(0,0);
    signed lidx = -1;
    assert( cand_lin.empty() );
-   bool linDone=false;
    for(signed i = rank_label.size()-1; i >= 0; --i) {
-      if(verbose) {
-         cout<<"huh? plasmid: "<<rank_label[i].first<<" "<<rank_label[i].second<<" "<< topScore<<endl;
-         if( isPlasmid(rank_label[i].first) ) {
-            cout<<"found plasmid: "<<rank_label[i].first<<" "<<rank_label[i].second<<" "<< topScore<<endl;
-         }
-      }
-      if( rank_label[i].second >= topScore && isPlasmid(rank_label[i].first) ) {
-         plasmidTopHit=true;
-         savePlasmidId=rank_label[i].first;
-         if(verbose) cout<<"Found top hit plasmid: "<<savePlasmidId<<endl;
-      } 
-      if( !linDone && !addToCandLineage(rank_label[i],cand_lin,dmap, tax_tree) )  {
+      if( !addToCandLineage(rank_label[i],cand_lin,dmap, tax_tree) )  {
          lidx = i;
-         linDone=true;
-      } else if( !linDone ) {
+         break;
+      } else {
          const hmap_t::const_iterator mtch = dmap.find(rank_label[i].first);
          if( (*mtch).second> lowest_depth || (i == (signed)rank_label.size()-1) ) {
             lowest = rank_label[i];
@@ -309,10 +289,6 @@ findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const T
             highest = rank_label[i];
             highest_depth = (*mtch).second;
          }
-      }
-      //stick around to make sure we've checked for plasmids
-      if( linDone && rank_label[i].second < topScore ) {
-         break;
       }
    }
    set<TID_T> add_set;
@@ -399,14 +375,6 @@ findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const T
          taxid_call = make_pair(lca_tid, max_val);
       }
    }
-   if( plasmidTopHit ) {
-//static bool isAncestor(const TaxTree<TID_T>& tax_tree, TID_T prev_taxid /*ancestor */, TID_T curr_taxid /* descendant */ ) {
-      if(verbose) cout<<"Check top hit plasmid to see if consistent with call: "<<endl;
-      if( isAncestor(tax_tree,taxid_call.first,savePlasmidId) ) {
-         taxid_call.first=savePlasmidId; 
-         if(verbose) cout<<"YES: siwthc to plasmid: "<<taxid_call.first<<endl;
-      }
-   }
    if(verbose) cout<<"I'm confused: "<<taxid_call.first<<" "<<taxid_call.second<<endl;
    return make_pair(taxid_call,match);
 }
@@ -468,12 +436,12 @@ fill_in_labels(const TaxTree<TID_T>& taxtree, vector<TID_T>& row, const tax_data
 struct TCmp { 
    TCmp(const hmap_t& imap) : _imap(imap) {}
    bool operator()(const pair<TID_T,float>& a, const pair<TID_T,float>& b) const {
-	if( fabs(a.second- b.second) < 0.001 ) {
-		const int adepth = (*_imap.find(a.first)).second;
-		const int bdepth = (*_imap.find(b.first)).second;
-		return adepth < bdepth;
+   if( fabs(a.second- b.second) < 0.001 ) {
+      const int adepth = (*_imap.find(a.first)).second;
+      const int bdepth = (*_imap.find(b.first)).second;
+      return adepth < bdepth;
         } 
-	return a.second < b.second; }
+   return a.second < b.second; }
    const hmap_t& _imap;
 };
 
@@ -488,19 +456,6 @@ struct ScoreOptions {
    u_usmap_t _rand_class; 
    bool _comp_rand_hits;
 };
-
-static void loadLowNumPlasmids(const string& file) {
-   ifstream ifs_lst(file.c_str());
-   if( !ifs_lst) {
-      cerr<<"Unexpected reading error: "<<file<<endl;
-      return;
-   }
-   TID_T pid;
-   while(ifs_lst>>pid) {
-      cout<<"debug: "<<pid<<endl;
-      gLowNumPlasmid.insert(pid);
-   }
-}
 
 static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usmap_t& rand_class_all) {
    ifstream ifs_lst(file_lst.c_str());
@@ -807,7 +762,6 @@ construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& lab
             phiXscore=log_odds;
             fndPhiX=true;
          }
-
          if( tax_idx == 0 || log_odds > top_score ) {
             top_score = log_odds;
          }
@@ -871,7 +825,7 @@ construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& lab
          ofs<<log_avg<<" "<<stdev1<<" "<<cand_kmer_cnt<<"\t";
          stdev1 *= sopt._diff_thresh;
          
-         res = findReadLabelVer2(rank_label,stdev1,tax_tree,tax2idx,valid_cand,sopt._imap,all_cand_set,top_score);    
+         res = findReadLabelVer2(rank_label,stdev1,tax_tree,tax2idx,valid_cand,sopt._imap,all_cand_set);    
          if(sopt._prn_all) {
             bool prn=false;
             for(signed i = rank_label.size()-1; i >= 0; --i) {
@@ -1043,8 +997,8 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                break;
              }
              if( last_depth == depth || last_depth == -1 ) {
-                  TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
                   vector<TID_T> path;
+                  TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
                   tax_tree_tmp.getPathToRoot(tid,path);
                   for(unsigned p = 0; p < path.size(); ++p) {
                      const TID_T ptid = path[p];
@@ -1188,8 +1142,7 @@ int main(int argc, char* argv[])
    int min_kmer = 35, min_fnd_kmer = 1;
 
    string rank_ids, kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, tax_tree_options, depth_file, rand_hits_file, rank_table_file, id_bit_conv_fn;
-   string low_num_plasmid_file;
-   hmap_t imap;	
+   hmap_t imap;   
    ScoreOptions sopt(imap);
 
    size_t mmap_size = 0;
@@ -1197,14 +1150,11 @@ int main(int argc, char* argv[])
    uint16_t max_count = ~0;
    bool prn_read = true;
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q:")) != -1) {
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:s:m:o:x:f:g:z:q:")) != -1) {
       switch(c) {
       case 'h':
         screenPhiXGlobal=false;
          break;
-      case 'r':
-        low_num_plasmid_file = optarg;
-        break;
       case 'f':
         id_bit_conv_fn = optarg;
         break;
@@ -1224,8 +1174,8 @@ int main(int argc, char* argv[])
          prn_read=false;
          break;
       case 'w':
-	      tid_map_is_strain_species = true;
-	      break;
+         tid_map_is_strain_species = true;
+         break;
       case 's':
          mmap_size = atoi(optarg);
          mmap_size = mmap_size * (1<<30);
@@ -1253,7 +1203,7 @@ int main(int argc, char* argv[])
          sopt._prn_all = true;
          break;   
       case 'm':
-	      rank_table_file = optarg;
+         rank_table_file = optarg;
         break;
       case 't':
         n_threads = atoi(optarg);
@@ -1264,12 +1214,12 @@ int main(int argc, char* argv[])
          break;
       case 'c':
          tax_tree_fn = optarg;
-	      break;
+         break;
       case 'k':
          k_size = atoi(optarg);
          break;
       case 'g':
-	      max_count = atoi(optarg);
+   max_count = atoi(optarg);
          break;
       case 'i':
          query_fn = optarg;
@@ -1387,9 +1337,6 @@ int main(int argc, char* argv[])
 #endif
    //cout << "End kmer DB load\n";
    //cout << "DB size is " << table->size() << endl;
-   if( low_num_plasmid_file.length() > 0 ) {
-      loadLowNumPlasmids(low_num_plasmid_file);
-   }
 
    sopt._comp_rand_hits = (rand_hits_file.length() == 0);
    if( !sopt._comp_rand_hits ) {
@@ -1400,7 +1347,8 @@ int main(int argc, char* argv[])
       return -1;
    }
 
-   ifstream ifs(query_fn.c_str());
+
+
    string line;
 
    omp_lock_t buffer_lock;
@@ -1413,6 +1361,7 @@ int main(int argc, char* argv[])
 
    ofstream ofs;
 
+
    if (rank_table_file.length() > 0) {
      if(max_count == ~0) {
        cout << "Need to set -h <tid-cutoff> to use rank file map!\n";
@@ -1422,13 +1371,13 @@ int main(int argc, char* argv[])
        uint32_t src, dest;
        
        while (fscanf(rmfp,"%d%d", &src, &dest) > 0) {
-	      tid_rank_map[src] = dest;
+         tid_rank_map[src] = dest;
        }
        
        fclose(rmfp);
        
      }
-	 
+    
    }
 
 
@@ -1439,12 +1388,12 @@ int main(int argc, char* argv[])
    cout<<"Read taxonomy depth: "<<depth_file<<endl;
    ifstream ifs1(depth_file.c_str());
    if(!ifs1) {
-	cerr<<"unable to open: "<<depth_file<<endl;
-	return -1;
+   cerr<<"unable to open: "<<depth_file<<endl;
+   return -1;
    }
    TID_T taxid,depth;
    while(ifs1>>taxid>>depth) {
-	sopt._imap[taxid] = depth;
+   sopt._imap[taxid] = depth;
    }
    
 
@@ -1462,21 +1411,30 @@ int main(int argc, char* argv[])
 
    bool in_finished = false;
 
+   ifstream tmpstream;
 
-#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer)  private(ifs, finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
+   istream ifs(cin.rdbuf());
+   if (query_fn != "-") {
+     tmpstream.open(query_fn.c_str());
+
+     if(!tmpstream) {
+     cerr<<"did not open for reading: "<<query_fn<<endl;
+     
+     exit(-1);
+     
+     }  
+     ifs.rdbuf(tmpstream.rdbuf());
+   }
+
+   
+
+
+
+
+#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer, ifs)  private(finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
   {
 
     finished = false;
-
-    if (omp_get_thread_num() == 0) {
-      cout<<"Read query file: "<<query_fn<<endl;                          
-      ifs.open(query_fn.c_str());
-      if(!ifs) {
-	cerr<<"did not open for reading: "<<query_fn<<endl;
-
-	exit(-1);
-      }
-    }
 
     ofname = ofbase;
     std::stringstream outs;
@@ -1486,71 +1444,81 @@ int main(int argc, char* argv[])
 
     ofs.open(ofname.c_str());
 
+
+    bool eof = false;
+
     while (!finished)   {
 
       if ((in_finished == false) && (omp_get_thread_num() == 0)) {
 
-	int j = 0 ;
 
-	int queue_size = 0;
 
-	omp_set_lock(&buffer_lock);
+   int j = 0 ;
 
-	queue_size = read_buffer_q.size();
+   int queue_size = 0;
 
-	omp_unset_lock(&buffer_lock);
+   omp_set_lock(&buffer_lock);
 
-	while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
+   queue_size = read_buffer_q.size();
 
-          getline(ifs, line);
+   omp_unset_lock(&buffer_lock);
 
-	  pos = ifs.tellg();
 
-	  if (pos == -1) {
 
-	    in_finished = true;
+   while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
 
-	    if(verbose) cout << read_count_in << " reads in\n";
-	    if(verbose) cout << line.size() << " line length\n";
-	  }
 
-	  if (line[0] == '>' || (fastq && line[0] == '@') ) {
+     
+     
+          eof = !getline(ifs, line);
 
-	    // skip the ">"                                                        
-	    hdr_buff=line.substr(1,line.length()-1);
-	    //      if(fastq) readOne=true;                                    
-	  }
 
-	  if (line[0] != '>' && line.length() > 1 && !fastq) {
-	    read_buff += line;
-	  }
+     if (eof) {
 
-	  if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
-	    read_buff += line;
-	  }
-	  if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
-	     line[0] == '-'))) && read_buff.length() > 0 ) {
+       in_finished = true;
+       
+       if(verbose) cout << line.size() << " line length\n";
+     }
 
-	    omp_set_lock(&buffer_lock);
+     if (line[0] == '>' || (fastq && line[0] == '@') ) {
 
-	    read_buffer_q.push(read_pair(read_buff, hdr_buff));
-	    read_count_in++;
-	    omp_unset_lock(&buffer_lock);
+       // skip the ">"                                                        
+       hdr_buff=line.substr(1,line.length()-1);
+       //      if(fastq) readOne=true;                                    
+     }
 
-	    read_buff="";
-	    hdr_buff = "";
-	    j ++;
-	    if(fastq) getline(ifs, line); // skip quality values for now       
+     if (line[0] != '>' && line.length() > 1 && !fastq) {
+       read_buff += line;
+     }
 
-	    if (in_finished) {
+     if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
+       read_buff += line;
+     }
+     if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
+        line[0] == '-'))) && read_buff.length() > 0 ) {
 
-	      cout << read_count_in << " reads in\n";
-	      break;
+       omp_set_lock(&buffer_lock);
 
-	    }
-	  }
+       read_buffer_q.push(read_pair(read_buff, hdr_buff));
+       read_count_in++;
+       omp_unset_lock(&buffer_lock);
 
-	}
+       read_buff="";
+       hdr_buff = "";
+       j ++;
+       
+       if(fastq) eof = !getline(ifs, line); // skip quality values for now       
+
+       if (in_finished) {
+
+         cout << read_count_in << " reads in\n";
+         break;
+
+       }
+     }
+
+   }
+
 
       }
 
@@ -1560,52 +1528,52 @@ int main(int argc, char* argv[])
 
       if (!read_buffer_q.empty()) {
 
-	read_pair in_pair = read_buffer_q.front();
-	read_buff = in_pair.first;
-	save_hdr = in_pair.second;
+   read_pair in_pair = read_buffer_q.front();
+   read_buff = in_pair.first;
+   save_hdr = in_pair.second;
 
-	read_buffer_q.pop();
+   read_buffer_q.pop();
 
-	read_count_out++;
+   read_count_out++;
 
       }
 
       omp_unset_lock(&buffer_lock);
       
       if (read_buff.length() > 0) {
-	
-	if(save_hdr[0] == '\0') {
-	  ostringstream ostrm;
-	  ostrm<<"unknown_hdr:"<<read_count_out;
-	  save_hdr=ostrm.str();
-	}
+   
+   if(save_hdr[0] == '\0') {
+     ostringstream ostrm;
+     ostrm<<"unknown_hdr:"<<read_count_out;
+     save_hdr=ostrm.str();
+   }
 
-	ofs<<save_hdr<<"\t";
+   ofs<<save_hdr<<"\t";
 
-	if( prn_read ) {
-	  ofs<<read_buff<<"\t";
-	} else {
-	  ofs<<"X"<<"\t";
-	}
+   if( prn_read ) {
+     ofs<<read_buff<<"\t";
+   } else {
+     ofs<<"X"<<"\t";
+   }
 
-	int thread = omp_get_thread_num();
+   int thread = omp_get_thread_num();
 
-	map<TID_T,int>& track_match = track_matchall[thread];
-	map<nomatch_t,int>& track_nomatch = track_nomatchall[thread];
-	map<TID_T,float>& track_tscore = track_tscoreall[thread];
+   map<TID_T,int>& track_match = track_matchall[thread];
+   map<nomatch_t,int>& track_nomatch = track_nomatchall[thread];
+   map<TID_T,float>& track_tscore = track_tscoreall[thread];
 
-	proc_line(tax_tree, read_buff.length(), read_buff, k_size, taxtable, 
-		  ofs, threshold,sopt, max_count, track_match, track_nomatch, 
-		  track_tscore,min_score, min_kmer, min_fnd_kmer);
+   proc_line(tax_tree, read_buff.length(), read_buff, k_size, taxtable, 
+        ofs, threshold,sopt, max_count, track_match, track_nomatch, 
+        track_tscore,min_score, min_kmer, min_fnd_kmer);
 
-	read_buff="";
-	
+   read_buff="";
+   
       }
     
 
 
       if ((read_count_in == read_count_out) && in_finished)
-	finished = true;
+   finished = true;
     
     }
 
