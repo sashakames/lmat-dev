@@ -1,39 +1,34 @@
 source $HOME/.bashrc
 
 
-base_dir=$1
-threads=$4
-dbsrc=$5
-subdir=$2
-destpath=$6
-procset=$3
+base_dir=/p/lscratche/ames4/1000humangenome/hg-files
+#threads=$4
+#dbsrc=$5
+subdir=work2
+#destpath=$6
+procset=$1
 
 echo args:  $*
 
 
-if [ ! -m $threads ] ; then
-    threads=40
-fi
 
+threads=38
+
+dbsrc=/p/lscratche/ames4/m9.20mer.16bit.g1000.db
 dbdest=/local/ramfs/m9.20mer.16bit.g1000.db
 
-# if [ -f $dbsrc ] ; then
-
-#     dbname=`basename $dbsrc`
-#     dbdest=$destpath/$dbname
-#     source $HOME/.bashrc
-    
-#     if [ ! -f  $dbdest ] ; then
-# 	time cp $dbsrc $dbdest 
-#     fi
-
-# else    
-
-# fi 
+dbdir=`dirname $dbdest`
 
 
+if [ ! -f  $dbdest ] ; then
+    time cp $dbsrc $dbdest 
+fi
 
-subs=`echo $procset | awk '{print substr($1, 0, 5);}'`
+hostname
+
+date
+
+subs=`echo $procset | awk '{print substr($base_dir, 0, 5);}'`
 
 subgroup=$base_dir/../$subdir/$subs/
 
@@ -42,21 +37,15 @@ if [ ! -d $subgroup ] ; then
 fi
 
     
+    
+odir=$base_dir/../$subdir/$subs/$procset
 
-odir=$subgroup/$n
-    
-echo Dir = $odir
-    
-if [ ! -d $odir ] ; then
-    mkdir $odir
-fi
+rm $odir/*.fa $odir/*.human_matches
 
-    
-odir=$basedir/../$subdir/$subs/$procset
 
 echo Dir = $odir
 
-lst=`cat $1/illum/$2.grp`
+lst=`cat $base_dir/illum/$procset.grp`
 
 	
 for m in $lst  ; do
@@ -82,7 +71,10 @@ for m in $lst  ; do
 	    echo $cmd
 	    sh  $cmd
 	   
+	    time sh do_parallel.sh $odir $path
 
-	    
 	done
-	time sh do_parallel.sh $odir
+
+echo $1 has completed
+
+date
