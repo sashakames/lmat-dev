@@ -27,6 +27,8 @@ fi
 ## Location of binaries
 if hash read_label >& /dev/null ; then
    bin_dir=
+elif [ -f read_label ] ; then
+    bin_dir=./
 else 
    #echo "Could not find read_label in your path assume LMAT binaries/scripts are here: $bin_dir"
    bin_dir="$LMAT_DIR/../bin/"
