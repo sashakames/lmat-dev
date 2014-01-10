@@ -719,7 +719,9 @@ http://www.cbcb.umd.edu/software/phymm/exp\_datasets/01\_\_10\_X\_100\_bp\_test\
 The \texttt{read\_label} driver searches the Reference Database for all k-mers 
 in the queries, and outputs taxonomic lineages, as discussed in Section 2.2 and
 Figure 2 in our paper.  Output files have the format: \texttt{<prefix>N.out} - where N is 0 to
-$(numthreads-1)$ - even in single threaded execution.  Input can come from stdin (supporing piped input) instead of an input file by using: \texttt{-i -}
+$(numthreads-1)$ - even in single threaded execution.  
+
+Input to read\_label can come from stdin (supporing piped input) instead of an input file by using: \texttt{-i -}
 
 
 \texttt{run\_lmat.sh} is the wrapper script for running the LMAT pipeline; it takes several required 
@@ -827,7 +829,7 @@ Output from the summary step is placed in a file \texttt{<prefix>.summ}
 
 There is now a gene identification step.  The user can download the gene database, which contains all microbial genes obtained from microbial genome database (current does not include all of NR). Reads are searched and the best gene match is reported.  Matches are in DNA space. Output is placed in a file \texttt{<prefix>.genesummary}
 
-\section{Advanced LMAT features.}
+\section{Advanced LMAT features}
 
 \subsection{16-bit ID Space}
 
