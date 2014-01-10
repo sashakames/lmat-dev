@@ -51,7 +51,6 @@
 Support for reading query input from stdin in read\_label module.  use ``-i -'' to enable this feature.
 \item
 Fixed a bug where incorrect header information was included in LMAT raw output (individual read labels).
-\item
 \item New aggresive plasmid assignment.  Previously plasmids were under-reported due to their placement in the NCBI taxonomy heirarchy. The same plasmid associated with multiple strains will normally be classified as a species (or higher rank) call according to the LMAT lowest common ancestor placement logic. Now in addition to the standard LMAT classification procedure the highest scoring matches are saved.  If the highest scoring match list includes a plasmid consistent with the initial LMAT classification, the final classification is switched to the plasmid.  The drawback
 to this procedure is that multiple plasmids with tie scores are not explicitly represented in the final output label. LMAT, however, saves the scores of the competing matched sequences so a post processing step (not yet included) can easily tag plasmid calls that are non-specific to the initially reported taxonomy. 
 
