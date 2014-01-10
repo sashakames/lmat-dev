@@ -1405,12 +1405,13 @@ int main(int argc, char* argv[])
    size_t read_count_out = 0;
 
 
-   string read_buff, hdr_buff, save_hdr;
+   string read_buff, hdr_buff, save_hdr, last_hdr;
 
    bool in_finished = false;
+   
 
 
-#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer)  private(ifs, finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
+#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer)  private(ifs, finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr, last_hdr)
   {
 
     finished = false;
@@ -1463,7 +1464,9 @@ int main(int argc, char* argv[])
 
 	  if (line[0] == '>' || (fastq && line[0] == '@') ) {
 
-	    // skip the ">"                                                        
+	    // skip the ">"             
+	    if (hdr_buff.length() > 0) 
+	      last_hdr=hdr_buff;
 	    hdr_buff=line.substr(1,line.length()-1);
 	    //      if(fastq) readOne=true;                                    
 	  }
@@ -1479,13 +1482,20 @@ int main(int argc, char* argv[])
 	     line[0] == '-'))) && read_buff.length() > 0 ) {
 
 	    omp_set_lock(&buffer_lock);
+	    
+	    if (in_finished)
+	      read_buffer_q.push(read_pair(read_buff, hdr_buff));
+	    else 
+	      read_buffer_q.push(read_pair(read_buff, last_hdr));
 
-	    read_buffer_q.push(read_pair(read_buff, hdr_buff));
+
+
 	    read_count_in++;
 	    omp_unset_lock(&buffer_lock);
 
 	    read_buff="";
-	    hdr_buff = "";
+
+
 	    j ++;
 	    if(fastq) getline(ifs, line); // skip quality values for now       
 
