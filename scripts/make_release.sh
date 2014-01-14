@@ -1,12 +1,9 @@
 #!/bin/sh
 #  set version number
 
-<<<<<<< HEAD
+
 verno=1.2.X.dev
 
-=======
-verno=1.2.2a
->>>>>>> rl-stdin
 
 
 reldir=../../LMAT-$verno

@@ -4,7 +4,7 @@ source $HOME/.bashrc
 base_dir=/p/lscratche/ames4/1000humangenome/hg-files
 #threads=$4
 #dbsrc=$5
-subdir=work2
+subdir=work
 #destpath=$6
 procset=$1
 

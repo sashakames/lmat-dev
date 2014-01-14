@@ -16,7 +16,7 @@ for n in `cat $1/complete-sets ` ; do
     
     subs=`echo $n | awk '{print substr($1, 0, 5);}'`
 
-    subdir=$1/../work2/$subs/ 
+    subdir=$1/../work/$subs/ 
     
     if [ ! -d $subdir ] ; then
 	mkdir $subdir
