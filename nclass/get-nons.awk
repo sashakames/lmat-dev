@@ -3,7 +3,7 @@
 mink=30;  
 
 if (len<50) {
-    mindk=len-20;   
+    mink=len-20;   
 }
 show=1; 
 if  ( ($NF == "DirectMatch" || $NF == "MultiMatch" ) && ($(base+3)>= mink))  { 
