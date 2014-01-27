@@ -2,7 +2,7 @@
 ### default options
 file_lst=""
 odir=.
-taxfile=$LMAT_DIR/ncbi_taxonomy_rank.segment.txt
+taxfile=$LMAT_DIR/ncbi_taxonomy_rank.segment.pruned.txt
 num_threads=0 ## default to number of cores on machine
 sstr=""
 idfile=""
@@ -27,8 +27,11 @@ fi
 bindir=""
 pbin=""
 if ! hash parallel >& /dev/null; then
-   echo "Warning could not find GNU parallel will try $LMAT_DIR/../bin"
    pbin="$LMAT_DIR/../bin/"
+fi
+
+if ! hash build_taxid_lst.pl >& /dev/null; then
+   bindir="$LMAT_DIR/../bin/"
 fi
    
 while test -n "${1}"; do
@@ -64,7 +67,7 @@ fi
 
 while read file ; do
    ofile=$file.idtxt
-   echo "build_taxid_lst.pl $taxfile $file $ofile $sstr | parallel " >> $tfile
+   echo "${bindir}build_taxid_lst.pl $taxfile $file $ofile $sstr | parallel " >> $tfile
 done < $file_lst
 ${pbin}parallel --load 150% --progress $jobstr -a $tfile 
 

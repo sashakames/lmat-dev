@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <cstring> //strtok
 #include <vector>
 #include <cmath>
 #include <list>
@@ -289,17 +290,11 @@ struct SaveRes {
 int main(int argc, char* argv[]) 
 {
    char c = '\0';
-   vector<int> k_size(4);
-   k_size[0]=8;
-   k_size[1]=10;
-   k_size[2]=14;
-   k_size[3]=20;
-   const unsigned num_kmer_sizes = 4; 
 
    float threshold = 0.0;
    map<TID_T, uint64_t> ref_kmer_cnt;
    string sep_plas_file,query_fn_lst,lmat_sum,kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, kmer_cnt_file, depth_file, rank_table_file, cont_genomes_lst;
-   string low_num_plasmid_file;
+   string low_num_plasmid_file, k_size_str;
    hmap_t imap;	
    bool skipHuman=false;
    string thresh_str;
@@ -332,11 +327,9 @@ int main(int argc, char* argv[])
       case 'c':
          tax_tree_fn = optarg;
 	      break;
-#if 0
       case 'k':
-         k_size = atoi(optarg);
+         k_size_str = optarg;
          break;
-#endif
       case 'f':
          query_fn_lst = optarg;
          break;
@@ -353,6 +346,25 @@ int main(int argc, char* argv[])
          cout << "Unrecognized option: "<<c<<", ignore."<<endl;
       }
    }
+   vector<int> k_size;
+   if( k_size_str.length() == 0) {
+      k_size.resize(4);
+      k_size[0]=8;
+      k_size[1]=10;
+      k_size[2]=14;
+      k_size[3]=20;
+   } else {
+      const char* val = strtok(const_cast<char*>(k_size_str.c_str()),",");
+      unsigned pos =0;
+      while( val != NULL ) {
+         istringstream istrm(val);
+         unsigned ival;
+         istrm>>ival;
+         k_size.push_back(ival);
+         ++pos;
+      }      
+   }
+   //const unsigned num_kmer_sizes = k_size.size(); 
    StopWatch clock;
    const unsigned buff_size = 2024;
    char buff[buff_size];

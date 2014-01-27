@@ -16,8 +16,8 @@ if len(argv) != 6 :
 
 out = open(argv[3], 'w')
 num = int(argv[4])
-include_only = argv[5]
-
+min_avg=float(argv[5])
+include_only='all'
 #ranks = 'superkingdom','family','genus','species',
 #order subgenus subspecies
 
@@ -34,6 +34,8 @@ a = open(argv[2])
 for line in a :
   t = line.split()
   count = t[1]
+  avg=float(t[0])/float(t[1])
+  #print "check avg:",avg,t[1],t[0]
   ktaxid = t[2]
   descrip=''
   if not tax.has_key(ktaxid) :
@@ -57,7 +59,7 @@ for line in a :
     e2 = descrip  
      #e2 = ['unknown,unkown\n']
   if include_only == 'all' or e.find(include_only) != -1 :
-     if int(count) > num :
+     if int(count) > num and avg >= min_avg :
        out.write(count + '\t')
        for x in e2[:-1] :
          if x.find('no rank') == -1 :
