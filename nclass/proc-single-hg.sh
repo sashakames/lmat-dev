@@ -75,6 +75,15 @@ for m in $lst  ; do
 
 	done
 
+inf=$odir/$procset.new.hg
+outf=$odir/$procset.jf
+xcover=30
+
+nthreads=$(( threads + 2 ))
+
+time $HOME/bin/jellyfish count -m 20 -o $outf -t $nthreads -c 6 -s 100000000 -C $inf 
+$HOME/bin/jellyfish dump -c -L $xcover $outf | awk '{print $1;}' | sort | uniq > $outf.$xcover.kmerdump
+
 echo $1 has completed
 
 date
