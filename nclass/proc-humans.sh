@@ -1,11 +1,6 @@
 pwd
 
-
-
 source $HOME/.bashrc
-
-
-
 
 for n in `cat $1/complete-sets ` ; do  
 
@@ -20,8 +15,16 @@ for n in `cat $1/complete-sets ` ; do
     echo Found $n with $sum data
     
     subs=`echo $n | awk '{print substr($1, 0, 5);}'`
+
+    subdir=$1/../work/$subs/ 
     
-    odir=$1/../work2/$subs/$n
+    if [ ! -d $subdir ] ; then
+	mkdir $subdir
+    fi
+
+    odir=$subdir/$n
+
+
     
     echo Dir = $odir
     
@@ -51,11 +54,12 @@ for n in `cat $1/complete-sets ` ; do
 	    echo $cmd
 	    sh  $cmd
 	   
+	    time sh do_parallel.sh $odir $path
 
 	    
 	done
 
-	time sh do_parallel.sh $odir
+
 
     fi
 #    fi
