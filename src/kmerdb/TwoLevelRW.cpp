@@ -1,4 +1,4 @@
-#include "SortedDb.hpp"
+#include "TwoLevelRW.hpp"
 
 #include <cassert>
 #include <fstream>
@@ -6,6 +6,8 @@
 #include <set>
 #include <ext/hash_map>
 #include <queue>
+
+#include <stdlib.h>
 
 #include <metag_const.h>
 #include "KmerFileMetaData.hpp"
@@ -29,10 +31,9 @@ size_t singletons = 0;
 size_t reduced_kmers = 0;
 size_t cut_kmers = 0;
 
-int size_classes = { 4, 8, 12, 16, 24, 32 , 48, 64, 96, 128, 192, 256, 385, 512, 786, 1024, 2048 };
 
 
-void SortedDbRW::addKmer(uint64t kmer)
+void TwoLevelRW::addKmer(uint64_t kmer, uint16_t taxid)
 {
 
   // look up k-mer
@@ -47,7 +48,7 @@ void SortedDbRW::addKmer(uint64t kmer)
 	
 
       // if empty allocate a new slot
-      top_tier_block[top_index] = (uint16_t*)malloc(size_classes * sizeof(uint16_t));
+      top_tier_block[top_index] = (uint16_t*)malloc(size_classes[ ] * sizeof(uint16_t));
       top_tier_block[top_index][0] = 1;
       
 

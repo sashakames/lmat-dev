@@ -1,5 +1,5 @@
-#ifndef __SORTED_DB_HPP__
-#define __SORTED_DB_HPP__
+#ifndef __TWOLEVEL_DB_HPP__
+#define __TWOLEVEL_DB_HPP__
 
 
 
@@ -72,50 +72,59 @@ public:
 
 
  
-  class SortedDbRW {
+  class TwoLevelRW {
 
 public:
-
-
-
-    SortedDb(size_t n_kmers, size_t space_size, const int n_threads)
-
-  {
-
-    top_tier_block = new (JEMALLOC_P(malloc)(sizeof(uint64_t)*TT_BLOCK_COUNT)) uint64_t[TT_BLOCK_COUNT];
-
-
-    //    allocator_str = "\n\ndatabase built with perm-je\n\n";
-    idx_config = IDX_CONFIG;
-
-    m_n_kmers = 0;
-
-    bzero((void*)top_tier_block, sizeof(uint64_t) *TT_BLOCK_COUNT);
     
 
-  }
+int size_classes = { 4, 8, 12, 16, 24, 32 , 48, 64, 96, 128, 192, 256, 384, 512, 786, 1024, 2048 };
+
+int get_class(int key)
+{
+  int idx=0;
+
+  while (key > size_classes[idx])
+    idx++;
+
+  return size_classes[idx];
+  
+}
 
 
 
-  void set_kmer_length(char c)
-  {
-    m_kmer_length = c;
-    idx_config = IDX_CONFIG;
-  }
 
-  char get_kmer_length() {
-    return m_kmer_length;
-    
-  }
-         
-  size_t size() {
-    return m_n_kmers;
-  }
+    void addTaxid(uint64_t & kmer_rec)
+    {
+      int tid_count = get_tid_count(kmer_rec);
 
-private:
+      if (get_class(tid_count) > get_class(tid_count+1) {
+	  
+	  //	  reallocate
+
+	} else {
+	  //  add to current structure
+
+	  
+	}
+
+    }
 
 
-  int idx_config;
+
+
+
+    void addKmer(uint64_t kmer, uint32_t taxid) {
+      
+        size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+  
+
+    }
+
+    void addData(char *filename, uint32_t taxid) ;
+
+
+  private:
+
 
   size_t m_n_kmers;
 
@@ -125,11 +134,6 @@ private:
 
 
   // used for taxid lists
-
-
-  size_t  m_list_offset ;
-  uint16_t m_cur_page;
-  uint32_t m_cur_offset;
 
 
 
