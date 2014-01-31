@@ -126,7 +126,7 @@ while [ $beg -le $end ] ; do
    #${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
    #${bin_dir}rand_read_label_32 -w -r $dynprune -h 1000 -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
 
-   ${bin_dir}rand_read_label_16 -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
+   ${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile -f $conv   >& $logfile
 
    sfile=$ofile.rand_lst
    sname=`basename $sfile`

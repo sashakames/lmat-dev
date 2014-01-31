@@ -131,7 +131,7 @@ done
 
 #copy rmodel scripts
 
-for n in gen_rand_mod.sh merge_cnts.py
+for n in gen_rand_mod.sh merge_cnts.py combine_counts.py
 do
 cp ../rmodel/$n  $reldir/bin
 done
