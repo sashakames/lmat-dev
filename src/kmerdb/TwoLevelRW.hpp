@@ -77,16 +77,16 @@ public:
 public:
     
 
-int size_classes = { 4, 8, 12, 16, 24, 32 , 48, 64, 96, 128, 192, 256, 384, 512, 786, 1024, 2048 };
+int SIZE_CLASSES = { 4, 8, 12, 16, 24, 32 , 48, 64, 96, 128, 192, 256, 384, 512, 786, 1024, 2048 };
 
 int get_class(int key)
 {
   int idx=0;
 
-  while (key > size_classes[idx])
+  while (key > SIZE_CLASSES[idx])
     idx++;
 
-  return size_classes[idx];
+  return SIZE_CLASSES[idx];
   
 }
 
@@ -97,16 +97,23 @@ int get_class(int key)
     {
       int tid_count = get_tid_count(kmer_rec);
 
-      if (get_class(tid_count) > get_class(tid_count+1) {
+    int old_size_class = get_class(tid_count)
+    int new_size_class = get_class(tid_count+1)
+      if ( size_class > new_size_class) {
 	  
+          
+          TidRecCell<new_size_class> new JEMALLOC_P(malloc)(sizeof(unit16_t)*new_size_class);
+          
+          delete(
+          
 	  //	  reallocate
 
-	} else {
+      } else {
 	  //  add to current structure
-
-	  
-	}
-
+            TidRecCell<old_size_class> &cur_cell = reinterpret_cast<TidRecCell<size_class>>(*)
+          bool rc = cur_cell.insert_
+      }
+          
     }
 
 

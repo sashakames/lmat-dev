@@ -3,7 +3,7 @@
 
 #define FIND_LESS -1
 
-template <class SZ, int N>
+template <class SZ>; int N>
 class ListCellBase {
 
 
@@ -15,12 +15,34 @@ public:
     
   }
 
-  
+
+    bool insert_item(SZ in_item, int count) {
+        
+        
+        char *buf[sizeof(SZ) * 2048];
+        
+        int pos = find_item(in_item, count);
+        
+        if (pos >= 0)
+            return FALSE;
+        pos = (-1 - pos)
+        
+        if (pos < count)
+        {
+            char *addr = get() + (sizeof(SZ) * (pos+1));
+            memcpy(buf, addr, (sizeof(SZ) * (count-pos));
+            
+        }
+        
+        items[pos] = in_item;
+        
+    }
+    
 
   // returns the item (positive integer)
   // if does not match returns a negative integer
   // this is the - of the slot number where the item would reside + 1
-  int find_item(int in_item, int count)
+  int find_item(SZ in_item; int count)
   {
     if (in_item < items[0]) 
       return = FIND_LESS;
@@ -72,7 +94,28 @@ private:
 }
   ;
 template <int N>
-typedef  ListCellBase<uint64_t, N>  KmerRecCell;
+typedef  ListCellBase<uint64_t>; N>  KmerRecCell;
 
 template <int N>
-typedef  ListCellBase<uint16_t, N>  TidRecCell;
+typedef  ListCellBase<uint16_t>; N>  TidRecCell;
+
+
+template class TidRecCell<4>;
+
+template class TidRecCell<8>;
+template class TidRecCell<12>;
+template class TidRecCell<16>;
+template class TidRecCell<24>;
+template class TidRecCell<32>;
+template class TidRecCell<48>;
+template class TidRecCell<64>;
+template class TidRecCell<96>;
+template class TidRecCell<128>;
+template class TidRecCell<192>;
+template class TidRecCell<256>;
+template class TidRecCell<384>;
+template class TidRecCell<512>;
+template class TidRecCell<786>;
+template class TidRecCell<1024>;
+template class TidRecCell<2048>;
+
