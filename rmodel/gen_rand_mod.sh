@@ -22,7 +22,7 @@ if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
 fi
 
 ## Assume the perm-je library is here
-export LD_LIBRARY_PATH=$LMAT_DIR/../lib
+export LD_LIBRARY_PATH=$LMAT_DIR/../../lib
 
 
 db_file=""
