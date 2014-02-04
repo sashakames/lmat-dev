@@ -30,8 +30,9 @@ public:
         if (pos < count)
         {
             char *addr = get() + (sizeof(SZ) * (pos+1));
-            memcpy(buf, addr, (sizeof(SZ) * (count-pos));
-            
+            memcpy(buf, addr, (sizeof(SZ) * (count-pos)));
+            memcpy(get()+(sizeof(SZ) * pos+1), buf, (sizeof(SZ) * (count-pos)) );
+                   
         }
         
         items[pos] = in_item;
