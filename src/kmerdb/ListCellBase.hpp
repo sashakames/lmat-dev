@@ -89,11 +89,11 @@ public:
   }
 
 
-private:
   SZ items[N];
 
-}
-  ;
+};
+
+
 template <int N>
 typedef  ListCellBase<uint64_t>; N>  KmerRecCell;
 

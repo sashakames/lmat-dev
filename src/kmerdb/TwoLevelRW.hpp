@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <set>
-#include <ext/hash_map>
+#include <map>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -18,6 +18,8 @@
 
 #include <metag_const.h>
 #include "metag_typedefs.hpp"
+
+#include "ListCellBase.hpp"
 
 #if (WITH_PJMALLOC == 0)
 #define JEMALLOC_P(x) x
@@ -76,6 +78,13 @@ public:
 
 public:
     
+      TwoLevelRW(int in_kmer_len) {
+          
+          m_kmer_length = in_kmer_len;
+          
+      }
+      
+      
 
 int SIZE_CLASSES = { 4, 8, 12, 16, 24, 32 , 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024, 2048 };
 
@@ -90,17 +99,36 @@ int get_class(int key)
   
 }
 
+      char *mmap_base_addr;
+      
+      
+      void set_base_addr(char *in_addr)
+      {
+          
+          
+          mmap_base_addr = in_addr;
+      }
+      
 
       char *get_addr(uint64_t kmer_rec) {
           
+          size_t offset = kmer_rec & 0x00000FFFFFFFFFF ;
           
-          
+          return mmap_base_addr + offset;
       }
 
       
-                        template <int, int >
+      void set_offset(char *addr, uint64_t &kmer_rec) {
+          
+          size_t offset = addr - mmap_base_addr;
+          
+          kmer_rec = kmer_rec | (offset & 0x000000FFFFFFFFFF) ;
+          
+      }
       
-      void reallocate_cell<OLD,NEW> {
+    template <int OLD, int NEW>
+      
+      void reallocate_cell(uint16_t in_tid, int tid_count  , uint64_t & kmer_rec ) {
                   TidRecCell<OLD> *cur_cell = reinterpret_cast<TidRecCell<OLD>*>(get_addr  );
                   TidRecCell<NEW> *new_cell = new JEMALLOC_P(malloc)(sizeof(unit16_t)*new_size_class);
                   
@@ -112,16 +140,23 @@ int get_class(int key)
                 if (pos > -1)
                     break;
                   
-                  abspos = (-pos) -1;
+                  abspos = (-pos) -1;
                   src = cur_cell->get();
                   dest = new_cell->get();
                   
                   if (abspos > 0)
                       memcpy(dest, src, (sizeof(uint16_t) * abspos));
-                  
+          
+          new_cell->items[abspos] = in_tid;
+          
+          
+          
+          
+          if ( tid_count > abspos)
+          
                   delete(cur_cell);
           ￼
-      // store the offset
+          set_offset(new_cell->get(), kmer_rec);
       }
 
     void addTaxid(uint64_t & kmer_rec, uint16_t in_tid) {
@@ -135,9 +170,12 @@ int get_class(int key)
 
           
           switch (old_size_class) {
-              case <#constant#>4:
-                    reallocate_cell(in_tid, tid_count, kmer_rec)
-
+              case ￼4:
+                  reallocate_cell<4,8>(in_tid, tid_count, kmer_rec);
+                  
+                  break;
+              case ￼8:
+                  reallocate_cell<8,12>(in_tid, tid_count, kmer_rec);
                   
                   break;
                   
@@ -160,15 +198,15 @@ int get_class(int key)
           TidRecCell<4> &cur_cell = reinterpret_cast<TidRecCell<4>>(get_addr(kmer))
                 rc = cur_cell.insert_item();                  ￼
                   break;
-                                case 8:
+              case 8:
           TidRecCell<8> &cur_cell = reinterpret_cast<TidRecCell<8>>(get_addr(kmer))
                   rc = cur_cell.insert_item();                  ￼
                   break;
-                                                  case 12:
+              case 12:
           TidRecCell<12> &cur_cell = reinterpret_cast<TidRecCell<12>>(get_addr(kmer))
                   rc = cur_cell.insert_item();                  ￼
                   break;
-                                                  case 8:
+              case 8:
           TidRecCell<16> &cur_cell = reinterpret_cast<TidRecCell<16>>(get_addr(kmer))
                   rc = cur_cell.insert_item();                  ￼
                   break;
@@ -238,14 +276,43 @@ int get_class(int key)
 
 
 
-    void addKmer(uint64_t kmer, uint32_t taxid) {
+    void addKmer(uint64_t kmer, uint16_t taxid) {
       
-        size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+      //  size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
   
+
+        
+        add_taxid(kmer_map[kmer], taxid);
+        
 
     }
 
-    void addData(char *filename, uint32_t taxid) ;
+      uint64_t read_encode(FILE *f, kencode_c &ken) {
+          
+          char buf[33];
+          
+          
+          fscanf(f,"%s", buf);
+          
+          if (strlen(buf) > 0) {
+              uint64_t kmer = ken.kencode(buf);
+              //    cout << kmer << "\n";
+              
+              return kmer;
+          }
+          else
+              return ~0;
+          
+      }
+      
+      
+      void addData(char *filename, uint16_t taxid) {
+          
+          FILE *f = fopen(filename, "r");
+          
+          
+          
+      };
 
 
   private:
@@ -255,10 +322,9 @@ int get_class(int key)
 
   uint8_t m_kmer_length;
 
-  uint64_t *top_tier_block;
-                 
-
-
+//  uint64_t *top_tier_block;
+      
+      std::map<uint64_t, uint64_t, std:less, PERM_NS::allocator<uint64> > kmer_map;
 
   // used for taxid lists
 
