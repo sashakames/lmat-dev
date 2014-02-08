@@ -98,9 +98,9 @@ int main(int argc, char *argv[]) {
     case 'l':
       list = true;
       break;
-      /*    case 'r':
+   case 'r':
       restore = true;
-      break;*/
+      break;
     case 'i':
       ++count;
       inputfn = optarg;
@@ -135,11 +135,17 @@ int main(int argc, char *argv[]) {
 
 
   perm(&ttable, sizeof(ttable));
-  mopen(outputfn.c_str(), "w+", mmap_size);
-    
 
-  ttable = PERM_NEW(TwoLevelRW)(kmer_len);
+  if (!restore) {
+    mopen(outputfn.c_str(), "w+", mmap_size);
+    ttable = PERM_NEW(TwoLevelRW)(kmer_len);
+  }
+  else
+    mopen(outputfn.c_str(), "r+", 0);
 
+
+
+  ttable->addData(inputfn.c_str(), in_taxid);
 
   return(0);
 }

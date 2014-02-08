@@ -186,6 +186,8 @@ int get_class(int key)
     
     int old_size_class = get_class(tid_count);
     int new_size_class = get_class(tid_count+1);
+
+    bool rc = false;
     
       if ( old_size_class > new_size_class) {
 	
@@ -196,10 +198,39 @@ int get_class(int key)
 	  break;
 	case 8:
 	  reallocate_cell<8,12>(in_tid, tid_count, kmer_rec);
-          
+	  break;
+	case 12:
+	  reallocate_cell<12, 16>(in_tid, tid_count, kmer_rec);
+	case 16:
+	  reallocate_cell<16, 24>(in_tid, tid_count, kmer_rec);
+	case 24:
+	  reallocate_cell<24, 32>(in_tid, tid_count, kmer_rec);
+	case 32:
+	  reallocate_cell<32, 48>(in_tid, tid_count, kmer_rec);
+	case 48:
+	  reallocate_cell<48, 64>(in_tid, tid_count, kmer_rec);
+	case 64:
+	  reallocate_cell<64, 96>(in_tid, tid_count, kmer_rec);
+	case 96:
+	  reallocate_cell<96, 128>(in_tid, tid_count, kmer_rec);
+	case 128:
+	  reallocate_cell<128, 192>(in_tid, tid_count, kmer_rec);
+	case 192:
+	  reallocate_cell<192, 256>(in_tid, tid_count, kmer_rec);
+	case 256:
+	  reallocate_cell<256, 384>(in_tid, tid_count, kmer_rec);
+	case 384:
+	  reallocate_cell<384, 512>(in_tid, tid_count, kmer_rec);
+	case 512:
+	  reallocate_cell<512, 768>(in_tid, tid_count, kmer_rec);
+	case 768:
+	  reallocate_cell<768, 1024>(in_tid, tid_count, kmer_rec);
+	case 1024:
+	  reallocate_cell<1024, 2048>(in_tid, tid_count, kmer_rec);
 	  break;
           
 	default:
+	  assert(0);
 	  break;
 	}
 	
@@ -210,22 +241,70 @@ int get_class(int key)
       } else {
 	  //  add to current structure
           
-          bool rc = false;
+
           
           switch (old_size_class) {
                   
 	  case 4:
 	    rc = grow_cell<4>(kmer_rec, in_tid, tid_count );
 	    break;
-                  
+	  case 8:
+	    rc = grow_cell<8>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 12:
+	    rc = grow_cell<12>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 16:
+	    rc = grow_cell<16>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 24:
+	    rc = grow_cell<24>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 32:
+	    rc = grow_cell<32>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 48:
+	    rc = grow_cell<48>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 64:
+	    rc = grow_cell<64>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 96:
+	    rc = grow_cell<96>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 128:
+	    rc = grow_cell<128>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 192:
+	    rc = grow_cell<192>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 256:
+	    rc = grow_cell<256>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 384:
+	    rc = grow_cell<384>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 512:
+	    rc = grow_cell<512>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 768:
+	    rc = grow_cell<768>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 1024:
+	    rc = grow_cell<1024>(kmer_rec, in_tid, tid_count );
+	    break;
+	  case 2048:
+	    rc = grow_cell<2048>(kmer_rec, in_tid, tid_count );
+	    break;
               default:
                   break;
-         
-          
+                  
 
 	  }
           
       }
+
+      assert(rc);
 
   }
 
@@ -237,38 +316,50 @@ int get_class(int key)
       
       //  size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
   
-
+    // Use whatever index we got for now....
         
         addTaxid(m_kmer_map[kmer], taxid);
         
 
     }
 
-      uint64_t read_encode(FILE *f, kencode_c &ken) {
-          
-          char buf[33];
-          
-          
-          fscanf(f,"%s", buf);
-          
-          if (strlen(buf) > 0) {
-              uint64_t kmer = ken.kencode(buf);
-              //    cout << kmer << "\n";
-              
-              return kmer;
-          }
-          else
-              return ~0;
-          
-      }
       
+
+uint64_t read_encode(FILE *f, kencode_c &ken) {
+
+  char buf[33];
+
+
+  fscanf(f,"%s", buf);
+
+  if (strlen(buf) > 0) {
+    uint64_t kmer = ken.kencode(buf);
+    //    cout << kmer << "\n";
+  
+    return kmer;
+  }
+  else
+    return ~0;
+
+}
+
       
-      void addData(char *filename, uint16_t taxid) {
-          
-          FILE *f = fopen(filename, "r");
+      void addData(const char *filename, uint16_t taxid) {
+	
+	kencode_c ken(m_kmer_length);
+	
+	FILE *f = fopen(filename, "r");
+	
+	  uint64_t kmer = 0;
 	  
+	  while (~kmer) {
+	    
+	    kmer = read_encode(f, ken); 
+	    addKmer(kmer, taxid);
+
+	  }
 	  
-          
+	  fclose(f);
           
       }
 

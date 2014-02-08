@@ -23,7 +23,7 @@ public:
         int pos = find_item(in_item, count);
         
         if (pos >= 0)
-            return false;
+            return true;
         pos = (-1 - pos);
         
         if (pos < count)
@@ -35,7 +35,7 @@ public:
         }
         
         m_items[pos] = in_item;
-        
+	return true;
     }
     
 
