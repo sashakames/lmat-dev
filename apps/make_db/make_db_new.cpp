@@ -11,8 +11,6 @@ using namespace std;
 using namespace metag;
 
 
-
-
 //typedef pair<size_t, int> kmer_info_t; 
 
 void usage() {
@@ -144,8 +142,9 @@ int main(int argc, char *argv[]) {
     mopen(outputfn.c_str(), "r+", 0);
 
 
-
+  ttable->set_base_addr(reinterpret_cast<char*>(pje_get_base()));
   ttable->addData(inputfn.c_str(), in_taxid);
+
 
   return(0);
 }

@@ -108,7 +108,7 @@ int get_class(int key)
   
 }
 
-      char *mmap_base_addr;
+    char *mmap_base_addr;
 
 
     int get_tid_count(uint64_t kmer_rec)
