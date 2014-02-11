@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
   
   uint16_t in_taxid ;
  
- while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:w ")) != -1) {
+ while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wd:")) != -1) {
     switch(c) {
     case 'd':
       in_taxid = atoi(optarg);
