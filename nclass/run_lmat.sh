@@ -296,32 +296,6 @@ for db in $dlst ; do
          ## Below are parameters that may need to be tweaked differently depending
          ## on whether a marker library or full database is being used
          ###########################################################################
-         ## minimum abundance of reads required before making a summarization call
-         ## note you can still check read counts with no abundance filtering
-         #virus
-         min_virus_read=0.00001
-         # bacteria/archaea
-         min_prok_read=0.0001
-         # eukaryotes
-         min_euk_read=0.0001
-         # plasmids
-         min_plas=0.01
-         # minimum weight irrespective of call type
-         # Can be used to filter out an organism with lots of low scoring reads
-         min_wrdc=3
-         # once one strain is called, this parameter specifies the minimum number of reads
-         # required to specify a second strain
-         #a standard value for collapsing strains
-         #same_strain=2.0
-         #default is to set this high and not collapse strain data
-         #The issue now is that when re-assigning higher ranked reads, it is possible for the called strain
-         #to not have all of the observed variants. Unless another strain remains as a viable candidate
-         #there's a higher chance that the variant could be mis-assigned to another species.
-         same_strain=0.0
-         # Can be used to filter out low scoring singleton read calls if desired
-         #min_avg_wght=1.7
-         min_avg_wght=1.0
-         ###########################################################################
          if [ $db == "$markerdb" ] ; then
             if [ $skipMarkSumm == 1 ] ; then
                continue
@@ -329,18 +303,13 @@ for db in $dlst ; do
             ###########################################################################
             ## must change these settings for marker library
             ###########################################################################
-            min_wrdc=0.07
-            min_avg_wght=0.03
             ## Stores the k-mer counts associated with each taxid
             kmercnt="$LMAT_DIR/tcnt.kML18"
             ## I'm noticing slight over specificity in the marker library,so consider lower this value
-            ##sdiff=0.5  
          else 
             ## Stores the k-mer counts associated with each taxid
             kmercnt="$LMAT_DIR/tcnt.m9.20.tax_histo"
          fi
-         min_thresh="$min_euk_read $min_prok_read $min_virus_read $min_contam_filt $min_plas $min_wrdc $same_strain $min_avg_wght"
-         kcnt=12
          hstr=""
          ## in rarer cases where large samples are dominanted by humans
          ## it may be faster to not attempt to summarize the human read contents
@@ -349,7 +318,7 @@ for db in $dlst ; do
          fi
          if [ ! -e $sumofile ] || [ $overwrite == 1 ] ; then
             echo "Summary process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$sumofile]"
-            /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -b $suspect_genomes -t "$min_thresh" -c $noprune_taxtree -l $fastsum_file -k $kcnt -f $lst -r $rankval -m $kmercnt -o $sumofile >& $logfile
+            /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -c $noprune_taxtree -l $fastsum_file -k "8,10,12,14,17,20" -f $lst -r $rankval -o $sumofile >& $logfile
             ${bin_dir}csumm.sh --fsumm=$fastsum_file
          fi
      fi

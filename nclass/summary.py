@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import sys,os
 import copy
 from operator import itemgetter
 
@@ -57,7 +57,7 @@ def getNode(arr) :
       if arr[iter] != '' :
          break
       iter += 1
-   return arr[iter],int(arr[iter+1]),int(arr[iter+4]),int(arr[iter+6]),float(arr[iter+7]),int(arr[iter+5])
+   return arr[iter],int(arr[iter+1]),int(arr[iter+2]),float(arr[iter+3])
 
 rankMap=loadRank(rankfile)
 fsumMap=loadFastSumm(fsummfile)
@@ -76,12 +76,10 @@ def loadTree(fh) :
       if vals[0]=='Name' :
          continue
       num_tabs=cntTabs(vals)
-      pn,cnode,val1,val2,val3,val4 = getNode(vals)
+      pn,cnode,val2,val3= getNode(vals)
       names[cnode] = pn
-      kmercnt[cnode]=val1
       rdcnt[cnode]=val2
       wrdcnt[cnode]=val3
-      call_kmercnt[cnode]=val4
       ## find parent for current node
       while lines != [] : 
          pnode,last_tab_cnt=lines[0]
@@ -101,7 +99,6 @@ def summNode(cnode,call_type,child) :
    if (rankMap.has_key(cnode) and rankMap[cnode] == call_type and not isPlasmid(cnode)) or (isPlasmid(cnode) and call_type == "plasmid") :
       tot_wrdcnt = wrdcnt[cnode]
       tot_rdcnt = rdcnt[cnode]
-      tot_kmercnt = kmercnt[cnode]
       the_call=cnode
 
       save_strains = []
@@ -114,7 +111,6 @@ def summNode(cnode,call_type,child) :
          if (call_type == "species" and not isPlasmid(alt)) or (call_type != "species" ) and rdcnt[alt] > 0 :
             tot_wrdcnt += wrdcnt[alt]
             tot_rdcnt += rdcnt[alt]
-            tot_kmercnt += kmercnt[alt]
          if call_type == "species" and rankMap.has_key(alt) and rankMap[alt] == "strain" and not isPlasmid(alt) and rdcnt[alt] > 0:
             save_strains.append( alt )
 
@@ -128,7 +124,7 @@ def summNode(cnode,call_type,child) :
          slst = sorted( save_strains, key=lambda val : wrdcnt[val], reverse=True )
          ## for now this returns just the top strain call
          the_call=slst[0]
-   return (cnode,the_call,tot_wrdcnt,tot_rdcnt,tot_kmercnt)
+   return (cnode,the_call,tot_wrdcnt,tot_rdcnt)
       
 def bread_first_traverse(call_type,child) :
    save_calls=[]
@@ -150,16 +146,60 @@ def bread_first_traverse(call_type,child) :
             lopen.insert(0,nd)
    return save_calls
 
+def findPeak(arr) :
+   fndFirstLocalMin = False
+   copyVal=-1
+   for it in range(1,len(arr)-1,1) :
+      if not fndFirstLocalMin and arr[it-1][1] >= arr[it][1] and arr[it][1] < arr[it+1][1] :
+         fndFirstLocalMin = True
+      if fndFirstLocalMin and arr[it-1][1] <= arr[it][1] and arr[it][1] > arr[it+1][1] :
+         copyVal=arr[it][0] 
+         break
+   return copyVal
 
-def doPrn(save_calls,outh,names) :
+      
+
+def loadKmerStats(ifile,rank) :
+   fh=open(ifile)
+   saveDistr=False
+   distr=[] 
+   hold={}
+   tot_kcnt,tid,kval,kcnt=-1,-1,-1,-1
+   while True :
+      ln = fh.readline()
+      ln=ln.rstrip()
+      if ln == "" or (ln.find("taxid=") != -1 and ln.find("distinct_kmer_cnt=") != -1) :
+         if distr != [] :
+            val=findPeak(distr)
+            hold.setdefault(tid,{})
+            hold[tid].setdefault(kval,(val,kcnt,tot_kcnt))
+         if ln == "" :
+            break
+         saveDistr=False
+         distr=[]
+         vals=ln.split('=')
+         tid=int(vals[1].split(' ')[0])
+         if rankMap.has_key(tid) and rank == rankMap[tid] :
+            kcnt=int(vals[2].split(' ')[0])
+            kval=int(vals[3].split(' ')[0])
+            tot_kcnt=int(vals[4].split(' ')[0])
+            saveDistr=True
+      elif saveDistr :
+         vals=ln.split(' ')
+         distr.append( (int(vals[2]),int(vals[3])) )
+ 
+   return hold 
+
+def doPrn(save_calls,outh,names,kcov) :
    rep=sorted ( save_calls, key = itemgetter(2), reverse=True )
-   pstr="% of Reads, Avg Read Score, Weighted Read Count (WRC), Read Count (RC), k-mer count, k-mer %, Original WRC, Original RC, Name, Taxid"
+   pstr="% of Reads, Avg Read Score, Weighted Read Count (WRC), Read Count (RC), Original WRC, Original RC, Name, Taxid"
    outh.write(pstr+"\n")
 
    rc_sum=0
    for val in rep :
       rc_sum+=val[3]
    for val in rep :
+      rep_id=val[0]
       call_id=val[1]
       owrc,orc=-1,-1
       if fsumMap.has_key(call_id) : 
@@ -168,23 +208,25 @@ def doPrn(save_calls,outh,names) :
          owrc,orc=v1[0],v1[1]
       else :
          prnName=names[call_id]
-      wrc,rc,kmrcnt=val[2],val[3],val[4]
+      wrc,rc=val[2],val[3]
       if rc == 0 :
          print "which one?",call_id,val
       avg=float(wrc)/float(rc)
-      ck=call_kmercnt[call_id]
-      if ck == 0 :
-         kpcnt=0
-      else :
-         kpcnt=float(kmrcnt)/float(ck)
       tot_pcnt=float(rc)/float(rc_sum)
-      pstr=str(tot_pcnt)+"\t"+str(avg)+"\t"+str(wrc)+"\t"+str(rc)+"\t"+str(kmrcnt)+"\t"+str(ck)+"\t"+str(kpcnt)+"\t"+str(owrc)+"\t"+str(orc)+"\t"+prnName+"\t"+str(call_id)
+      pstr=str(tot_pcnt)+"\t"+str(avg)+"\t"+str(wrc)+"\t"+str(rc)+"\t"+str(owrc)+"\t"+str(orc)+"\t"+prnName+"\t"+str(call_id)
+      pstr += "\t"+str(rep_id)
+      if kcov.has_key(rep_id) :
+         for kv in kcov[rep_id].keys() :
+            pstr += "\t"+str(kv)+","+str(kcov[rep_id][kv][0])+","+str(kcov[rep_id][kv][1])+","+str(kcov[rep_id][kv][2])
       outh.write(pstr+"\n")
 
 fh=open(summfile)
 lchild,lname=loadTree(fh)
 for ranktype in rank_calls.split() :
    outfile=open(out_base+"."+ranktype,"w")
-   #print "proces",ranktype,lchild[992401]
+   redun_file=summfile+"."+ranktype+"_kmer_cov"
+   k_mer_cov={}
+   if os.path.isfile(redun_file) :
+      k_mer_cov=loadKmerStats(redun_file,ranktype)
    save_calls=bread_first_traverse(ranktype,lchild)
-   doPrn(save_calls,outfile,lname)
+   doPrn(save_calls,outfile,lname,k_mer_cov)

@@ -67,25 +67,7 @@ static void loadLowNumPlasmids(const string& file) {
 }
 
 
-//static float compReadCnt(const vector<map<TID_T,float> >& track, TID_T tid);
-static void compKmerCov(const vector<vector<map<TID_T,kmer_cnt_t> > >& track, TID_T tid, ofstream& ofs, const vector<int>& kv); 
-
-// as long cont_lst is not too big (which it shouldn't be) let's just do brute force for now
-static bool checkContLst( const string& buff_str, const list<string>& cont_lst ) {
-   bool isCont=false;
-   list<string>::const_iterator it = cont_lst.begin();
-   const list<string>::const_iterator is = cont_lst.end();
-   for(; it != is; ++it) {
-      const string& cont_id = *it;
-      //cout<<"needle="<<cont_id<<" haystack="<<buff_str<<endl;
-      if( buff_str.find( cont_id ) != string::npos  ) {
-         if(VERBOSE) cout<<"identified as genome with possible contaminants "<<cont_id<<endl;
-         isCont=true;  
-         break;
-      }
-   }
-   return isCont;
-}
+static void compKmerCov(const vector<vector<map<TID_T,kmer_cnt_t> > >& track, TID_T tid, ofstream& ofs, const vector<int>& kv, const vector<vector<map<TID_T,int> > >&); 
 
 struct QCmp {
    bool operator()(const tid_call_t& a, const tid_call_t& b) {
@@ -127,47 +109,9 @@ default: k = 0; continue; \
    klen: k-mer length in nucleotides
 */
 
-#if 0
 static
-int retrieve_kmer_labels(/*INDEXDB<TID_T>* table,*/ const char* str, const int slen, const kmer_t klen, const TID_T& taxid, map< TID_T, 
-                         kmer_cnt_t >& kmer_track) {
-    int j; /* position of last nucleotide in sequence */
-    int k = 0; /* count of contiguous valid characters */
-    int highbits = (klen-1)*2; /* shift needed to reach highest k-mer bits */
-    kmer_t mask = ((kmer_t)1 << klen*2)-1; /* bits covering encoded k-mer */
-    kmer_t forward = 0; /* forward k-mer */
-    kmer_t reverse = 0; /* reverse k-mer */
-    kmer_t kmer_id; /* canonical k-mer */
-    set<kmer_t> no_dups;
-    int valid_kmers=0;
-    for (j = 0; j < slen; j++) {
-        register int t;
-        ENCODE(t, str[j], k);
-        forward = ((forward << 2) | t) & mask;
-        reverse = ((kmer_t)(t^3) << highbits) | (reverse >> 2);
-        if (++k >= (signed)klen) {
-           valid_kmers++;
-           kmer_id = (forward < reverse) ? forward : reverse;
-            /* zero based position of forward k-mer is (j-klen+1) */
-            /* zero based position of reverse k-mer is (slen-j-1) */
-           //const int pos = j-klen+1;
-           /* kmer_lookup(kmer); do k-mer lookup here... */
-           if( no_dups.find(kmer_id) != no_dups.end() ) continue;
-           no_dups.insert(kmer_id);
-           if( kmer_track[taxid].find(kmer_id) == kmer_track[taxid].end() ) {
-               kmer_track[taxid].insert(make_pair(kmer_id,1));
-           } else { 
-               kmer_track[taxid][kmer_id] += 1;
-           } 
-         }
-    }
-    return valid_kmers;
-}
-#endif
-
-static
-int retrieve_kmer_labels(/*INDEXDB<TID_T>* table,*/ const char* str, const int slen, const vector<int>& klen, const TID_T& taxid, vector<map< TID_T,
-                         kmer_cnt_t > >& kmer_track) {
+void retrieve_kmer_labels(/*INDEXDB<TID_T>* table,*/ const char* str, const int slen, const vector<int>& klen, const TID_T& taxid, 
+                         vector<map< TID_T, kmer_cnt_t > >& kmer_track, vector<map<TID_T,int> >& /*delete me*/) {
     int j; /* position of last nucleotide in sequence */
     const unsigned kls = klen.size();
     vector<int> k(kls,0); /* count of contiguous valid characters */
@@ -181,7 +125,7 @@ int retrieve_kmer_labels(/*INDEXDB<TID_T>* table,*/ const char* str, const int s
     }
     //kmer_t kmer_id; /* canonical k-mer */
     vector<set<kmer_t> > no_dups(kls);
-    int valid_kmers=0;
+    vector<int> valid_kmers(kls,0);
     vector<kmer_t> forward(kls,0); /* forward k-mer */
     vector<kmer_t> reverse(kls,0); /* reverse k-mer */
     for (j = 0; j < slen; j++) {
@@ -191,7 +135,6 @@ int retrieve_kmer_labels(/*INDEXDB<TID_T>* table,*/ const char* str, const int s
           forward[ksi] = ((forward[ksi] << 2) | t) & mask[ksi];
           reverse[ksi] = ((kmer_t)(t^3) << highbits[ksi]) | (reverse[ksi] >> 2);
           if (++k[ksi] >= (signed)klen[ksi]) {
-            valid_kmers++;
             const kmer_t kmer_id = (forward[ksi] < reverse[ksi]) ? forward[ksi] : reverse[ksi];
             /* zero based position of forward k-mer is (j-klen+1) */
             /* zero based position of reverse k-mer is (slen-j-1) */
@@ -206,14 +149,13 @@ int retrieve_kmer_labels(/*INDEXDB<TID_T>* table,*/ const char* str, const int s
           }
        }
     }
-    return valid_kmers;
 }
 
 
 void
-storeKmers(const string &read_str, const vector<int>& k_size, vector<map< TID_T, kmer_cnt_t> >& kmer_track, TID_T call) {
+storeKmers(const string &read_str, const vector<int>& k_size, vector<map< TID_T, kmer_cnt_t> >& kmer_track, vector<map< TID_T, int> >& kmer_cnt, TID_T call) {
    const int ri_len = read_str.length();
-   retrieve_kmer_labels(read_str.c_str(), ri_len, k_size, call, kmer_track);
+   retrieve_kmer_labels(read_str.c_str(), ri_len, k_size, call, kmer_track, kmer_cnt);
 }
 
 static string *split_file_names(int& n_threads, const string& file_lst)
@@ -292,8 +234,7 @@ int main(int argc, char* argv[])
    char c = '\0';
 
    float threshold = 0.0;
-   map<TID_T, uint64_t> ref_kmer_cnt;
-   string sep_plas_file,query_fn_lst,lmat_sum,kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, kmer_cnt_file, depth_file, rank_table_file, cont_genomes_lst;
+   string sep_plas_file,query_fn_lst,lmat_sum,kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, depth_file, rank_table_file, cont_genomes_lst;
    string low_num_plasmid_file, k_size_str;
    hmap_t imap;	
    bool skipHuman=false;
@@ -315,9 +256,6 @@ int main(int argc, char* argv[])
       case 'y':
          VERBOSE = true;
          break;
-      case 'm':
-	     kmer_cnt_file = optarg;
-        break;
       case 'l':
 	     lmat_sum = optarg;
         break;
@@ -362,9 +300,12 @@ int main(int argc, char* argv[])
          istrm>>ival;
          k_size.push_back(ival);
          ++pos;
+         val = strtok(NULL,",");
       }      
    }
-   //const unsigned num_kmer_sizes = k_size.size(); 
+   for(unsigned i = 0; i < k_size.size(); ++i) {
+      cout<<"track k size="<<k_size[i]<<endl;
+   }
    StopWatch clock;
    const unsigned buff_size = 2024;
    char buff[buff_size];
@@ -382,25 +323,8 @@ int main(int argc, char* argv[])
    if( low_num_plasmid_file.length() > 0 ) {
       loadLowNumPlasmids(low_num_plasmid_file);
    }
-
-   float min_euk, min_prok,min_vir, min_contam, min_plas, min_wrdcnt, same_strain_thresh,min_avg_wght;
-   istringstream thrsh_istrm(thresh_str.c_str());
-   thrsh_istrm>>min_euk>>min_prok>>min_vir>>min_contam>>min_plas>>min_wrdcnt>>same_strain_thresh>>min_avg_wght;
-   cout<<"Thresh: "<<thresh_str<<endl;
-   if( !kmer_cnt_file.c_str() ) {
-      cout<<"Require an expected k-mer count file"<<endl;
-      return 0;
-   }
-   cout<<"expected kmer cnt:"<<kmer_cnt_file<<endl;
-   ifstream ifs2(kmer_cnt_file.c_str());
-   TID_T tid;
-   uint64_t cnt;
-   while(ifs2.getline(buff,buff_size)) {
-      istringstream istrm(buff);
-      istrm>>tid>>cnt;
-      ref_kmer_cnt.insert(make_pair(tid,cnt));
-   }
    rank_map_t rank_table;
+   TID_T tid;
    if( rank_table_file.size() > 0) {
       ifstream ifs1(rank_table_file.c_str());
       string rank;
@@ -418,41 +342,45 @@ int main(int argc, char* argv[])
    cout<<"Done Read taxonomy tree: "<<tax_tree_fn<<endl;
    map<TID_T,float> weighted_readcnt;
    map<TID_T,int> read_cnts;
-   map<TID_T,int> merge_read_cnt;
-      set<TID_T> curr_call_set;
-      ifstream call_ifs(lmat_sum.c_str());
-      if( !call_ifs ) {
-         cerr<<"Failed to open "<<lmat_sum<<" must exit now"<<endl;
-         return -1;
-      }
-      map<TID_T,signed> save_call;
-      set<TID_T> non_leaf_call;
-      set<TID_T> cont_set;
-      while(call_ifs.getline(buff,buff_size)) {
-         string buff_str=buff;
-         if( buff_str.find("\tNULL\t") == string::npos) {
-            istringstream istrm(buff);
-            TID_T tid;
-            unsigned read_cnt = 0;
-            string descrip;
-            float wght_rc = 0;
-            istrm>>wght_rc>>read_cnt>>tid>>descrip;
-            weighted_readcnt.insert(make_pair(tid,wght_rc));
-            read_cnts.insert(make_pair(tid,read_cnt)); 
-            vector<TID_T> ptor;
-            tax_tree.getPathToRoot(tid,ptor);
-            if( ptor.size() > 0 && tid < 10000000 ) { //tid >= 10000000 are plasmids treat their parent's as leaves also
-               assert (ptor[0] != tid ); // confirm tid is included here
-               for(unsigned i = 0; i < ptor.size(); ++i) {
-                  non_leaf_call.insert(ptor[i]);
-               }
-            } else if( ptor.size() <= 0 ) {
-               non_leaf_call.insert(tid);
-            }
-            save_call.insert(make_pair(tid,read_cnt));
-            if( VERBOSE ) cout<<"check candidate: "<<buff_str<<endl;
+   set<TID_T> curr_call_set;
+   ifstream call_ifs(lmat_sum.c_str());
+   if( !call_ifs ) {
+      cerr<<"Failed to open "<<lmat_sum<<" must exit now"<<endl;
+      return -1;
+   }
+   //map<TID_T,signed> save_call;
+   //set<TID_T> non_leaf_call;
+   //set<TID_T> cont_set;
+   list<TID_T> clst;
+   tid_map_t strain2spec;
+   while(call_ifs.getline(buff,buff_size)) {
+      string buff_str=buff;
+      if( buff_str.find("\tNULL\t") == string::npos) {
+         istringstream istrm(buff);
+         TID_T tid;
+         unsigned read_cnt = 0;
+         string descrip;
+         float wght_rc = 0;
+         istrm>>wght_rc>>read_cnt>>tid>>descrip;
+         weighted_readcnt.insert(make_pair(tid,wght_rc));
+         read_cnts.insert(make_pair(tid,read_cnt)); 
+         if( rank_table[tid] == "species" ) {
+            strain2spec.insert( make_pair(tid,tid) );
          }
+         if( !isPlasmid(tid) ) {
+            vector<TID_T> localptor;
+            tax_tree.getPathToRoot(tid,localptor);
+            for(unsigned li = 0; li < localptor.size(); ++li) {
+               if( rank_table[localptor[li]] == "species" ) {
+                  strain2spec.insert( make_pair(tid,localptor[li]) );
+                  if(VERBOSE) cout<<"save species mapping: "<<tid<<" to "<<localptor[li]<<endl;
+               }
+            }
+         }
+         clst.push_back(tid);
       }
+   }
+#if 0
       list<tid_call_t> cand_lst;
       map<TID_T,signed>::const_iterator it1 = save_call.begin();
       const map<TID_T,signed>::const_iterator is1 = save_call.end();
@@ -482,44 +410,39 @@ int main(int argc, char* argv[])
          call_vec[i] = val;
       }
       sort( call_vec.begin(), call_vec.end(), QCmp() );
-      tid_map_t top_strain, strain2spec;
       set<TID_T> leaf_calls;
-      map<TID_T,TID_T> get_species;
-      cand_lin_t save_call_lin;
+      //cand_lin_t save_call_lin;
       for(unsigned cvi =0; cvi < call_vec.size(); ++cvi) {
          const TID_T tid = call_vec[cvi].first;
          vector<TID_T> localptor;
          tax_tree.getPathToRoot(tid,localptor);
          if(VERBOSE) cout<<"save call lineage: "<<cvi<<" "<<tid<<endl;
          list<TID_T> lst; // intentionally empty
-         save_call_lin.insert( make_pair( tid,lst) );
+         //save_call_lin.insert( make_pair( tid,lst) );
          leaf_calls.insert(tid);
          if( rank_table[tid] == "species" ) {
             strain2spec.insert( make_pair(tid,tid) );
          }
          for(unsigned li = 0; li < localptor.size(); ++li) {
             if( rank_table[localptor[li]] == "species" ) {
-               if( top_strain.find( localptor[li] ) == top_strain.end() ) {
-                  assert( tid != localptor[li] );
-                  top_strain.insert( make_pair(localptor[li],tid) );
-               }
                strain2spec.insert( make_pair(tid,localptor[li]) );
                if(VERBOSE) cout<<"save species mapping: "<<tid<<" to "<<localptor[li]<<endl;
-            
-               get_species.insert( make_pair(tid, localptor[li]) );
             }
-            save_call_lin[ localptor[li] ].push_back(tid);
-            if(VERBOSE) cout<<"why so slow: "<<tid<<" "<<save_call_lin[localptor[li]].size()<<endl;
+            //save_call_lin[ localptor[li] ].push_back(tid);
+            //if(VERBOSE) cout<<"why so slow: "<<tid<<" "<<save_call_lin[localptor[li]].size()<<endl;
          }
       }
+#endif
       string line;
       bool finished = false;
       clock.start();
       size_t read_count = 0; 
+      vector< vector< map< TID_T, int > > >  valid_kmer_cnt(n_threads);
       vector< vector<map< TID_T, kmer_cnt_t> > >  kmer_track(n_threads);
-      for(unsigned i = 0; i < kmer_track.size(); ++i) { kmer_track[i].resize(4); }
+      for(unsigned i = 0; i < valid_kmer_cnt.size(); ++i) { valid_kmer_cnt[i].resize(k_size.size()); }
+      for(unsigned i = 0; i < kmer_track.size(); ++i) { kmer_track[i].resize(k_size.size()); }
       ifstream ifs;
-#pragma omp parallel shared(file_lst, k_size, tax_tree, strain2spec, kmer_track)  private(ifs,finished, ofname, line, read_count)
+#pragma omp parallel shared(file_lst, k_size, tax_tree, strain2spec, kmer_track,valid_kmer_cnt)  private(ifs,finished, ofname, line, read_count)
       {
       read_count = 0;
       finished = false;
@@ -558,110 +481,122 @@ int main(int argc, char* argv[])
        istrm >>taxid>>score>>match_type;
        if(isHuman(taxid) && skipHuman) continue;
        if(score < threshold) continue;
-       if( strain2spec.find(taxid) != strain2spec.end() ) {
-            const TID_T use_tid = strain2spec[taxid];  
-            storeKmers(read_buff, k_size, kmer_track[thread], use_tid);
+       TID_T use_tid = taxid;
+       // If it's a not a plasmid and classified as strain/species roll everything together
+       // everything else is left as it is.
+       if( strain2spec.find(taxid) != strain2spec.end() && ! isPlasmid(taxid) ) {
+         use_tid = strain2spec[taxid];  
        } 
+       // for speed sake, don't bother k-mer counting beyond species,plasmid,genus
+       storeKmers(read_buff, k_size, kmer_track[thread], valid_kmer_cnt[thread], use_tid);
        read_count ++;
      }
    }
-   kmer_cnt_t merge_kmer_cnt;
    set<TID_T> seen;
    ofstream ofs(ofbase.c_str());
-      map<TID_T,list<TID_T> > child;
-      typedef pair<TID_T,pair<float,pair<int,int> > > res_t;
-      for(unsigned i =0; i < call_vec.size(); ++i) {
-         const TID_T tid = call_vec[i].first;
-         vector<TID_T> ptor;
-         tax_tree.getPathToRoot(tid,ptor);
-         TID_T child_node=tid;
-         for(unsigned li = 0; li  < ptor.size(); ++li) {
-            const TID_T ptid = ptor[li];
-            if( seen.find(child_node) == seen.end() ) {
-               seen.insert( child_node );
-               if( child.find(ptid) == child.end() ) {
-                  list<TID_T> nodes;
-                  nodes.push_back(child_node);
-                  child.insert( make_pair(ptid,nodes) );
-               } else {
-                  child[ptid].push_back(child_node);
-               }
+   map<TID_T,list<TID_T> > child;
+   typedef pair<TID_T,pair<float,pair<int,int> > > res_t;
+   list<TID_T>::const_iterator ib = clst.begin();
+   const list<TID_T>::const_iterator ie = clst.end();
+   for(; ib != ie ; ++ib) {
+      const TID_T tid = *ib; 
+      vector<TID_T> ptor;
+      tax_tree.getPathToRoot(tid,ptor);
+      TID_T child_node=tid;
+      for(unsigned li = 0; li  < ptor.size(); ++li) {
+         const TID_T ptid = ptor[li];
+         if( seen.find(child_node) == seen.end() ) {
+            seen.insert( child_node );
+            if( child.find(ptid) == child.end() ) {
+               list<TID_T> nodes;
+               nodes.push_back(child_node);
+               child.insert( make_pair(ptid,nodes) );
+            } else {
+               child[ptid].push_back(child_node);
             }
-            child_node= ptid;
          }
+         child_node= ptid;
       }
-      string out_fn;
-      ostringstream to1;
-      to1<<ofbase<<".species_kmer_cov";
-      ofstream kos(to1.str().c_str());
-      if( !kos ) {
-         cout<<"Unable to write to "<<to1.str()<<" will try to continue"<<endl;
-      } 
-      ofs<<"Name\tTaxID\tAbundance\tGenome Copies\tGenome Covered\tReads\tWReads"<<endl;
-      //vector<map<TID_T,float> > merge_kmer_track(k_size.size());
-      map<TID_T,list<char> > tab_lst;
-      TID_T cnode = 1; // should always be root
-      list<TID_T> open;
-      open.push_back(cnode);
-      while( !open.empty() ) {
-         const TID_T tid = open.front();
-         open.pop_front();
-         const list<TID_T>& lst = child[tid];
-         list<TID_T>::const_iterator ib = lst.begin();
-         const list<TID_T>::const_iterator ie = lst.end();
-         list<char> chk = tab_lst[tid];
-         chk.push_back('\t');
-         for(; ib != ie; ++ib) {
-            tab_lst[*ib] = chk;
-            open.push_front(*ib);
-         }
-         const unsigned tot_read_cnt = read_cnts[tid];
-         float wrdc=0,ratio=0;
-         unsigned median_kmer_cnt=0;
-         uint64_t expect_cov=0,k_mer_cnt=0;
-         if( tot_read_cnt > 0 ) {
-            wrdc = weighted_readcnt[tid];
-            if( rank_table[tid] == "species" ) {
-               compKmerCov(kmer_track,tid,kos,k_size);
-            }
-            expect_cov = ref_kmer_cnt[tid];
-            k_mer_cnt = merge_kmer_cnt[tid];
-            ratio = (float)k_mer_cnt / (float)expect_cov;
-         }
-         const string call_name = tax_tree.getName(tid);
-         list<char>::const_iterator tab_ib = tab_lst[tid].begin();
-         list<char>::const_iterator tab_ie = tab_lst[tid].end();
-         for( ; tab_ib != tab_ie; ++tab_ib) {
-            ofs<<*tab_ib;
-         }
-         ofs<<call_name<<"\t"<<tid<<"\t"<<median_kmer_cnt<<"\t"<<ratio<<"\t"<<k_mer_cnt<<"\t"<<expect_cov<<"\t"<<tot_read_cnt<<"\t"<<wrdc<<endl;
+   }
+   string out_fn;
+   ofs<<"Name\tTaxID\tReads\tWReads"<<endl;
+   map<TID_T,list<char> > tab_lst;
+   TID_T cnode = 1; // should always be root
+   list<TID_T> open;
+   open.push_back(cnode);
+   map<string,ofstream*> rank_ofs;
+   while( !open.empty() ) {
+      const TID_T tid = open.front();
+      open.pop_front();
+      const list<TID_T>& lst = child[tid];
+      list<TID_T>::const_iterator ib = lst.begin();
+      const list<TID_T>::const_iterator ie = lst.end();
+      list<char> chk = tab_lst[tid];
+      chk.push_back('\t');
+      for(; ib != ie; ++ib) {
+         tab_lst[*ib] = chk;
+         open.push_front(*ib);
       }
-   cout << "query time: " << clock.stop() << endl;
+      const unsigned tot_read_cnt = read_cnts[tid];
+      float wrdc=0;
+      if( tot_read_cnt > 0 ) {
+         wrdc = weighted_readcnt[tid];
 
+         string rank=rank_table[tid];
+         if( rank != "no_rank" ) {
+            if(isPlasmid(tid)) {
+               rank="plasmid";
+            }
+            ofstream* kos = NULL;
+            if( rank_ofs.find(rank) != rank_ofs.end() ) {
+               kos = rank_ofs[rank]; 
+            } else {
+               ostringstream to1;
+               to1<<ofbase<<"."<<rank<<"_kmer_cov";
+               ofstream* kos = new ofstream(to1.str().c_str());
+               if( !(*kos) ) {
+                  cout<<"Unable to write to "<<to1.str()<<" will try to continue"<<endl;
+               } 
+               rank_ofs.insert(make_pair(rank,kos));
+            }
+            // k-mer count doesn't really make sense if there's only one read
+            if(kos && tot_read_cnt > 1) {
+               compKmerCov(kmer_track,tid,*kos,k_size,valid_kmer_cnt);
+            }
+         }
+      }
+      const string call_name = tax_tree.getName(tid);
+      list<char>::const_iterator tab_ib = tab_lst[tid].begin();
+      list<char>::const_iterator tab_ie = tab_lst[tid].end();
+      for( ; tab_ib != tab_ie; ++tab_ib) {
+         ofs<<*tab_ib;
+      }
+      ofs<<call_name<<"\t"<<tid<<"\t"<<tot_read_cnt<<"\t"<<wrdc<<endl;
+   }
+   cout << "query time: " << clock.stop() << endl;
    return 0; 
 }
 
-   static float compReadCnt(const vector<map<TID_T,float> >& track, TID_T tid) {
-      float sum = 0;
-      for(unsigned thread = 0; thread < track.size(); ++thread) {
-         if( track[thread].find(tid) != track[thread].end()) {
-            sum += (*track[thread].find(tid)).second;
-         }
-      }
-      return sum;
-   }
-static void compKmerCov(const vector<vector<map<TID_T,kmer_cnt_t> > >& track, TID_T tid, ofstream& ofs, const vector<int>& kv) {
+static void compKmerCov(const vector<vector<map<TID_T,kmer_cnt_t> > >& track, TID_T tid, ofstream& ofs, const vector<int>& kv, const vector<vector<map<TID_T,int> > >& /*delete*/) {
    for(unsigned ksi = 0; ksi < kv.size(); ++ksi) {
       kmer_cnt_t  local_merge;
+      map<TID_T,int> local_kcnt;
       uint64_t kmer_cnt = 0;
+      int kcnt_sum = 0;
       for(unsigned thread = 0; thread < track.size(); ++thread) {
+         //if( kcnt[thread][ksi].find(tid) != kcnt[thread][ksi].end())  
+            //assert( track[thread][ksi].find(tid) != track[thread][ksi].end() );
+
          if( track[thread][ksi].find(tid) != track[thread][ksi].end() ) {
+            ////kcnt_sum += (*kcnt[thread][ksi].find(tid)).second;
+            //if(tid == 1392) cout<<"what's happening "<<thread<<" "<<kcnt_sum<<" "<<(*kcnt[thread][ksi].find(tid)).second<<endl;
             const kmer_cnt_t& local_track = (*track[thread][ksi].find(tid)).second;
             kmer_cnt_t::const_iterator it = local_track.begin();
             const kmer_cnt_t::const_iterator is = local_track.end();
             for(; it != is; ++it ) {
                const kmer_t kmer_val = (*it).first;
                const uint64_t cnt = (*it).second;
+               kcnt_sum += cnt;
                if( local_merge.find(kmer_val) == local_merge.end() ) {
                   local_merge[kmer_val] = cnt;
                   ++kmer_cnt; 
@@ -686,7 +621,7 @@ static void compKmerCov(const vector<vector<map<TID_T,kmer_cnt_t> > >& track, TI
          }
       }
       sort (ids.begin(),ids.end());
-      ofs<<"taxid="<<tid<<" distinct_kmer_cnt="<<kmer_cnt<<" k_size="<<kv[ksi]<<endl;
+      ofs<<"taxid="<<tid<<" distinct_kmer_cnt="<<kmer_cnt<<" k_size="<<kv[ksi]<<" tot_kmer_cnt="<<kcnt_sum<<endl;
       for(unsigned i= 0; i < ids.size(); ++i) {
          ofs<<tid<<" "<<kv[ksi]<<" "<<ids[i]<<" "<<hist[ids[i]]<<endl;
       }

@@ -41,6 +41,13 @@ The following must now be done on instdb-a
 The scripts are provided here for completeness (gid_to_tid.pl and bulkLookupTaxNodeBySeqDataID.pl)
 cat microbe2.fasta.headers | gid_to_tid.pl > microbe2.fasta.headers.mapping
 outputs any errors to errlog.txt and creates a tmp file : tmp.txt
+#############################
+## Step 3 - ALTERNATIVE map gids to tax ids -- If sequences do not come from KPATH, and we only have GIs
+#############################
+wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
+gunzip gi_taxid_nucl.dmp.gz 
+cat $headers | perl -ne 'if(/gi\|(\d+)/) { system("grep -m 1 ^\"$1\t\" gi_taxid_nucl.dmp");} else { print "error finding $1\n";}' > $headers.tids
+
 
 
 ## If human data not available create as follows:
