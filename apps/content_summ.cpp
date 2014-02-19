@@ -238,7 +238,6 @@ int main(int argc, char* argv[])
    string low_num_plasmid_file, k_size_str;
    hmap_t imap;	
    bool skipHuman=false;
-   string thresh_str;
    while ((c = getopt(argc, argv, "m:f:ah:n:jb:ye:wp:k:c:v:k:i:d:l:t:sr:o:x:f:g:z:q:")) != -1) {
       switch(c) {
       case 'p':
@@ -246,9 +245,6 @@ int main(int argc, char* argv[])
          break;
       case 's':
          skipHuman = true;
-         break;
-      case 'b':
-         cont_genomes_lst = optarg;
          break;
       case 'r':
          rank_table_file = optarg;
@@ -273,9 +269,6 @@ int main(int argc, char* argv[])
          break;
       case 'i':
          query_fn = optarg;
-         break;
-      case 't':
-         thresh_str = optarg;
          break;
       case 'o':
          ofbase = optarg;
@@ -309,17 +302,6 @@ int main(int argc, char* argv[])
    StopWatch clock;
    const unsigned buff_size = 2024;
    char buff[buff_size];
-   list<string> cont_lst;
-   if( cont_genomes_lst.size() > 0 ) {
-      ifstream ifs(cont_genomes_lst.c_str());
-      if( !ifs ) {
-         cout<<"Error reading "<<cont_genomes_lst<<endl;
-         return -1; 
-      }
-      while(ifs.getline(buff,buff_size)) {
-         cont_lst.push_back(buff);
-      }
-   }
    if( low_num_plasmid_file.length() > 0 ) {
       loadLowNumPlasmids(low_num_plasmid_file);
    }

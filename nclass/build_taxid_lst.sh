@@ -67,9 +67,8 @@ fi
 
 while read file ; do
    ofile=$file.idtxt
-   echo "${bindir}build_taxid_lst.pl $taxfile $file $ofile $sstr | parallel " >> $tfile
+   echo "${bindir}build_taxid_lst.pl $taxfile $file $ofile $sstr | ${pbin}parallel " >> $tfile
 done < $file_lst
 ${pbin}parallel --load 150% --progress $jobstr -a $tfile 
-
 
 rm -f $tfile

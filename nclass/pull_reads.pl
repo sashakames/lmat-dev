@@ -19,7 +19,6 @@ my $ofilebase="$odir/$tbase.$idname.pulled";
 sub writeFasta {
   my ($str,$header,$fh) = @_;
   print $fh ">$header\n";
-  #print ">$header\n";
   for(my $iter = 0; $iter < length($$str); $iter += 80) {
     my $mstr = substr($$str,$iter,80);
     print $fh "$mstr\n";
