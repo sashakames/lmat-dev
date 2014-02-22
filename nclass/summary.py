@@ -222,7 +222,7 @@ def doPrn(save_calls,outh,names,kcov) :
 
 fh=open(summfile)
 lchild,lname=loadTree(fh)
-for ranktype in rank_calls.split() :
+for ranktype in rank_calls.split(',') :
    outfile=open(out_base+"."+ranktype,"w")
    redun_file=summfile+"."+ranktype+"_kmer_cov"
    k_mer_cov={}
