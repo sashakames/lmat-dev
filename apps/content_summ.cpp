@@ -235,11 +235,14 @@ int main(int argc, char* argv[])
 
    float threshold = 0.0;
    string sep_plas_file,query_fn_lst,lmat_sum,kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, depth_file, rank_table_file, cont_genomes_lst;
-   string low_num_plasmid_file, k_size_str;
+   string low_num_plasmid_file, k_size_str, rank_check_str;
    hmap_t imap;	
    bool skipHuman=false;
-   while ((c = getopt(argc, argv, "m:f:ah:n:jb:ye:wp:k:c:v:k:i:d:l:t:sr:o:x:f:g:z:q:")) != -1) {
+   while ((c = getopt(argc, argv, "m:f:a:h:n:jb:ye:wp:k:c:v:k:i:d:l:t:sr:o:x:f:g:z:q:")) != -1) {
       switch(c) {
+      case 'a':
+         rank_check_str = optarg;
+         break;
       case 'p':
          low_num_plasmid_file = optarg;
          break;
@@ -296,6 +299,14 @@ int main(int argc, char* argv[])
          val = strtok(NULL,",");
       }      
    }
+   set<string> rank_check;
+   const char* val1 = strtok(const_cast<char*>(rank_check_str.c_str()),",");
+   while( val1 != NULL ) {
+      cout<<"rank store: ["<<val1<<"]"<<endl;
+      rank_check.insert(val1);
+      val1 = strtok(NULL,",");
+   }
+
    for(unsigned i = 0; i < k_size.size(); ++i) {
       cout<<"track k size="<<k_size[i]<<endl;
    }
@@ -330,9 +341,6 @@ int main(int argc, char* argv[])
       cerr<<"Failed to open "<<lmat_sum<<" must exit now"<<endl;
       return -1;
    }
-   //map<TID_T,signed> save_call;
-   //set<TID_T> non_leaf_call;
-   //set<TID_T> cont_set;
    list<TID_T> clst;
    tid_map_t strain2spec;
    while(call_ifs.getline(buff,buff_size)) {
@@ -362,59 +370,6 @@ int main(int argc, char* argv[])
          clst.push_back(tid);
       }
    }
-#if 0
-      list<tid_call_t> cand_lst;
-      map<TID_T,signed>::const_iterator it1 = save_call.begin();
-      const map<TID_T,signed>::const_iterator is1 = save_call.end();
-      for(;  it1 != is1; ++it1) {
-         TID_T tid = (*it1).first;
-         unsigned read_cnt_sum= (*it1).second;
-            if( non_leaf_call.find(tid) == non_leaf_call.end() ) {
-               // without this, plasmids will get selected first
-               if( tid < 10000000 ) {
-                  vector<TID_T> ptor;
-                  tax_tree.getPathToRoot(tid,ptor);
-                  for(unsigned i = 0; i < ptor.size(); ++i) {
-                     if(VERBOSE) cout<<"add to: "<<tid<<" "<<ptor[i]<<" "<<save_call[ptor[i]]<<" "<<read_cnt_sum<<endl;
-                     read_cnt_sum+=save_call[ptor[i]];
-                  }
-               }
-               if(VERBOSE) cout<<"final read cnt: "<<tid<<" "<<read_cnt_sum<<endl;
-               cand_lst.push_back( make_pair(tid, read_cnt_sum) );
-            }
-      }
-      vector< tid_call_t > call_vec(cand_lst.size());
-      list<tid_call_t>::const_iterator cit = cand_lst.begin();
-      const list<tid_call_t>::const_iterator cis = cand_lst.end();
-      for(unsigned i = 0; cit != cis; ++cit, ++i) {
-         const tid_call_t& val = *cit;
-         assert( i < call_vec.size());
-         call_vec[i] = val;
-      }
-      sort( call_vec.begin(), call_vec.end(), QCmp() );
-      set<TID_T> leaf_calls;
-      //cand_lin_t save_call_lin;
-      for(unsigned cvi =0; cvi < call_vec.size(); ++cvi) {
-         const TID_T tid = call_vec[cvi].first;
-         vector<TID_T> localptor;
-         tax_tree.getPathToRoot(tid,localptor);
-         if(VERBOSE) cout<<"save call lineage: "<<cvi<<" "<<tid<<endl;
-         list<TID_T> lst; // intentionally empty
-         //save_call_lin.insert( make_pair( tid,lst) );
-         leaf_calls.insert(tid);
-         if( rank_table[tid] == "species" ) {
-            strain2spec.insert( make_pair(tid,tid) );
-         }
-         for(unsigned li = 0; li < localptor.size(); ++li) {
-            if( rank_table[localptor[li]] == "species" ) {
-               strain2spec.insert( make_pair(tid,localptor[li]) );
-               if(VERBOSE) cout<<"save species mapping: "<<tid<<" to "<<localptor[li]<<endl;
-            }
-            //save_call_lin[ localptor[li] ].push_back(tid);
-            //if(VERBOSE) cout<<"why so slow: "<<tid<<" "<<save_call_lin[localptor[li]].size()<<endl;
-         }
-      }
-#endif
       string line;
       bool finished = false;
       clock.start();
@@ -447,10 +402,7 @@ int main(int argc, char* argv[])
        const size_t p3 = line.find('\t',p2+1);
        const size_t p4 = line.find('\t',p3+1);
        const size_t p5 = line.find('\t',p4+1);
-       const string hdr = line.substr(0,p1-1);
        const string read_buff = line.substr(p1+1,p2-p1-1);
-       const string ignore_stats = line.substr(p2+1,p3-p2-1);
-       const string alt_scores = line.substr(p3+1,p4-p3-1);
        const string taxid_w_scores = line.substr(p4+1,p5-p4-1);
        // would be faster to check for a -1 not a string but read_label *may* need to be modified
        if( taxid_w_scores.find( "NoDbHits" ) != string::npos || taxid_w_scores.find( "ReadTooShort") != string::npos ) {
@@ -470,7 +422,10 @@ int main(int argc, char* argv[])
          use_tid = strain2spec[taxid];  
        } 
        // for speed sake, don't bother k-mer counting beyond species,plasmid,genus
-       storeKmers(read_buff, k_size, kmer_track[thread], valid_kmer_cnt[thread], use_tid);
+       string rnk = rank_table.find(use_tid) != rank_table.end() ? rank_table[use_tid] : "undef" ;
+       if( rank_check.find(rnk) != rank_check.end() || isPlasmid(taxid) ) { 
+          storeKmers(read_buff, k_size, kmer_track[thread], valid_kmer_cnt[thread], use_tid);
+       }
        read_count ++;
      }
    }
@@ -566,12 +521,7 @@ static void compKmerCov(const vector<vector<map<TID_T,kmer_cnt_t> > >& track, TI
       uint64_t kmer_cnt = 0;
       int kcnt_sum = 0;
       for(unsigned thread = 0; thread < track.size(); ++thread) {
-         //if( kcnt[thread][ksi].find(tid) != kcnt[thread][ksi].end())  
-            //assert( track[thread][ksi].find(tid) != track[thread][ksi].end() );
-
          if( track[thread][ksi].find(tid) != track[thread][ksi].end() ) {
-            ////kcnt_sum += (*kcnt[thread][ksi].find(tid)).second;
-            //if(tid == 1392) cout<<"what's happening "<<thread<<" "<<kcnt_sum<<" "<<(*kcnt[thread][ksi].find(tid)).second<<endl;
             const kmer_cnt_t& local_track = (*track[thread][ksi].find(tid)).second;
             kmer_cnt_t::const_iterator it = local_track.begin();
             const kmer_cnt_t::const_iterator is = local_track.end();
