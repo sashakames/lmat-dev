@@ -1477,6 +1477,7 @@ int main(int argc, char* argv[])
    if (query_fn != "-") {
      tmpstream.open(query_fn.c_str());
 
+
      if(!tmpstream) {
 	  cerr<<"did not open for reading: "<<query_fn<<endl;
 	  
@@ -1492,7 +1493,8 @@ int main(int argc, char* argv[])
 
 
 
-#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer)  private(ifs, finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr, last_hdr)
+#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer, ifs)  private(finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr, last_hdr)
+
 
   {
 

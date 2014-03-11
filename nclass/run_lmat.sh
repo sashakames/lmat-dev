@@ -29,6 +29,7 @@ fi
 ## Location of binaries
 if hash read_label >& /dev/null ; then
    bin_dir=
+
 elif [ -f read_label ] ; then
     bin_dir=./
 elif [ `basename $PWD` == "nclass" ] ; then
@@ -286,12 +287,14 @@ for db in $dlst ; do
       if [ -f $db ] && [ $do_rl == 1 ] ; then
          if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
             echo "Process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$fastsum_file]"
+
 	    if [ -n $qual_filter ] ; then
 		echo Quality filter Q$qual_filter on.
 		gunzip -c $query_file | $seqtk $qual_filter - | $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i - -d $db -c $taxtree -o $rlofile >& $logfile
 	    else
 		/usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
 	    fi
+
 
 
             min_reads=1
