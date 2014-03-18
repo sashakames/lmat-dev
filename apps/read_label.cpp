@@ -62,7 +62,8 @@ static std::tr1::unordered_set<int> gLowNumPlasmid;
 
 #define _USE_KPATH_IDS 0
 
-#define isPlasmid(tid) ((tid >=10000000 || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
+#define isPlasmid(tid) (((tid >=10000000 && tid < 11000000) || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
+
 
 
 my_map tid_rank_map;
@@ -1202,6 +1203,11 @@ void proc_line(const TaxTree<TID_T>& tax_tree, int ri_len, string &line, int k_s
         // needed to check if this is empty due to short read first!!!
         if( valid_kmers < min_kmer ) {
            ofs<<"-1 -1 -1"<<"\t-1 -1\t"<<valid_kmers<<" "<<min_kmer<<" ReadTooShort"<<endl;
+           if( track_nomatch.find(eReadTooShort) != track_nomatch.end()) {
+               track_nomatch[eReadTooShort] += 1;
+           } else {
+               track_nomatch[eReadTooShort] = 1;
+           }
         } else if( !taxid_lst.empty() ) {  
            pair< ufpair_t, match_t> mtch = construct_labels(tax_tree,label_vec,taxid_lst,tax2idx,idx2tax,ofs,k_size,sopt,bin_sel,min_kmer,min_fnd_kmer); 
            if(mtch.second == eNoMatch && valid_kmers < min_kmer ) {
