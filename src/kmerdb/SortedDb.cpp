@@ -199,7 +199,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    if (taxid_q.size() <= tid_cutoff) {
 	      //            cout << "Cut to rank: " << cur_priority << " org \
 	      // cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
-	      tmp_tid_count = write_set.size();
+	      tmp_tid_count = taxid_q.size();
 
 	      break;
 	      
