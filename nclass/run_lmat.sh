@@ -27,6 +27,8 @@ fi
 ## Location of binaries
 if hash read_label >& /dev/null ; then
    bin_dir=
+elif [ -f read_label ] ; then
+    bin_dir=./
 else 
    #echo "Could not find read_label in your path assume LMAT binaries/scripts are here: $bin_dir"
    bin_dir="$LMAT_DIR/../bin/"
@@ -261,7 +263,9 @@ for db in $dlst ; do
       if [ -e $db ] && [ $do_rl == 1 ] ; then
          if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
             echo "Process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$fastsum_file]"
+
             /usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+
             min_reads=1
             if [ ! -e $fastsum_file ] ; then
                echo "Error, did not create a fastsummary file [$fastsum_file]"

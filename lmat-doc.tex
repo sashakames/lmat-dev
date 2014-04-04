@@ -46,7 +46,18 @@
 \tableofcontents
 
 \section{What's New in Version \lmatver}
+\begin{itemize}
+\item
+Support for reading query input from stdin in read\_label module.  use ``-i -'' to enable this feature.
+\item
+Fixed a bug where incorrect header information was included in LMAT raw output (individual read labels).
+\item New aggresive plasmid assignment.  Previously plasmids were under-reported due to their placement in the NCBI taxonomy heirarchy. The same plasmid associated with multiple strains will normally be classified as a species (or higher rank) call according to the LMAT lowest common ancestor placement logic. Now in addition to the standard LMAT classification procedure the highest scoring matches are saved.  If the highest scoring match list includes a plasmid consistent with the initial LMAT classification, the final classification is switched to the plasmid.  The drawback
+to this procedure is that multiple plasmids with tie scores are not explicitly represented in the final output label. LMAT, however, saves the scores of the competing matched sequences so a post processing step (not yet included) can easily tag plasmid calls that are non-specific to the initially reported taxonomy. 
 
+\end{itemize}
+
+{\it Earlier updates:}
+Version 1.2.1
 \begin{itemize}
 \item
 Support for full database download from the LMAT ftp site.
@@ -55,7 +66,6 @@ read\_label no long re-prints the query input filename for every execution threa
 \end{itemize}
 
 
-{\it Earlier updates:}
 
 Version 1.2~includes a number of major changes, which should be described in more technical detail in forthcoming publications.  Changes include:
 \begin{itemize}
@@ -658,7 +668,7 @@ Files needed for this step are placed in the rmodel subdirectory.  Two
 scripts must be run to generate the model files. First, need to
 prepare a count of k-mers per every taxonomy identifier.
 \item
-\texttt{countTaxidFrequency}: this executable takes as input the ascii output file from step \ref{tax-histo-fast-limited}. 
+\texttt{frequency\_counter}: this executable takes as input the ascii output file from step \ref{tax-histo-fast-limited}. 
 \item
 
 If run for multiple input files, use \texttt{combine\_counts.py} to aggregate to a single file., eg:
@@ -708,7 +718,10 @@ http://www.cbcb.umd.edu/software/phymm/exp\_datasets/01\_\_10\_X\_100\_bp\_test\
 The \texttt{read\_label} driver searches the Reference Database for all k-mers 
 in the queries, and outputs taxonomic lineages, as discussed in Section 2.2 and
 Figure 2 in our paper.  Output files have the format: \texttt{<prefix>N.out} - where N is 0 to
-$(numthreads-1)$ - even in single threaded execution. 
+$(numthreads-1)$ - even in single threaded execution.  
+
+Input to read\_label can come from stdin (supporing piped input) instead of an input file by using: \texttt{-i -}
+
 
 \texttt{run\_lmat.sh} is the wrapper script for running the LMAT pipeline; it takes several required 
 and optional paramaters; run with no arguments for usage and example invocation.
@@ -815,7 +828,7 @@ Output from the summary step is placed in a file \texttt{<prefix>.summ}
 
 There is now a gene identification step.  The user can download the gene database, which contains all microbial genes obtained from microbial genome database (current does not include all of NR). Reads are searched and the best gene match is reported.  Matches are in DNA space. Output is placed in a file \texttt{<prefix>.genesummary}
 
-\section{Advanced LMAT features.}
+\section{Advanced LMAT features}
 
 \subsection{16-bit ID Space}
 
@@ -823,7 +836,7 @@ The make\_db\_table utility contains an option to store taxonomy IDs as 16-bit v
 
 In order to use custom 16 bit IDs within a custom reference database, this mapping file  needs to be generated from file containing the complete list of taxonomy IDs.  If 32-bit IDs are adequate or necessary due to the ID space, you can skip most of these steps.  However, you should ensure that you have compiled the LMAT binaries with the following environment variable set:  \texttt{TAXID\_SIZE=32}  
 
-  The complete list of taxids used in a database can be obtained from the output of the countTaxidFrequency / combine\_counts.py execution.  Run Tid16_getMapping.py with that file as input.  Output the mapping file (user chooses the filename) which is used in the following steps
+  The complete list of taxids used in a database can be obtained from the output of the \texttt{frequency\_counter} / \texttt{combine\_counts.py} execution.  Run Tid16_getMapping.py with that file as input.  Output the mapping file (user chooses the filename) which is used in the following steps
 
 Ensure you have compiled (make) LMAT with the following enviroment variable set:  \texttt{TAXID\_SIZE=16}
 Use the -f <filename> option with make\_db\_table to specify the filename when creating the database index.
