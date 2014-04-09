@@ -6,19 +6,20 @@ import pprint
 newstartid=100000000
 #read in remapping data
 mapfile=sys.argv[1]
+
 #a = open('/usr/mic/post1/metagenomics/ref_sets/fasta/20130206update/microbe3.20130207.headers.mapping.ncbionly.multi')
 a = open(mapfile)
 
 ### note that the first time around the altered tax ids will be identified on this line 
 ###      print 'failed to find name entry for tid=', tid
 ### after this, you have to go to the web site to see what the new updated tax ids are
-manual_conv = { 
-'1203226'  : '1204472',
-'1115514' : '630626',
-'647653' : '862751',
-'710469' : '983544',
-'1204472' : '1203226'
-}
+manual_conv={}
+if len(sys.argv) >= 3 :
+   u = open(sys.argv[2])
+   for lin in u :
+      lin=lin.rstrip()
+      vals=lin.split()
+      manual_conv.setdefault(vals[0],vals[1])
 
 ##
 print "Manually identified the following recent changes in NCBI taxonomy",manual_conv
