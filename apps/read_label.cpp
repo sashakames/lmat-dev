@@ -512,23 +512,35 @@ static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usm
       return;
    }
 
-   gRank2num.insert( make_pair("no_rank",0) );
-   gRank2num.insert( make_pair("genus",1) );
-   gRank2num.insert( make_pair("family",2) );
-   gRank2num.insert( make_pair("order",3) );
-   gRank2num.insert( make_pair("class",4) );
-   gRank2num.insert( make_pair("phylum",5) );
-   gRank2num.insert( make_pair("kingdom",6) );
-   gRank2num.insert( make_pair("depth=0",7) );
+   unsigned cnt = 0;
+   gRank2num.insert( make_pair("no_rank",cnt) );
 
-   gNum2rank.insert( make_pair(0,"no_rank") );
-   gNum2rank.insert( make_pair(1,"genus") );
-   gNum2rank.insert( make_pair(2,"family") );
-   gNum2rank.insert( make_pair(3,"order") );
-   gNum2rank.insert( make_pair(4,"class") );
-   gNum2rank.insert( make_pair(5,"phylum") );
-   gNum2rank.insert( make_pair(6,"kingdom") );
-   gNum2rank.insert( make_pair(7,"depth=0") );
+   gRank2num.insert( make_pair("ethnic",cnt++) );
+   gRank2num.insert( make_pair("region",cnt++) );
+   gRank2num.insert( make_pair("species",cnt++) );
+
+   gRank2num.insert( make_pair("genus",cnt++) );
+   gRank2num.insert( make_pair("family",cnt++) );
+   gRank2num.insert( make_pair("order",cnt++) );
+   gRank2num.insert( make_pair("class",cnt++) );
+   gRank2num.insert( make_pair("phylum",cnt++) );
+   gRank2num.insert( make_pair("kingdom",cnt++) );
+   gRank2num.insert( make_pair("depth=0",cnt++) );
+
+   cnt = 0;
+   gNum2rank.insert( make_pair(cnt,"no_rank") );
+
+   gNum2rank.insert( make_pair(cnt++,"ethnic") );
+   gNum2rank.insert( make_pair(cnt++,"region") );
+   gNum2rank.insert( make_pair(cnt++,"species") );
+
+   gNum2rank.insert( make_pair(cnt++,"genus") );
+   gNum2rank.insert( make_pair(cnt++,"family") );
+   gNum2rank.insert( make_pair(cnt++,"order") );
+   gNum2rank.insert( make_pair(cnt++,"class") );
+   gNum2rank.insert( make_pair(cnt++,"phylum") );
+   gNum2rank.insert( make_pair(cnt++,"kingdom") );
+   gNum2rank.insert( make_pair(cnt++,"depth=0") );
 
 
    int read_len;
