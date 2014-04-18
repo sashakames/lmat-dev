@@ -668,7 +668,7 @@ Files needed for this step are placed in the rmodel subdirectory.  Two
 scripts must be run to generate the model files. First, need to
 prepare a count of k-mers per every taxonomy identifier.
 \item
-\texttt{countTaxidFrequency}: this executable takes as input the ascii output file from step \ref{tax-histo-fast-limited}. 
+\texttt{frequency\_counter}: this executable takes as input the ascii output file from step \ref{tax-histo-fast-limited}. 
 \item
 
 If run for multiple input files, use \texttt{combine\_counts.py} to aggregate to a single file., eg:
@@ -836,7 +836,7 @@ The make\_db\_table utility contains an option to store taxonomy IDs as 16-bit v
 
 In order to use custom 16 bit IDs within a custom reference database, this mapping file  needs to be generated from file containing the complete list of taxonomy IDs.  If 32-bit IDs are adequate or necessary due to the ID space, you can skip most of these steps.  However, you should ensure that you have compiled the LMAT binaries with the following environment variable set:  \texttt{TAXID\_SIZE=32}  
 
-  The complete list of taxids used in a database can be obtained from the output of the countTaxidFrequency / combine\_counts.py execution.  Run Tid16_getMapping.py with that file as input.  Output the mapping file (user chooses the filename) which is used in the following steps
+  The complete list of taxids used in a database can be obtained from the output of the \texttt{frequency\_counter} / \texttt{combine\_counts.py} execution.  Run Tid16_getMapping.py with that file as input.  Output the mapping file (user chooses the filename) which is used in the following steps
 
 Ensure you have compiled (make) LMAT with the following enviroment variable set:  \texttt{TAXID\_SIZE=16}
 Use the -f <filename> option with make\_db\_table to specify the filename when creating the database index.
