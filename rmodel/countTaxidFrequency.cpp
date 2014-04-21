@@ -108,7 +108,6 @@ template<class T> void doit(string &input_fn, string &output_fn, int quit_early)
       }
       mp[tid] += 1;
     }
-
     total_tid +=tid_count;
 
     if (tid_count == 1)

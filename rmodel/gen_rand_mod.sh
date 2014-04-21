@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 
 if [ -z "$LMAT_DIR" ] ; then
    echo "Please set METAG_DIR environment variable to point to the directory where LMAT datafiles are stored"
@@ -31,8 +31,6 @@ depthf="$LMAT_DIR/depth_for_ncbi_taxonomy.segment.pruned.dat"
 taxtree=$LMAT_DIR/ncbi_taxonomy.segment.dat.nohl
 rankinfo=$LMAT_DIR/ncbi_taxid_to_rank.txt
 tax_histo_cnt=$LMAT_DIR/tcnt.m9.20.tax_histo
-#tax_histo_cnt=$LMAT_DIR/tcnt.kML18
-dynprune=$LMAT_DIR/numeric_ranks
 
 odir=.
 read_len=0
@@ -42,6 +40,7 @@ min_sample_size=100
 #create GC context specific null models, where GC content is evenly divided among this many bins (particuarly useful for handling larger eukaryotic genomes)
 binsize=10
 threads=80
+tax_dir=""
 usage="Generate random null model 
 
 Usage: $0 options 
@@ -55,6 +54,7 @@ option list:
    --min_sample_size=$min_sample_size
    --odir=$odir : place output here
    --threads=$threads : number of threads to use
+   --tax_dir=$LMAT_DIR
 
 example usage:
 $0 --db_file=$db_file --read_len=80
@@ -89,6 +89,8 @@ while test -n "${1}"; do
       odir=$optarg;;
    --threads=*)
       threads=$optarg;;
+   --tax_dir=*)
+      tax_dir=$optarg;;
    *)
       echo "Unrecognized argument [$opt]"
       echo "${usage}"
@@ -96,6 +98,14 @@ while test -n "${1}"; do
    esac
    shift
 done
+
+if [ -n "$tax_dir" ] ; then
+   conv=$tax_dir/m9.32To16.map
+   depthf="$tax_dir/depth_for_ncbi_taxonomy.segment.pruned.dat"
+   taxtree=$tax_dir/ncbi_taxonomy.segment.dat.nohl
+   rankinfo=$tax_dir/ncbi_taxid_to_rank.txt
+   tax_histo_cnt=$tax_dir/tcnt.m9.20.tax_histo
+fi
 
 if [ $read_len = 0 ] &&  [ $read_range = 0 ] ; then
    echo "${usage}"
@@ -123,10 +133,7 @@ while [ $beg -le $end ] ; do
    ofile=$odir/$oname
    logfile="$ofile.log"
 
-   #${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
-   #${bin_dir}rand_read_label_32 -w -r $dynprune -h 1000 -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
-
-   ${bin_dir}rand_read_label_16 -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
+   ${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
 
    sfile=$ofile.rand_lst
    sname=`basename $sfile`

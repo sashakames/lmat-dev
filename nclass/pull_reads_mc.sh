@@ -19,7 +19,7 @@ option list:
                               : 1236 1149864
                               : 1030145
                               : LowScore 0
-                              : NoDbMatch
+                              : NoDbHits
                               : will create 4 files one containing reads assigned taxids with value 1236 or 1149864, the second file will contain reads assigned 1030145, another file containing reads with scores less than 0 and the last file contains reads with no match to the database
                               : The first id is included in the filename to differentiate files so it is currently assumed to be unique.
    --threads=$num_threads (default) : default is to use all cores - you can customize the call to gnu parallel to limit resource use.
@@ -89,7 +89,7 @@ while read file ; do
    echo "$file $idfile $min_score $min_kmers $odir" >> $tfile
 done < $file_lst
 
-${pbin}parallel --load 150% --progress $jobstr -a $tfile $prog 
+${pbin}parallel --load 150% --progress $jobstr -a $tfile ${bindir}$prog 
 while read idlst ; do
    taxid=`echo $idlst | awk '{ print $1 }'`
    first=0

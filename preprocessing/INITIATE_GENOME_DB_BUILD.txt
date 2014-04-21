@@ -41,6 +41,13 @@ The following must now be done on instdb-a
 The scripts are provided here for completeness (gid_to_tid.pl and bulkLookupTaxNodeBySeqDataID.pl)
 cat microbe2.fasta.headers | gid_to_tid.pl > microbe2.fasta.headers.mapping
 outputs any errors to errlog.txt and creates a tmp file : tmp.txt
+#############################
+## Step 3 - ALTERNATIVE map gids to tax ids -- If sequences do not come from KPATH, and we only have GIs
+#############################
+wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
+gunzip gi_taxid_nucl.dmp.gz 
+cat $headers | perl -ne 'if(/gi\|(\d+)/) { system("grep -m 1 ^\"$1\t\" gi_taxid_nucl.dmp");} else { print "error finding $1\n";}' > $headers.tids
+
 
 
 ## If human data not available create as follows:
@@ -86,5 +93,10 @@ failed to find name entry for tid= 710469
 ## used by content summary step to identify plasmids to allow for distinct thresholding
 grep -i plasmid microbe3.headers.mapping.ncbionly.multi | perl -ne 'if(/^(\d+)/) { if($1 <10000000) { print; }}' | cut -f1 > low_numid_plasmids.txt
 ## another support file used
-cat  ncbi_taxonomy_rank.segment.txt | perl -ne '@t=split(/\t/); @t1=split(/,/,$t[$#t]); $t1[0]=~ s/ /_/g; if(/taxid=(\d+)/) { print "$1 $t1[0]\n";}' > ncbi_taxid_to_rank.txt
+#cat  ncbi_taxonomy_rank.segment.txt | perl -ne '@t=split(/\t/); @t1=split(/,/,$t[$#t]); $t1[0]=~ s/ /_/g; if(/taxid=(\d+)/) { print "$1 $t1[0]\n";}' > ncbi_taxid_to_rank.txt
+## use a strain identifier to differentiate "no rank" below species
+cat  ncbi_taxonomy_rank.segment.txt | perl -ne ' if(/taxid=(\d+)/) { $tid = $1; } @t=split(/\t/); @t1=split(/,/,$t[$#t]); if( $t1[0] =~ /no rank/ && /\s+species,/ )  { print "$tid strain\n"; } else { $t1[0]=~ s/ /_/g; print "$tid $t1[0]\n"; }' > ncbi_taxid_to_rank_all.txt
+
+## need to check where Sasha's code is for creating the *.pruned.* files
+cat ncbi_taxid_to_rank_all.txt | filtertids.pl ncbi_taxid_to_rank.pruned.txt.orig > ncbi_taxid_to_rank.pruned.txt
 

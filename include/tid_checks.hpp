@@ -11,7 +11,7 @@
 //#define PHIX_TID 1217068
 #define HUMAN_TID 9606
 
-#define isPhiX(tid) (((tid==PHIX_TID)||(tid==10847)||(tid==374840))? 1 : 0)
+#define isPhiX(tid) (((tid==PHIX_TID)||(tid==10847)||(tid==374840)||tid==32630))? 1 : 0)
 
 inline bool isHuman(TID_T taxid)  {
    bool res = false;

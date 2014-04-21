@@ -1,4 +1,6 @@
-#!/bin/sh -xvf
+#!/bin/sh 
+
+export LMAT_DIR=/usr/gapps/kpath/lmat/LMAT-1.2.2/runtime_inputs
 
 #####################################
 ### SCRIPT TO RUN THE LMAT PIPELINE
@@ -6,13 +8,9 @@
 ### Steps:
 ###
 ### 1) Call read_label to taxonomically label all reads, and count reads assigned to each label
-### 2) Call content_summ to generate summary of organisms present using read_label output
 ### 3) call tolineage.py generates human readable taxonomy lineage, can be input to Krona, which is then run if the binary is found, to produce an html file
-### 4) Call gene_label assigne gene names to each read and count the reads assigned to each label
 ###
 #####################################
-#export LMAT_DIR=/p/lscratche/allen99/lmat/lmat-dev/runtime_inputs
-
 if [ -z "$LMAT_DIR" ] ; then
    echo "Please set LMAT_DIR environment variable to point to the directory where LMAT datafiles are stored"
    exit 1
@@ -20,10 +18,10 @@ fi
 
 ## Some environments require explicit enabling of hyperthreading
 ## Other environments may already enable this
-#if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
-#   /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus 
-#   export GOMP_CPU_AFFINITY=0-79
-#fi
+if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
+   /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus 
+   export GOMP_CPU_AFFINITY=0-79
+fi
 
 ## Should improve this 
 ## Location of binaries
@@ -38,10 +36,10 @@ elif [ `basename $PWD` == "nclass" ] ; then
    #echo "Could not find read_label in your path assume LMAT binaries/scripts are here: $bin_dir"
    bin_dir="$LMAT_DIR/../bin/"
 fi
-
+acc=""
 ## Assume the perm-je library is here
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LMAT_DIR/../lib
-
+pipe_cmd=""
 overwrite=0
 #####################################################
 ## DEFAULT PARAMETER SETTINGS FOR CLASSIFICATION
@@ -75,10 +73,8 @@ marker_min_score=0
 
 ## Working to deprecate this with improved null models, it increases the human tax scores by 1 standard deviation
 #hbias=1.5
-hbias=0
+hbias=1.5
 
-## number of standard deviations between best call and competing alternative
-sdiff=1.0  
 
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
@@ -97,7 +93,7 @@ verbose=0
 # Must be specified by user on command line
 query_file=
 # specify directory to place output
-odir=  
+odir=./  
 
 # in some cases you might not want to bother summarizing the human reads
 # turn on if there are a huge # of human reads and you want to save time
@@ -128,7 +124,9 @@ option list:
    --skipMarkSumm (default=$skipMarkSumm) : Turn off summarization of marker output (may be preferred when running the full database)
    --overwrite (default=$overwrite) : overwrite output file if it exists 
    --min_read_kmer (default=$min_read_kmer) : minimum number of valid k-mers present in read needed for analysis
-   --prune_thresh: threshold of maximum taxonomy IDs allowed per k-mer. 
+   --prune_thresh : threshold of maximum taxonomy IDs allowed per k-mer. 
+   --pipe_cmd=$pipe_cmd : provide a pipe cmd instead of query_file, example: cat file.fastq.gz | gunzip | seqtk -A |
+   --acc=$acc
 
 example usage:
 $0 --db_file=$dbfile --genedb_file=$genedbfile --query_file=HC1.fna --threads=$threads
@@ -163,6 +161,8 @@ while test -n "${1}"; do
       min_read_kmer=$optarg;;
    --marker_library=*)
       markerdb=$optarg;;
+   --pipe_cmd=*)
+      pipe_cmd=$optarg;;
    --genedb_file=*)
       genedbfile=$optarg;;
    --query_file=*)
@@ -171,6 +171,8 @@ while test -n "${1}"; do
       PTHRESH=$optarg;;
    --threads=*)
       threads=$optarg;;
+   --acc=*)
+      acc=$optarg;;
    --nullm=*)
       nullm=$optarg;;
    --sdiff=*)
@@ -232,152 +234,71 @@ if [ ! $odir == '' ]; then
     odir="$odir/"
 fi
 
-
-
 dlst="$markerdb $dbfile"
-for db in $dlst ; do 
-      dbname=`basename $db`
-      if test -z $PTHRESH; then
-	  rlofile="${odir}$query_file_name.$dbname.lo.rl_output" 
-      else
-	  rlofile="${odir}$query_file_name.$dbname.$PTHRESH.lo.rl_output"	 
-      fi
-      logfile="$rlofile.log" 
-      tidmap="$LMAT_DIR/m9.32To16.map"
-      ## File giving a list of null models - assumes this specific naming convention
+db=$dbfile
+dbname=`basename $db`
+if test -z $PTHRESH; then
+rlofile="${odir}$query_file_name.$dbname.lo.rl_output" 
+else
+  rlofile="${odir}$query_file_name.$dbname.$PTHRESH.lo.rl_output"	 
+fi
 
-      ## The higher the number the more conservative the read label call
-      ## This value specifices how much higher (in standard deviation units) the score of the assigned label must be
-      fstr="-f $tidmap"
-      if [ ! -z $PTHRESH ]; then
-	  pstr="-g $PTHRESH -m $LMAT_DIR/numeric_ranks_coarse"
-      fi
-      rprog=${bin_dir}read_label
-      if [ $db != "$markerdb" ] ; then
-         ## use full library parameters
-         use_min_score=$min_score
-         echo "search full db: $db"
-      else 
-         ## use marker library parameters
-         use_min_score=$marker_min_score
-         echo "search marker library: $db"
-      fi
+logfile="$rlofile.log" 
+tidmap="$LMAT_DIR/m9.32To16.map"
+## File giving a list of null models - assumes this specific naming convention
 
+## The higher the number the more conservative the read label call
+## This value specifices how much higher (in standard deviation units) the score of the assigned label must be
+sdiff=1.0  
+fstr="-f $tidmap"
+if [ ! -z $PTHRESH ]; then
+   pstr="-g $PTHRESH -m $LMAT_DIR/numeric_ranks"
+fi
+rprog=${bin_dir}read_label
+use_min_score=$min_score
 
-
-      if [ -z $nullm ] ; then
-	  echo Using default null model list file for $dbname
-	  nullm=$LMAT_DIR/$dbname.null_lst.txt
-          nullmstr="-n $nullm"
-      elif [ "$nullm" == "no" ] ; then
+if [ -z $nullm ] ; then
+   echo "Using default null model list file for $dbname
+   nullm=$LMAT_DIR/$dbname.null_lst.txt
+   nullmstr="-n $nullm"
+elif [ "$nullm" == "no" ] ; then
 	  echo Not using null model files
 	  nullmstr=""
-      elif [ -e $nullm ] ; then
+elif [ -f $nullm ] ; then
 	  nullmstr="-n $nullm"
-      else
+else
 	  echo "Please provide valid null models list file"
+	  echo "no file found at $nullm"
 	  exit 
-      fi
+fi
 
+fastsum_file="$rlofile.$use_min_score.$min_read_kmer.fastsummary"
+echo "Create output file from input parameters: $fastsum_file"
+if [ ! -e $db ] ; then
+   echo "Could not find db: $db"
+   exit 0
+fi
+if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
+   echo "Process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$fastsum_file]"
 
-      fastsum_file="$rlofile.$use_min_score.$min_read_kmer.fastsummary"
-      if [ -e $db ] && [ $do_rl == 1 ] ; then
-         if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
-            echo "Process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$fastsum_file]"
+   /usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
 
-            /usr/bin/time -v $rprog -w $rankval $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
-
-            min_reads=1
-            if [ ! -e $fastsum_file ] ; then
-               echo "Error, did not create a fastsummary file [$fastsum_file]"
-               exit 0
-            fi
-
-            min_num_reads=1 ## 
-            ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads all
-
-
-            if hash ktImportText > /dev/null 2>&1 ; then
-               ktImportText $fastsum_file.lineage -o $fastsum_file.lineage.html
-            fi
-            if [ $verbose == 1 ] ; then
-               echo "Verbose setting is used for debuging one program at a time only"
-               exit 0
-            fi
-         fi
-      fi
-      if [ $do_cs == 1 ] && [ -e $fastsum_file ] ; then
-         lst=$rlofile.flst
-         if [ -e $lst ] ; then
-             rm -f $lst
-         fi
-         counter=0
-         while [ $counter -lt $threads ] ; do
-            lfile=${rlofile}${counter}.out
-            echo $lfile >> $lst
-            let counter=counter+1
-         done
-         sumofile="$fastsum_file.summ"
-         logfile="$sumofile.log"
-         ###########################################################################
-         ## Below are parameters that may need to be tweaked differently depending
-         ## on whether a marker library or full database is being used
-         ###########################################################################
-         if [ $db == "$markerdb" ] ; then
-            if [ $skipMarkSumm == 1 ] ; then
-               continue
-            fi
-            ###########################################################################
-            ## must change these settings for marker library
-            ###########################################################################
-            ## Stores the k-mer counts associated with each taxid
-            kmercnt="$LMAT_DIR/tcnt.kML18"
-            ## I'm noticing slight over specificity in the marker library,so consider lower this value
-         else 
-            ## Stores the k-mer counts associated with each taxid
-            kmercnt="$LMAT_DIR/tcnt.m9.20.tax_histo"
-         fi
-         hstr=""
-         ## in rarer cases where large samples are dominanted by humans
-         ## it may be faster to not attempt to summarize the human read contents
-         if [ $skipHumanSumm == 1 ] ; then
-            hstr="-s"
-         fi
-         if [ ! -e $sumofile ] || [ $overwrite == 1 ] ; then
-            echo "Summary process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$sumofile]"
-            /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -c $noprune_taxtree -l $fastsum_file -k "8,10,12,14,17,20" -f $lst -r $rankval -o $sumofile >& $logfile
-            ${bin_dir}csumm.sh --fsumm=$fastsum_file
-         fi
-     fi
-
-done
-
-## assign gene names
-if [ $genedbfile ] ; then
-   if [ $do_gl == 1 ] ; then
-      genedbname=`basename $genedbfile`
-      lst=$rlofile.ras.flst
-      if [ -e $lst ] ; then
-         rm -f $lst
-      fi
-      counter=0
-      while [ $counter -lt $threads ] ; do
-         lfile=${rlofile}${counter}.out.ras.1
-         echo $lfile >> $lst
-         let counter=counter+1
-      done
-      vstr=""
-      ## note need to fix verbose setting to get here (if needed)
-      if [ $verbose == 1 ] ; then
-         vstr="-y"
-      fi
-      genofile="$rlofile.ras.flst.$genedbname.rl_output"
-      logfile="$rlofile.ras.flst.$genedbname.rl_output.log"
-      res=$genofile.$gene_score.$num_gene_kmers.genesummary
-      if [ ! -e $res ] || [ $overwrite == 1 ] ; then
-         ${bin_dir}gene_label $vstr -q $num_gene_kmers -x $gene_score -p -r -l $lst -d $genedbfile -o $genofile -g $genefile >& $logfile
-         cat $res | sort -k1gr,1gr > tmp.$$
-         mv tmp.$$ $res 
-      fi
+   min_reads=1
+   if [ ! -e $fastsum_file ] ; then
+      echo "Error, did not create a fastsummary file [$fastsum_file]"
+      exit 0
    fi
+   min_num_reads=10 ## 
+   ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads all
+   ${bin_dir}fsreport.py $fastsum_file $taxtree $rankval plasmid,species,genus $odir
+
+   if hash ktImportText > /dev/null 2>&1 ; then
+      ktImportText $fastsum_file.lineage -o $fastsum_file.lineage.html
+   fi
+   if [ $verbose == 1 ] ; then
+      echo "Verbose setting is used for debuging one program at a time only"
+      exit 0
+   fi
+else 
+   echo "Warning, $fastsum_file exists, set --overwrite to overwrite existing file"
 fi

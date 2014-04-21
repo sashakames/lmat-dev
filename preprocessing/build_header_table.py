@@ -29,7 +29,7 @@ gi_to_tid = {}
 a = open(argv[2])
 for line in a :
   t = line.split()
-  gi_to_tid[t[0]] = t[1]
+  gi_to_tid[t[4]] = t[0]
 
 fasta = argv[1]
 output_dir = argv[3]
@@ -62,24 +62,8 @@ for line in a :
     discard = False
     line = line[:-1] 
     first = False
-    t = line.split('|')
-    gi = -1
-    #attempt to find the gi
-    for k in range(len(t)) :
-      if t[k] == 'gi' :
-        gi = t[k+1]
-        break
-
-    if gi == -1 :
-      x = line.find('>gi|')
-      if x != -1 :
-        j1 = line.find('|', x+5)
-        assert(j1 != -1)
-        gi = line[x+4:j1]
-        j = gi.find(':')
-        if j != -1 :
-          gi = gi[:j]
-
+    #t = line.split('|')
+    gi = line
     #warn if we failed to find the NCBI gi
     if gi == -1 :
       was_found = False

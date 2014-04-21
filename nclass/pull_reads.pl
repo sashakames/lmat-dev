@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-use MyUtils;
 use FileHandle;
 use File::Basename;
 
@@ -16,6 +15,15 @@ my $odir=$myargs[4];
 my $select_type="exclusive"; ## make this the default
 my $idname=basename($id_file);
 my $ofilebase="$odir/$tbase.$idname.pulled";
+
+sub writeFasta {
+  my ($str,$header,$fh) = @_;
+  print $fh ">$header\n";
+  for(my $iter = 0; $iter < length($$str); $iter += 80) {
+    my $mstr = substr($$str,$iter,80);
+    print $fh "$mstr\n";
+  }
+}
 
 if( !($select_type eq "exclusive") && !($select_type eq "inclusive") ){ 
    print "select type must be specified as exclusive or inclusive\n";

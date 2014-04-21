@@ -36,7 +36,9 @@ using namespace metag;
 static bool verbose=false;
 static bool screenPhiXGlobal = true;
 size_t perm_bytes_allocd;
+static map<TID_T,string> gRank_table;
 
+typedef map<TID_T,unsigned> cmap_t;
 typedef pair<TID_T,float> ufpair_t;
 typedef pair<TID_T,uint16_t> tax_elem_t;
 typedef set<tax_elem_t> tax_data_t;
@@ -50,6 +52,7 @@ typedef std::tr1::unordered_map<uint16_t, usmap_t> u_usmap_t;
 typedef pair<string,string> read_pair;
 
 
+static bool gPERMISSIVE_MATCH = false;
 vector <int> read_len_vec(1,0);
 vector <int> read_len_avgs(1,0);
 
@@ -59,7 +62,7 @@ static std::tr1::unordered_set<int> gLowNumPlasmid;
 
 #define _USE_KPATH_IDS 0
 
-#define isPlasmid(tid) ((tid >=10000000 || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
+#define isPlasmid(tid) (((tid >=10000000 && tid < 11000000) || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
 
 
 
@@ -509,23 +512,35 @@ static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usm
       return;
    }
 
-   gRank2num.insert( make_pair("no_rank",0) );
-   gRank2num.insert( make_pair("genus",1) );
-   gRank2num.insert( make_pair("family",2) );
-   gRank2num.insert( make_pair("order",3) );
-   gRank2num.insert( make_pair("class",4) );
-   gRank2num.insert( make_pair("phylum",5) );
-   gRank2num.insert( make_pair("kingdom",6) );
-   gRank2num.insert( make_pair("depth=0",7) );
+   unsigned cnt = 0;
+   gRank2num.insert( make_pair("no_rank",cnt) );
 
-   gNum2rank.insert( make_pair(0,"no_rank") );
-   gNum2rank.insert( make_pair(1,"genus") );
-   gNum2rank.insert( make_pair(2,"family") );
-   gNum2rank.insert( make_pair(3,"order") );
-   gNum2rank.insert( make_pair(4,"class") );
-   gNum2rank.insert( make_pair(5,"phylum") );
-   gNum2rank.insert( make_pair(6,"kingdom") );
-   gNum2rank.insert( make_pair(7,"depth=0") );
+   gRank2num.insert( make_pair("ethnic",cnt++) );
+   gRank2num.insert( make_pair("region",cnt++) );
+   gRank2num.insert( make_pair("species",cnt++) );
+
+   gRank2num.insert( make_pair("genus",cnt++) );
+   gRank2num.insert( make_pair("family",cnt++) );
+   gRank2num.insert( make_pair("order",cnt++) );
+   gRank2num.insert( make_pair("class",cnt++) );
+   gRank2num.insert( make_pair("phylum",cnt++) );
+   gRank2num.insert( make_pair("kingdom",cnt++) );
+   gRank2num.insert( make_pair("depth=0",cnt++) );
+
+   cnt = 0;
+   gNum2rank.insert( make_pair(cnt,"no_rank") );
+
+   gNum2rank.insert( make_pair(cnt++,"ethnic") );
+   gNum2rank.insert( make_pair(cnt++,"region") );
+   gNum2rank.insert( make_pair(cnt++,"species") );
+
+   gNum2rank.insert( make_pair(cnt++,"genus") );
+   gNum2rank.insert( make_pair(cnt++,"family") );
+   gNum2rank.insert( make_pair(cnt++,"order") );
+   gNum2rank.insert( make_pair(cnt++,"class") );
+   gNum2rank.insert( make_pair(cnt++,"phylum") );
+   gNum2rank.insert( make_pair(cnt++,"kingdom") );
+   gNum2rank.insert( make_pair(cnt++,"depth=0") );
 
 
    int read_len;
@@ -960,6 +975,7 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
     kmer_t reverse = 0; /* reverse k-mer */
     kmer_t kmer_id; /* canonical k-mer */
     set<kmer_t> no_dups;
+    cmap_t leaf_track;
     int valid_kmers=0, gc_cnt=0;
     for (j = 0; j < slen; j++) {
         register int t;
@@ -1012,14 +1028,16 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                //const uint16_t pr_cnt = h->present();
                const uint16_t pr_cnt = 1;
                obs_tids.push_back(tid);
-               label_vec[pos].second.insert( make_pair(tid,pr_cnt) );
-               if( tax2idx.find(tid) == tax2idx.end() ) {
-                  const unsigned idx = taxid_lst.size();
-                  tax2idx[tid] = idx;
-                  idx2tax[idx] = tid;
-                  taxid_lst.push_back(tid);
+               if(gPERMISSIVE_MATCH) {
+                  label_vec[pos].second.insert( make_pair(tid,pr_cnt) );
+                  if( tax2idx.find(tid) == tax2idx.end() ) {
+                     const unsigned idx = taxid_lst.size();
+                     tax2idx[tid] = idx;
+                     idx2tax[idx] = tid;
+                     taxid_lst.push_back(tid);
+                  }
                }
-               // Note: ng should not change with multiple calls to next here
+                  // Note: ng should not change with multiple calls to next here
                if(verbose) {
                   if( dcnt == 0 ) cout<<"debug kmer "<<kmer_id<<" gc="<<ng;
                   cout<<" ["<<pos<<" "<<tid<<" "<<pr_cnt<<"]" ;
@@ -1035,39 +1053,139 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
            }
            CmpDepth1 cd(dmap);
            sort(obs_tids_vec.begin(),obs_tids_vec.end(),cd);
-           int last_depth = -1;
-           for(unsigned i = 0; i < obs_tids_vec.size(); ++i) {
-             const TID_T tid=obs_tids_vec[i];
-             const int depth = (*dmap.find(tid)).second;
-             if( depth == 0 ) {
-               break;
-             }
-             if( last_depth == depth || last_depth == -1 ) {
-                  TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
-                  vector<TID_T> path;
-                  tax_tree_tmp.getPathToRoot(tid,path);
-                  for(unsigned p = 0; p < path.size(); ++p) {
-                     const TID_T ptid = path[p];
-                     //if( verbose ) cout<<"lineage tids added: "<<ptid<<" for "<<tid<<" pos="<<pos<<" "<<p<<endl;
-                     label_vec[pos].second.insert( make_pair(ptid,1) );
-                     if( tax2idx.find(ptid) == tax2idx.end() ) {
-                        const unsigned idx = taxid_lst.size();
-                        tax2idx[ptid] = idx;
-                        idx2tax[idx] = ptid;
-                        if( verbose ) cout<<"lineage tids added: "<<ptid<<" for "<<tid<<" pos="<<pos<<endl;
-                        taxid_lst.push_back(ptid);
+           if( gPERMISSIVE_MATCH ) {
+              int last_depth = -1;
+              for(unsigned i = 0; i < obs_tids_vec.size(); ++i) {
+                const TID_T tid=obs_tids_vec[i];
+                const int depth = (*dmap.find(tid)).second;
+                if( depth == 0 ) {
+                  break;
+                }
+                if( last_depth == depth || last_depth == -1 ) {
+                     TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
+                     vector<TID_T> path;
+                     tax_tree_tmp.getPathToRoot(tid,path);
+                     for(unsigned p = 0; p < path.size(); ++p) {
+                        const TID_T ptid = path[p];
+                        if( verbose ) cout<<"lineage tids added: "<<ptid<<" for "<<tid<<" pos="<<pos<<" "<<p<<endl;
+                        label_vec[pos].second.insert( make_pair(ptid,1) );
+                        if( tax2idx.find(ptid) == tax2idx.end() ) {
+                           const unsigned idx = taxid_lst.size();
+                           tax2idx[ptid] = idx;
+                           idx2tax[idx] = ptid;
+                           if( verbose ) cout<<"lineage tids added: "<<ptid<<" for "<<tid<<" pos="<<pos<<endl;
+                           taxid_lst.push_back(ptid);
+                        }
                      }
-                  }
-             } else {
-               break;
+                } else {
+                  break;
+                }
+             }
+          } else {
+             std::tr1::unordered_set<TID_T> non_leaf; 
+             for(unsigned i = 0; i < obs_tids_vec.size(); ++i) {
+                const TID_T tid=obs_tids_vec[i];
+                if( non_leaf.find(tid) == non_leaf.end() ) {
+                   const uint16_t pr_cnt = 1;
+                   const int depth = (*dmap.find(tid)).second;
+                   if(verbose) cout<<"this is a non leaf tid:"<<tid<<" "<<depth<<endl;
+                   label_vec[pos].second.insert( make_pair(tid,pr_cnt) );
+                   if( leaf_track.find(tid) != leaf_track.end()) {
+                      leaf_track[tid] += 1;
+                   } else {
+                      leaf_track.insert(make_pair(tid,1));
+                   }
+                   if( tax2idx.find(tid) == tax2idx.end() ) {
+                      const unsigned idx = taxid_lst.size();
+                      tax2idx[tid] = idx;
+                      idx2tax[idx] = tid;
+                      taxid_lst.push_back(tid);
+                   }
+                   TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
+                   vector<TID_T> path;
+                   tax_tree_tmp.getPathToRoot(tid,path);
+                   //const int depth = (*dmap.find(tid)).second;
+                   for(unsigned p = 0; p < path.size(); ++p) {
+                     const TID_T ptid = path[p];
+                     non_leaf.insert(ptid);
+                   }
+               } else {
+                  if(verbose) cout<<"skip this non leaf tid:"<<tid<<endl;
+               }
              }
           }
+
+
           if( verbose ) cout<<"num taxids: "<<taxid_lst.size();
           if(dcnt > 0 && verbose ) cout<<" end k-mer lookup"<<endl;
           if(mtch == 0 && verbose ) cout<<" no k-mer matches "<<endl;
           delete h;
        }
    }
+   if( ! gPERMISSIVE_MATCH ) {
+      map<TID_T,pair<TID_T,unsigned> > save_spec_rep;
+      cmap_t::const_iterator cb = leaf_track.begin();
+      cmap_t::const_iterator cs = leaf_track.end();
+      for(; cb != cs; ++cb) {
+          const TID_T stid = (*cb).first;
+          const unsigned stid_cnt = (*cb).second;
+          if( gRank_table.find(stid) != gRank_table.end() && gRank_table[stid] == "strain" ) {
+             vector<TID_T> path;
+             TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
+             tax_tree_tmp.getPathToRoot(stid,path);
+             for(unsigned p = 0; p < path.size(); ++p) {
+                const TID_T ptid = path[p];
+                if( gRank_table.find(ptid) != gRank_table.end() && gRank_table[ptid] == "species" ) {
+                  if( save_spec_rep.find(ptid) == save_spec_rep.end() ) {
+                     save_spec_rep.insert(make_pair(ptid,make_pair(stid,stid_cnt)));
+                  } else if( stid_cnt > save_spec_rep[ptid].second ) {
+                     save_spec_rep[ptid] = make_pair(stid,stid_cnt);
+                  }
+                  break;
+               }
+             } 
+         } else {
+            //save_spec_rep.insert(make_pair(stid,make_pair(stid,stid_cnt)));
+         }
+      }
+      std::tr1::unordered_set<TID_T> rep_strain;
+      map<TID_T,pair<TID_T,unsigned> >::const_iterator sb1=save_spec_rep.begin(); 
+      map<TID_T,pair<TID_T,unsigned> >::const_iterator se1=save_spec_rep.end(); 
+      for( ; sb1 != se1; ++sb1) {
+         TID_T species_id= (*sb1).first;
+         TID_T strain_id= (*sb1).second.first;
+         rep_strain.insert( strain_id );
+         if(verbose) cout<<"Representative strain: "<<strain_id<<" "<<species_id<<" "<<(*sb1).second.second<<endl;
+      }
+      for(unsigned pos = 0; pos < label_vec.size(); ++pos) {
+         if( label_vec[pos].first >= 0 ) {
+               set<tax_elem_t>::const_iterator sb=label_vec[pos].second.begin(); 
+               const set<tax_elem_t>::const_iterator se=label_vec[pos].second.end(); 
+               for(; sb != se; ++sb) {
+                  TID_T tid = (*sb).first;
+                  //cout<<"What's happened here: "<<tid<<" "<<(*sb).second<<" "<<pos<<endl;
+                  if( rep_strain.find(tid) != rep_strain.end() || gRank_table[tid] != "strain"  ) {
+                     TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
+                     vector<TID_T> path;
+                     tax_tree_tmp.getPathToRoot(tid,path);
+                     for(unsigned p = 0; p < path.size(); ++p) {
+                        const TID_T ptid = path[p];
+                        if( verbose ) cout<<"lineage tids added: "<<ptid<<" for "<<tid<<" pos="<<pos<<" "<<p<<endl;
+                        label_vec[pos].second.insert( make_pair(ptid,1) );
+                        if( tax2idx.find(ptid) == tax2idx.end() ) {
+                           const unsigned idx = taxid_lst.size();
+                           tax2idx[ptid] = idx;
+                           idx2tax[idx] = ptid;
+                           if( verbose ) cout<<"lineage tids added: "<<ptid<<" for "<<tid<<" pos="<<pos<<endl;
+                           taxid_lst.push_back(ptid);
+                        }
+                     }
+                  }
+               }
+         }
+      }
+   }
+
    float gc_pcnt = ((float)gc_cnt / (float)j) * 100.0;
    int bin_sel = gc_pcnt / 10; // better to not hard code this 
    if(verbose) cout<<"GC info: "<<gc_pcnt<<" "<<bin_sel<<endl;
@@ -1097,6 +1215,11 @@ void proc_line(const TaxTree<TID_T>& tax_tree, int ri_len, string &line, int k_s
         // needed to check if this is empty due to short read first!!!
         if( valid_kmers < min_kmer ) {
            ofs<<"-1 -1 -1"<<"\t-1 -1\t"<<valid_kmers<<" "<<min_kmer<<" ReadTooShort"<<endl;
+           if( track_nomatch.find(eReadTooShort) != track_nomatch.end()) {
+               track_nomatch[eReadTooShort] += 1;
+           } else {
+               track_nomatch[eReadTooShort] = 1;
+           }
         } else if( !taxid_lst.empty() ) {  
            pair< ufpair_t, match_t> mtch = construct_labels(tax_tree,label_vec,taxid_lst,tax2idx,idx2tax,ofs,k_size,sopt,bin_sel,min_kmer,min_fnd_kmer); 
            if(mtch.second == eNoMatch && valid_kmers < min_kmer ) {
@@ -1187,7 +1310,7 @@ int main(int argc, char* argv[])
    float threshold = 0.0, min_score = 0.0;
    int min_kmer = 35, min_fnd_kmer = 1;
 
-   string rank_ids, kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, tax_tree_options, depth_file, rand_hits_file, rank_table_file, id_bit_conv_fn;
+   string rank_map_file,rank_ids, kmer_db_fn, query_fn, ofname, ofbase, tax_tree_fn, tax_tree_options, depth_file, rand_hits_file, rank_table_file, id_bit_conv_fn;
    string low_num_plasmid_file;
    hmap_t imap;	
    ScoreOptions sopt(imap);
@@ -1197,7 +1320,7 @@ int main(int argc, char* argv[])
    uint16_t max_count = ~0;
    bool prn_read = true;
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q:")) != -1) {
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:w:pk:c:v:k:i:d:l:t:r:sm:o:x:f:g:z:q:")) != -1) {
       switch(c) {
       case 'h':
         screenPhiXGlobal=false;
@@ -1224,12 +1347,10 @@ int main(int argc, char* argv[])
          prn_read=false;
          break;
       case 'w':
-	      tid_map_is_strain_species = true;
+	      rank_map_file = optarg;
 	      break;
       case 's':
-         mmap_size = atoi(optarg);
-         mmap_size = mmap_size * (1<<30);
-         cout << "Input heap size: " << mmap_size << endl;
+         gPERMISSIVE_MATCH=true;
          break;
       case 'n':
          rand_hits_file=optarg;
@@ -1432,6 +1553,15 @@ int main(int argc, char* argv[])
      }
 	 
    }
+   if( rank_map_file.size() > 0) {
+      ifstream ifs1(rank_map_file.c_str());
+      TID_T tid;
+      string rank;
+      while(ifs1>>tid>>rank) {
+         gRank_table.insert(make_pair(tid,rank));
+      }
+   }
+
 
 
 
@@ -1536,8 +1666,9 @@ int main(int argc, char* argv[])
 	    
 	    if(verbose) cout << line.size() << " line length\n";
 	  }
-
+     string lst_hdr_buff;
 	  if (line[0] == '>' || (fastq && line[0] == '@') ) {
+       lst_hdr_buff = hdr_buff; 
 
 	    // skip the ">"             
 	    if (hdr_buff.length() > 0) 
@@ -1562,6 +1693,8 @@ int main(int argc, char* argv[])
 	      read_buffer_q.push(read_pair(read_buff, hdr_buff));
 	    else 
 	      read_buffer_q.push(read_pair(read_buff, last_hdr));
+
+
 
 
 
