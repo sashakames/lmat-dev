@@ -1,5 +1,13 @@
 import sys
 
+if len(sys.argv) < 4:
+    print "Usage:  python " + sys.argv[0] + " <species-filename> <genus-filename> <taxonomy_rank-txt-file>"
+    print "outputs to stdout"
+
+    exit(0)
+
+
+
 speciesf=open(sys.argv[1])
 
 genusf=open(sys.argv[2])
