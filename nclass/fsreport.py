@@ -119,6 +119,9 @@ if gsfile != "" :
       t = line.split('\t')
       rc = t[0]
       taxid = t[1]
+      if taxid == '0' :
+         ## means this read was not assigned to a taxid
+         continue
       geneid = t[3]
       type=t[6]
 
