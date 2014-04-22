@@ -186,12 +186,30 @@ while test -n "${1}"; do
    shift
 done
 
-
+fastq="false"
 
 if [ ! -e $query_file ] ; then
    echo "Error $query_file not found"
    exit 0
+else
+    first=`head -n1 $query_file | awk '{print substr($1,0,1)}'`
+    fqchar='@'
+    
+    if [ $first == $fqchar ] ; then
+	fastq="true"
+    else 
+	fachar='>'
+	if [ $first != $fachar ] ; then
+	    echo "Error: $query_file must be in fasta or fastq format"
+	    exit 1
+	fi
+    fi
 fi
+
+if [ $fastq == "true" ] ; then 
+    fastqstr="-q"
+fi
+
 if [ ! -e $db_file ] && [ ! -e $markerdb ] ; then
    echo "Error need to supply a markery library or full database file"
    exit 0
@@ -280,7 +298,7 @@ for db in $dlst ; do
       if [ -e $db ] && [ $do_rl == 1 ] ; then
          if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
             echo "Process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$fastsum_file]"
-            /usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+            /usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr $fastqstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
             min_reads=1
             if [ ! -e $fastsum_file ] ; then
                echo "Error, did not create a fastsummary file [$fastsum_file]"
