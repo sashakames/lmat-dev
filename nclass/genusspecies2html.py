@@ -100,6 +100,7 @@ for data in allarr:
         fgcolor="#000000"
     elif "plasmid" in data[5][-1]:
         color = PLASMID
+        fgcolor="#000000"
     elif "Homo" in data[5][-1]:
         color = HOMO
         fgcolor="#000000"
@@ -125,6 +126,7 @@ for data in allarr:
             color = FUNSPE
         else:
             color=FUNSTR
+            fgcolor="#000000"
     else:
         if data[4] == "genus":
             color = EUKGEN
@@ -138,6 +140,7 @@ for data in allarr:
 
 
         
+    rank = data[4]
 
     for n in data[0:3]:
 
@@ -146,7 +149,7 @@ for data in allarr:
         print "<b><font color="+ fgcolor +">" + n + "</font></b></td>"
 
 
-        rank = ""
+
         ident = ""
         
     if ',' in data[3]:
@@ -154,14 +157,10 @@ for data in allarr:
 
 
             
-        if pair[0] == "no rank":
-            rank = "strain"
-        else:
-            rank = pair[0]
         ident=pair[1]
 
     else:
-        rank = ""
+
         
         ident = data[3]
         
