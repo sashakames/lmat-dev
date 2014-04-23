@@ -86,7 +86,7 @@ verbose=0
 # Must be specified by user on command line
 query_file=
 # specify directory to place output
-odir=./  
+odir=.  
 
 # run content summary on marker
 usage="Run LMAT pipeline 
@@ -216,15 +216,16 @@ fi
 if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    echo "Process $query_file [overwrite=$overwrite 1=yes, 0=no] [outputfile=$fastsum_file]"
 
-   /usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+   /usr/bin/time -v $rprog $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
 
    min_reads=1
    if [ ! -e $fastsum_file ] ; then
       echo "Error, did not create a fastsummary file [$fastsum_file]"
       exit 0
    fi
-   min_num_reads=10 ## 
-   ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads all
+   min_num_reads=10 ## minimum abundance cutoffs to help with Krona plots
+   min_avg=0 ## minimum average read score (off)
+   ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads $min_avg
    ${bin_dir}fsreport.py $fastsum_file plasmid,species,genus $odir
 
    if hash ktImportText > /dev/null 2>&1 ; then
