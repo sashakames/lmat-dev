@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh -xvf
 
 if [ -z "$LMAT_DIR" ] ; then
    echo "Please set METAG_DIR environment variable to point to the directory where LMAT datafiles are stored"
@@ -28,7 +28,7 @@ export LD_LIBRARY_PATH=$LMAT_DIR/../lib
 db_file=""
 conv=$LMAT_DIR/m9.32To16.map
 depthf="$LMAT_DIR/depth_for_ncbi_taxonomy.segment.pruned.dat"
-taxtree=$LMAT_DIR/ncbi_taxonomy.segment.dat.nohl
+taxtree=$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat.nohl
 rankinfo=$LMAT_DIR/ncbi_taxid_to_rank.txt
 tax_histo_cnt=$LMAT_DIR/tcnt.m9.20.tax_histo
 
@@ -133,13 +133,14 @@ while [ $beg -le $end ] ; do
    ofile=$odir/$oname
    logfile="$ofile.log"
 
-   ${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
+   #${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
 
    sfile=$ofile.rand_lst
    sname=`basename $sfile`
    if [ -e $sfile ] ; then
       ## try to roll up low read tax id calls into higher order taxids to avoid a lot of spurious strain calls
       merge_cnts.py $sfile $taxtree $rankinfo $min_sample_size $tax_histo_cnt $odir/null.bin.$binsize.$sname $binsize
+      #cp $sfile $odir/null.bin.$binsize.$sname
       if [ $debug == 0 ] ; then
          gzip $odir/null.bin.$binsize.$sname
       fi

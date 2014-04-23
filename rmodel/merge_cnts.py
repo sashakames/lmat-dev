@@ -35,13 +35,17 @@ output_file=argv[6]
 num_bins=int(argv[7])
 ranks = {}
 tax_hist_cnt={}
-thc_strm = open(thc_file)
-for line in thc_strm :
-   line=line.rstrip()
-   vals=line.split()
-   tid=int(vals[0])
-   cnt=int(vals[1])
-   tax_hist_cnt.setdefault(tid,cnt)
+ignore_thc=False
+try:
+   thc_strm = open(thc_file)
+   for line in thc_strm :
+      line=line.rstrip()
+      vals=line.split()
+      tid=int(vals[0])
+      cnt=int(vals[1])
+      tax_hist_cnt.setdefault(tid,cnt)
+except:
+   ignore_thc=True
     
 a = open(ncbi_rank)
 for line in a :
@@ -86,8 +90,12 @@ for line in tax_obs_strm :
    line=line.rstrip()
    t = line.split()
    tid = int(t[0])
+   if ignore_thc :
+      tax_hist_cnt.setdefault(tid,1)
    if not tax_hist_cnt.has_key(tid) :
       print "really? ",tid
+      print line
+      continue
    recall.setdefault(tid)
    curr_tid = parents[tid]
    kmer_cnt = tax_hist_cnt[tid]
@@ -172,8 +180,10 @@ for line in tax_obs_strm :
    cnt1+=1
 
 print "how much",cnt1
-merge_hack=store_rank_val[561]
-merge_hack.extend(store_rank_val[620])
+if store_rank_val.has_key(561) :
+   merge_hack=store_rank_val[561]
+if store_rank_val.has_key(620) :
+   merge_hack.extend(store_rank_val[620])
 cnt=0
 out_fh=open(output_file,"w")
 out_fh.write(str(num_bins)+"\n")
@@ -181,6 +191,7 @@ out_fh.write(str(num_bins)+"\n")
 ## they likely need to be broken down by GC content type
 qlst =  tax_hist_cnt.keys()
 qlst.insert(0,562)
+print qlst
 once={}
 save={}
 saveid=[]
@@ -189,6 +200,8 @@ for tid in qlst :
    if once.has_key(tid) :
       continue
    once.setdefault(tid,1)
+   if not parents.has_key(tid) :
+      continue
    curr_tid = parents[tid]
    use_val = []
    tid_kcnt=0

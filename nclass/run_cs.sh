@@ -82,14 +82,14 @@ usage="Run LMAT pipeline
 Usage: $0 options 
 
 option list:
-   --label_lst=$lst: list of files containing LMAT's read label output 
+   --ilst=$lst: list of files containing LMAT's read label output 
    --filesum=$fastsum_file : LMAT's fastsummary output file
    --verbose=$verbose : Only used for debugging single read queries (too much output for larger datasets)
    --odir=$odir : Place output in this directory (defaults to current)
    --overwrite (default=$overwrite) : overwrite output file if it exists 
 
 example usage:
-$0 --label_lst=file_lst_of_lmat_output --filesum=*.fastsummary 
+$0 --ilst=file_lst_of_lmat_output --filesum=*.fastsummary 
 
 "
 
@@ -103,7 +103,7 @@ while test -n "${1}"; do
    optarg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
 
    case $opt in
-   --label_lst=*)
+   --ilst=*)
       lst=$optarg;;
    --filesum=*)
       fastsum_file=$optarg;;

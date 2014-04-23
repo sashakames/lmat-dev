@@ -3,10 +3,10 @@
 file_lst=""
 min_kmers=1
 min_read_len=-1
+min_tax_score=0
 prog=gene_summary.pl
 los=0.1
 num_threads=2
-#taxfile="$LMAT_DIR/gene_info"
 taxfile="$LMAT_DIR/gn_ref2.txt"
 usage="Summarize gene call file
 Usage: $0 options
@@ -17,6 +17,7 @@ option list:
    --file_lst=$file_lst (default)
    --taxfile=$taxfile (default)
    --min_read_len=$min_read_len (default)
+   --min_tax_score=$min_tax_score (default)
    --threads=$num_threads (default)
 "
 if test $# = 0; then
@@ -38,6 +39,8 @@ while test -n "${1}"; do
       min_read_len=$optarg;;
    --taxfile=*)
       taxfile=$optarg;;
+   --min_tax_score=*)
+      min_tax_score=$optarg;;
    --threads=*)
       num_threads=$optarg;;
    *)
@@ -51,8 +54,7 @@ done
 false=0
 user=`whoami`
 while read file ; do
-   echo "$file | $prog $taxfile $los $min_kmers $min_read_len"
-   echo $file | $prog $taxfile $los $min_kmers $min_read_len &
+   echo $file | $prog $taxfile $los $min_kmers $min_read_len $min_tax_score &
 
    doWait=1
    while [ $doWait -eq 1 ] ; do
@@ -87,3 +89,15 @@ echo "file_lst $file_lst"
 
 out=`echo $save | sed 's/output[0-9]*/output/g'`
 echo "$lst" | combine_gs.pl | sort -k1nr,1nr > $out
+
+lst=""
+save=""
+while read file ; do
+   lst="$file.$los.$min_read_len.genesummary.$min_tax_score.taxid $lst"
+   save="$file.$los.$min_read_len.genesummary.$min_tax_score.taxid"
+done < $file_lst
+echo "file_lst $file_lst"
+
+out=`echo $save | sed 's/output[0-9]*/output/g'`
+echo "$lst" | combine_gs.pl | sort -k1nr,1nr > $out
+

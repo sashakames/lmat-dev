@@ -28,7 +28,9 @@ print 'reading:', argv[2]
 gi_to_tid = {}
 a = open(argv[2])
 for line in a :
-  t = line.split()
+  line=line.rstrip()
+  t = line.split('\t')
+  
   gi_to_tid[t[4]] = t[0]
 
 fasta = argv[1]
@@ -81,6 +83,7 @@ for line in a :
       continue
 
     tid = gi_to_tid[gi];
+    si = tid
 
     #warn if taxonomy doesn't contain the id
     '''
@@ -93,7 +96,7 @@ for line in a :
     '''
 
     #write the header with the fake id
-    out_seq.write('>' +gi + '\n')
+    out_seq.write('>' +si + '\n')
     out_gi.write(gi + '\n')
     out_gi.write(line + '\n')
     out_tid.write(tid + '\n')

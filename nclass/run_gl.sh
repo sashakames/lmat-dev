@@ -49,7 +49,7 @@ genedbfile=""
 genefile="$LMAT_DIR/gn_ref2.txt.gz"
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
-
+rank_report="species,plasmid,genus"
 ## minimum percentage of k-mer matches from a read found in a gene before a call can be made
 gene_score=0.01
 
@@ -82,6 +82,7 @@ option list:
    --min_read_kmer (default=$num_gene_kmers) : minimum number of valid k-mers present in read needed for analysis
    --min_gene_score (default=$gene_score) : minimum percentage of k-mers matching to reference gene (for gene summary step)
    --min_tax_score (default=$min_tax_score) : minimum score for matched tax id (used for tracking rRNA assigned to specific tax ids)
+   --rank_report=$rank_report : read binning for different ranks (user provides a comma separated list of ranks). plasmid is treated as a separate rank
 
 example usage:
 $0 --genedb_file=$genedbfile --ilst=run_lmat_output_file_lst.lst 
@@ -115,7 +116,9 @@ while test -n "${1}"; do
    --overwrite)
       overwrite=1;;
    --min_gene_score)
-      gene_score=$optarg;;
+      gaene_score=$optarg;;
+   --rank_report)
+      rank_report=$optarg;;
    --min_tax_score)
       min_tax_score=$optarg;;
    *)
@@ -157,7 +160,7 @@ if [ $genedbfile ] ; then
          mv tmp.$$ $res 
          min_map_reads=10
          if [ -e $fs_file ] ; then
-            ${bin_dir}fsreport.py $fs_out species,genus,plasmid $odir $res2 $min_map_reads
+            ${bin_dir}fsreport.py $fs_out $rank_report $odir $res2 $min_map_reads
          fi
       fi
 else

@@ -52,13 +52,10 @@ noprune_taxtree=$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat
 genefile="$LMAT_DIR/gn_ref2.txt.gz"
 ## Stores tree depth of each taxnomy node
 depthf="$LMAT_DIR/depth_for_ncbi_taxonomy.segment.pruned.dat"
-
+## identify the rank for each taxid - uses a keyword "strain" to identify ranks below species
+rankval="$LMAT_DIR/ncbi_taxid_to_rank.pruned.txt"
 ## Stores human readable lineage information on each taxonomy node
 taxfile="$LMAT_DIR/ncbi_taxonomy_rank.segment.pruned.txt"
-
-## Used by content summarization to map taxids to rank (can this be merged with $species_map?)
-rankval="$LMAT_DIR/ncbi_taxid_to_rank.pruned.txt"
-
 ## For content summarization, and read counting, ignore reads with scores below this threshold
 min_score=0
 
@@ -216,7 +213,7 @@ fi
 if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    echo "Process $query_file [overwrite=$overwrite 1=yes, 0=no] [outputfile=$fastsum_file]"
 
-   /usr/bin/time -v $rprog $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+   /usr/bin/time -v $rprog $fstr $pstr -u $taxfile -s -w $rankval -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
 
    min_reads=1
    if [ ! -e $fastsum_file ] ; then
@@ -230,10 +227,6 @@ if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
 
    if hash ktImportText > /dev/null 2>&1 ; then
       ktImportText $fastsum_file.lineage -o $fastsum_file.lineage.html
-   fi
-   if [ $verbose == 1 ] ; then
-      echo "Verbose setting is used for debuging one program at a time only"
-      exit 0
    fi
 else 
    echo "Warning, $fastsum_file exists, set --overwrite to overwrite existing file"

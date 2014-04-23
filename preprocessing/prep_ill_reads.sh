@@ -1,6 +1,9 @@
-#!/bin/sh -xvf
+#!/bin/sh 
 ### default options
 file_lst=""
+adapt_file=/usr/mic/bio/blastdb/vector/all-illumina-adapters.fa
+useMcf=0
+odir=.
 num_threads=0
 isPe=0
 usage="Filtering steps for Illumina reads
@@ -10,6 +13,8 @@ option list:
    --file_lst=$file_lst (default)  : list of fastq files 
    --threads=$num_threads (default) : default is to use all cores - customize the call to gnu parallel to limit resource use.
    --pe (default=off) : handle paired end reads
+   --mcf (default=$useMcf) : use fastq-mcf
+   --odir (default=$odir) : output directory
 "
 if test $# = 0; then
    echo "${usage}"
@@ -46,6 +51,10 @@ while test -n "${1}"; do
       num_threads=$optarg;;
    --pe*)
       isPe=1;;
+   --mcf*)
+      useMcf=1;;
+   --odir=*)
+      odir=$optarg;;
    *)
       echo "Unrecognized argument [$opt]"
       echo "${usage}"
@@ -70,6 +79,28 @@ fi
 t=1
 if [ $t -eq 1 ]; then
 
+if [ $isPe == 0 -a $useMcf == 1 ] ; then
+   while read file ; do
+      fname=`basename $file`
+      echo "fastq-mcf $adapt_file $file -o $odir/fc.$fname" >> $tfile
+   done < $file_lst
+   ${pbin}parallel --load 150% --progress $jobstr -a $tfile 
+
+   if [ -e $tfile ] ; then
+      rm -f $tfile
+   fi
+   while read file ; do
+      fname=`basename $file`
+      rfile="$odir/fc.$fname"
+      echo "$rfile" >> $tfile
+   done < $file_lst
+   ${pbin}parallel --load 150% --progress $jobstr -a $tfile /usr/gapps/kpath/seqtk-master/seqtk seq -A -q 10 -n N {} ">" {.}.fasta
+
+   exit 0
+fi
+if [ -e $tfile ] ; then
+   rm -f $tfile
+fi
 while read file ; do
    echo "fastq_illumina_filter -N -o fc.$file $file" >> $tfile
    if [ $isPe == 1 ] ; then

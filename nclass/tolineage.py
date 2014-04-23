@@ -35,7 +35,6 @@ for line in a :
   t = line.split()
   count = t[1]
   avg=float(t[0])/float(t[1])
-  #print "check avg:",avg,t[1],t[0]
   ktaxid = t[2]
   descrip=''
   if not tax.has_key(ktaxid) :
