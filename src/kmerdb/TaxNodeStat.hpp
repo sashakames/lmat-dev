@@ -149,7 +149,7 @@ public:
 	  // iterate on taxid priority queue in batches of taxons with
 	  // the same rank
 
-	    cout << "kmer pruning ";
+	    //	    cout << "kmer pruning ";
 	    while(!taxid_q.empty()) {
 
 	    // get current priorty
@@ -157,7 +157,7 @@ public:
 	      
 	    // pull out elements that match top priority
 
-	      cout << " priority: " << cur_priority << " count " << taxid_q.size();
+	      //	      cout << " priority: " << cur_priority << " count " << taxid_q.size();
 	      while(taxid_q.top().first == cur_priority) {
 	    
 		const MyPair res = taxid_q.top(); 
@@ -174,7 +174,7 @@ public:
 	      if (taxid_q.size() <= tid_cut) {
 		//	      cout << "Cut to rank: " << cur_priority << " org count  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";
 		m_taxid_count = taxid_q.size();
-		cout << " priority: " << taxid_q.top().first << " count " << taxid_q.size();
+		//		cout << " priority: " << taxid_q.top().first << " count " << taxid_q.size();
 		break;
 		
 	      } 

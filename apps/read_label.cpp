@@ -1320,7 +1320,9 @@ int main(int argc, char* argv[])
    uint16_t max_count = ~0;
    bool prn_read = true;
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:w:pk:c:v:k:i:d:l:t:r:sm:o:x:f:g:z:q:")) != -1) {
+
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q")) != -1) {
+
       switch(c) {
       case 'h':
         screenPhiXGlobal=false;
@@ -1652,7 +1654,7 @@ int main(int argc, char* argv[])
 
 
 
-	while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
+	while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads && (!in_finished)) {
 
 
 	  
@@ -1708,16 +1710,16 @@ int main(int argc, char* argv[])
 	    
 	    if(fastq) eof = !getline(ifs, line); // skip quality values for now       
 
-	    if (in_finished) {
-
-	      cout << read_count_in << " reads in\n";
-	      break;
-
-	    }
 	  }
 
-	}
+	  if (in_finished) {
+	    
+	    cout << read_count_in << " reads in\n";
+	    break;
 
+	  }
+	}
+	
 
       }
 
