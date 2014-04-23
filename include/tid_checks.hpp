@@ -7,11 +7,10 @@
 
 /* attemp to centralize any references to harcoded tax ids here */
 
-#define PHIX_TID 374840
-//#define PHIX_TID 1217068
+#define ART_SEQ_TID 32630
 #define HUMAN_TID 9606
 
-#define isPhiX(tid) ( (tid==PHIX_TID)||(tid==10847)||(tid==374840)||(tid==32630) ? 1 : 0)
+#define isPhiX(tid) ( (tid==374840)||(tid==10847)||(tid==374840)||(tid==32630) ? 1 : 0)
 
 inline bool isHuman(TID_T taxid)  {
    bool res = false;
