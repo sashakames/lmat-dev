@@ -21,12 +21,6 @@
 #define TAXTREE TaxTree<uint32_t>
 #define INDEXDBSZ INDEXDB<uint32_t>
 
-//#define TAXNODE TaxNode
-//define TAXNODESTAT TaxNodeStat
-//define TAXTREE TaxTree
-//define INDEXDBSZ INDEXDB
-
-
 using std::fstream;
 using std::cout;
 using std::endl;
@@ -53,6 +47,7 @@ typedef map<uint32_t,uint32_t> map_t;
 typedef map<uint32_t,float> ufmap_t;
 typedef map<uint16_t, ufmap_t> u_ufmap_t;
 typedef map<uint32_t,uint32_t> hmap_t;
+typedef map<TID_T,uint32_t> tmap_t;
 
 vector <int> read_len_vec;
 vector <int> read_len_avgs;
@@ -108,74 +103,6 @@ struct CmpDepth1 {
    const hmap_t& _imap;
 };
 
-static bool isHuman(uint32_t taxid)  {
-   bool res = false;
-   switch (taxid) {
-   case 9606:
-   case 63221: //neanderthal:
-      res=true;
-      break;
-   default:
-      res=false;
-      break;
-   }
-   return res;
-}
-
-void
-fill_in_labels(const TAXTREE& taxtree, vector<uint32_t>& row, const tax_data_t& taxids, const hmap_t& idx2taxid, const hmap_t& taxid2idx) {
-   for(unsigned tax_idx = 0; tax_idx < row.size(); ++tax_idx) {
-      const hmap_t::const_iterator mtch = idx2taxid.find(tax_idx);
-      assert(mtch != idx2taxid.end());
-      const uint32_t col_tax_val = (*mtch).second;
-      const TAXTREE::const_iterator col_tax_val_it = taxtree.find(col_tax_val); 
-      if(col_tax_val_it == taxtree.end()) {
-         cout<<"we have a taxtree mapping problem: "<<col_tax_val<<endl;
-         continue;
-      }
-      TAXNODE* col_tax_val_node = (*col_tax_val_it).second;
-      // see if this id's genome count needs to be update
-      //  based on its children   - can skip if its a leaf
-      if( !col_tax_val_node->isLeaf() && row[tax_idx] == 0 ) {
-         tax_data_t::const_iterator it = taxids.begin();
-         const tax_data_t::const_iterator is = taxids.end();
-         unsigned has_cnt_sum = 0;
-         for(; it != is; ++it) {   
-            const uint32_t tax_id = (*it).first;
-            const TAXTREE::const_iterator tax_val_it = taxtree.find(tax_id); 
-            if(tax_val_it == taxtree.end()) {
-               cout<<"we have a taxtree mapping problem: "<<col_tax_val<<endl;
-               continue;
-            }
-            TAXNODE* tax_val_node = (*tax_val_it).second;
-            // test if tax_id is a descendant of tax_val
-            // save max value
-            const hmap_t::const_iterator idx_mtch = taxid2idx.find(tax_id);
-            assert(idx_mtch != taxid2idx.end());
-            const uint32_t tax_val_idx = (*idx_mtch).second;
-            
-            if( col_tax_val != tax_id && row[tax_val_idx] > 0 && tax_val_node->isAncestor(col_tax_val)) {
-               // want to capture the descendant tax nodes closest to col_tax_val_node 
-               has_cnt_sum = 1;
-               break;
-            }
-         }
-         if( has_cnt_sum > 0 ) {
-            row[tax_idx] = has_cnt_sum;
-            if(verbose) cout<<"Final Tax Node Val "<<col_tax_val<<" final transfer cnt for taxid="<<row[tax_idx]<<endl;
-         }
-      }
-   }
-   if(verbose) cout<<"fill_row: "; 
-   for(unsigned tax_idx = 0; tax_idx < row.size(); ++tax_idx) {
-      const hmap_t::const_iterator mtch = idx2taxid.find(tax_idx);
-      assert(mtch != idx2taxid.end());
-      const uint32_t tax_val = (*mtch).second;
-      if(verbose) cout<<"["<<tax_val<<","<<row[tax_idx]<<"]";
-   }
-   if(verbose) cout<<endl;
-}
-
 struct TCmp { 
    TCmp(const hmap_t& imap) : _imap(imap) {}
    bool operator()(const pair<uint32_t,float>& a, const pair<uint32_t,float>& b) const {
@@ -199,6 +126,33 @@ struct ScoreOptions {
    u_ufmap_t _rand_hits; 
    bool _comp_rand_hits;
 };
+
+
+static void doMerge(const vector< map<TID_T,hmap_t> >& gtrackall, map<uint32_t,tmap_t>& merge_cnt) {
+   for(unsigned thread = 0; thread < gtrackall.size();  ++thread) {
+      const map<TID_T,hmap_t>& gt = const_cast<map<TID_T,hmap_t>&>(gtrackall[thread]);
+      map<TID_T,hmap_t>::const_iterator it = gt.begin();
+      const map<TID_T,hmap_t>::const_iterator is = gt.end();
+      for(; it != is; ++it) {
+         TID_T tid = (*it).first;
+         const hmap_t& hm = (*it).second;
+         hmap_t::const_iterator it1 = hm.begin();
+         const hmap_t::const_iterator is1 = hm.end();
+         for(; it1 != is1; ++it1) {
+            uint32_t gid = (*it1).first;
+            uint32_t cnt = (*it1).second;
+            if( merge_cnt.find(gid) == merge_cnt.end() ) {
+               merge_cnt.insert( make_pair(gid,tmap_t()));
+            }
+            if( merge_cnt[gid].find(tid) == merge_cnt[gid].end() ) {
+               merge_cnt[gid][tid] = cnt;
+            } else {
+               merge_cnt[gid][tid] += cnt;
+            }
+         }
+      }
+   }
+}
 
 #define ENCODE(t, c, k) \
 switch (c) { \
@@ -242,7 +196,7 @@ unsigned retrieve_kmer_labels(INDEXDBSZ* table, const char* str, const int slen,
     kmer_t forward = 0; /* forward k-mer */
     kmer_t reverse = 0; /* reverse k-mer */
     kmer_t kmer_id; /* canonical k-mer */
-
+    unsigned debug_cnt = 0;
     set<kmer_t> no_dups;
     for (j = 0; j < slen; j++) {
         register int t;
@@ -269,9 +223,10 @@ unsigned retrieve_kmer_labels(INDEXDBSZ* table, const char* str, const int slen,
               } else {
                   gene_track[gid] += 1; 
               }
+              ++debug_cnt;
               //if(verbose) cout<<"found this: gene_tid="<<tid<<" label="<<assigned_taxid<<" gid="<<gid<<endl;
            }
-           //if( verbose ) cout<<"num taxids: "<<geneid_lst.size();
+           if( verbose ) cout<<"num taxids: "<<geneid_lst.size()<<" "<<debug_cnt<<endl;
            //if(dcnt > 0 && verbose ) cout<<" end k-mer lookup"<<endl;
            //if(mtch == 0 && verbose ) cout<<" no k-mer matches "<<endl;
            delete h;
@@ -281,14 +236,16 @@ unsigned retrieve_kmer_labels(INDEXDBSZ* table, const char* str, const int slen,
 }
 
 void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs, 
-               const ScoreOptions& sopt, uint16_t max_count, hmap_t& gene_update, float min_score, int min_kmer) {
+               const ScoreOptions& sopt, uint16_t max_count, hmap_t& gene_update, hmap_t& gene_update_taxscore, float min_score, int min_kmer, const string& hdr, const taxid_t tid, float tscore, float min_tax_score) {
 
      const int ri_len = line.length();
      if(ri_len < 0 ) {
          cout<<"unexpected ri_len value: "<<ri_len<<endl;
          return;
      } else if( ri_len < k_size ) {
-         ofs<<"\t"<<-1<<" "<<-1<<"\tNone\t"<<"\t-1 -1 ReadTooShort"<<endl;
+         //try not printing
+         //ofs<<hdr<<"\t"<<line<<"\t"<<tid<<"\t";
+         //ofs<<"\t"<<-1<<" "<<-1<<"\tNone\t"<<"\t-1 -1 ReadTooShort"<<endl;
      } else {
         vector<label_info_t> label_vec(ri_len-k_size+1,make_pair(-1,tax_data_t()));
         list<geneid_t> geneid_lst; 
@@ -306,12 +263,17 @@ void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs,
            sort(gsort.begin(),gsort.end(),Cmp()); 
            const float gscore = (float)gsort[0].second/(float)cnt;
            const uint32_t gl = gsort[0].first;
+           ofs<<hdr<<"\t"<<line<<"\t"<<tid<<" "<<tscore<<"\t";
            ofs<<"\t"<<-1<<" "<<gsort[0].second<<" "<<cnt<<"\t"<<gl<<" "<<gscore<<" GL"<<endl;
            if( gscore > min_score && (signed)cnt > min_kmer) {
                ++gene_update[gl];
            } 
+           if( tscore >= min_tax_score && gscore > min_score && (signed)cnt > min_kmer) {
+               ++gene_update_taxscore[gl];
+           } 
         } else {
-           ofs<<"\t"<<-1<<" "<<-1<<"\tNone\t"<<"\t-1 -1 NoDbHits"<<endl;
+           //ofs<<hdr<<"\t"<<line<<"\t"<<tid<<"\t";
+           //ofs<<"\t"<<-1<<" "<<-1<<"\tNone\t"<<"\t-1 -1 NoDbHits"<<endl;
         }
      }
   }
@@ -381,9 +343,10 @@ int main(int argc, char* argv[])
 {
    char c = '\0';
    int n_threads = 0, k_size = -1;
-   bool restore = false, ascii = false;
-   float min_score = 0.0;
+   bool ascii = false;
+   float min_score = 0.0, min_tax_score = 0.0;
    int min_kmer = 0;
+   const bool restore=true;
 
    string genefile, kmer_db_fn, query_fn, query_fn_lst, ofname, ofbase;
    hmap_t imap;	
@@ -391,8 +354,11 @@ int main(int argc, char* argv[])
    size_t mmap_size = 0;
    uint16_t max_count = ~0;
 
-   while ((c = getopt(argc, argv, "h:n:jb:ye:wmpk:c:v:k:i:d:l:t:s:r o:x:f:g:z:q:a ")) != -1) {
+   while ((c = getopt(argc, argv, "b:h:n:jye:wmpk:c:v:k:i:d:l:t:s:r o:x:f:g:z:q:a ")) != -1) {
       switch(c) {
+      case 'b' :
+         min_tax_score = atof(optarg);
+         break;
       case 'g' :
          genefile = optarg;
          break;
@@ -411,9 +377,6 @@ int main(int argc, char* argv[])
       case 'j':
          verbose = true;
          break;
-      case 'b':
-         sopt._diff_thresh = atof(optarg);
-         break;
       case 'l':
          query_fn_lst= optarg;
          break;
@@ -423,9 +386,6 @@ int main(int argc, char* argv[])
       case 'p':
          sopt._prn_all = true;
          break;   
-      case 'r':
-        restore = true;
-        break;
       case 'a':
         ascii = true;
         break;
@@ -534,6 +494,7 @@ int main(int argc, char* argv[])
    }
    omp_set_num_threads(n_threads);
    vector< map<TID_T,hmap_t> > gtrackall(n_threads);
+   vector< map<TID_T,hmap_t> > gtrackall_tax(n_threads);
    string line;
    bool finished;
    size_t pos = 0 ;
@@ -543,9 +504,14 @@ int main(int argc, char* argv[])
    clock.start();
    size_t read_count = 0; 
 
-#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, gtrackall, min_score, min_kmer)  private(ifs,finished, pos, ofs, ofname, line, read_count)
+#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, gtrackall, gtrackall_tax, min_score, min_kmer, min_tax_score)  private(ifs,finished, pos, ofs, ofname, line, read_count)
 
    {
+     bool useFasta = query_fn.length() > 0 ? true : false;
+     if( useFasta ) {
+         cout<<"Sorry fasta input file not yet supported"<<endl;
+         exit(0);
+     }
      read_count = 0;
      finished = false;
      const char* fn = NULL;
@@ -554,7 +520,6 @@ int main(int argc, char* argv[])
      } else if( file_lst ) {
          fn = file_lst[ omp_get_thread_num() ].c_str();
      }  
-     //cout<<"did not open for reading: ["<<fn<<"] tid: ["<<omp_get_thread_num()<<"]"<<endl;
      ifs.open(fn);
      if(!ifs) {
          cerr<<"did not open for reading: ["<<fn<<"] tid: ["<<omp_get_thread_num()<<"]"<<endl;
@@ -593,7 +558,7 @@ int main(int argc, char* argv[])
             finished = true;
           } 
        }
-
+       taxid_t taxid;
        size_t p1 = line.find('\t');
        string hdr = line.substr(0,p1);
 
@@ -601,59 +566,45 @@ int main(int argc, char* argv[])
        const string read_buff = line.substr(p1+1,p2-p1-1);
 
        size_t p3 = line.find('\t',p2+1);
-       string ignore_stats = line.substr(p2+1,p3-p2-1);
+       string stats = line.substr(p2+1,p3-p2-1);
+       istringstream istrm2(stats.c_str());
+       float score1,score2,score3;
+       istrm2>>score1>>score2>>score3;
+       // means this read lacks valid k-mers
+       if( score3 == -1 ) continue;
+       
        size_t p4 = line.find('\t',p3+1);
-       string ignore_alt_scores = line.substr(p3+1,p4-p3-1);
+       //string ignore_alt_scores = line.substr(p3+1,p4-p3-1);
        size_t p5 = line.find('\t',p4+1);
        string taxid_w_scores = line.substr(p4+1,p5-p4);
 
        istringstream istrm(taxid_w_scores.c_str());
-       float score;
-       taxid_t taxid;
+       float tax_score = 0.0;
        string match_type;
        
-       istrm >>taxid>>score>>match_type; 
-
-       //skip human genes for now
-       //if(isHuman(taxid)) continue;
-       //if(score < tax_threshold) continue;
-       ofs<<hdr<<"\t"<<read_buff<<"\t"<<taxid<<"\t";
-      
+       istrm >>taxid>>tax_score>>match_type; 
+       // check keywords from read_label output -
+       // NoDbHits or ReadTooShort  (valid hits are DirectMatch and MultiMatch or PartialMultiMatch)
+       if( match_type[0] == 'N' || match_type[0] == 'R' ) {
+         taxid=0;
+       }
        map<TID_T,hmap_t>& track = gtrackall[omp_get_thread_num()];
+       map<TID_T,hmap_t>& track_tax = gtrackall_tax[omp_get_thread_num()];
+       hmap_t& gtrack_tax = track_tax[taxid];
        hmap_t& gtrack = track[taxid];
-	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, gtrack, min_score, min_kmer);
+	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, gtrack, gtrack_tax, min_score, min_kmer, hdr,taxid,tax_score, min_tax_score);
 	    read_count ++;
      }
      ofs.close();
    }
-   typedef map<TID_T,uint32_t> tmap_t; 
    map<uint32_t,tmap_t>  merge_cnt;
-   for(unsigned thread = 0; thread < gtrackall.size();  ++thread) {
-      map<TID_T,hmap_t>& gt = gtrackall[thread];
-      map<TID_T,hmap_t>::const_iterator it = gt.begin();
-      const map<TID_T,hmap_t>::const_iterator is = gt.end();
-      for(; it != is; ++it) {
-         TID_T tid = (*it).first;
-         const hmap_t& hm = (*it).second;
-         hmap_t::const_iterator it1 = hm.begin();
-         const hmap_t::const_iterator is1 = hm.end();
-         for(; it1 != is1; ++it1) {
-            uint32_t gid = (*it1).first;
-            uint32_t cnt = (*it1).second;
-            if( merge_cnt.find(gid) == merge_cnt.end() ) {
-               merge_cnt.insert( make_pair(gid,tmap_t()));
-            }
-            if( merge_cnt[gid].find(tid) == merge_cnt[gid].end() ) {
-               merge_cnt[gid][tid] = cnt;
-            } else {
-               merge_cnt[gid][tid] += cnt;
-            }
-         }
-      }
-   }
+   doMerge(gtrackall,merge_cnt);
+   map<uint32_t,tmap_t>  merge_cnt_tax;
+   doMerge(gtrackall_tax,merge_cnt_tax);
+
    igzstream zipifs(genefile.c_str());
    if( !zipifs ) {
-      cout<<"no way"<<genefile<<endl;
+      cout<<"Unable to unzip gene annotation table: "<<genefile<<endl;
       return -1;
    }
    ostringstream output;
@@ -663,6 +614,15 @@ int main(int argc, char* argv[])
       cerr<<"Can't write to "<<output.str()<<endl;
       return -1;
    }
+
+   ostringstream output_tax;
+   output_tax<<ofbase<<"."<<min_score<<"."<<min_kmer<<".genesummary.min_tax_score."<<min_tax_score;
+   ofstream sum_ofs_tax(output_tax.str().c_str());
+   if( !sum_ofs_tax ) {
+      cerr<<"Can't write to "<<output_tax.str()<<endl;
+      return -1;
+   }
+
    const unsigned buff_size = 20000;
    char buff[buff_size]; 
    while(zipifs.getline(buff,buff_size)) {
@@ -679,6 +639,16 @@ int main(int argc, char* argv[])
             sum_ofs<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
          }
       } 
+      if( merge_cnt_tax.find(gid) != merge_cnt_tax.end() ) {
+         tmap_t::const_iterator ti = merge_cnt_tax[gid].begin();
+         const tmap_t::const_iterator ts = merge_cnt_tax[gid].end();
+         for(; ti != ts; ++ti) {
+            TID_T label = (*ti).first;
+            uint32_t cnt = (*ti).second;
+            sum_ofs_tax<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
+         }
+      }
+
    }
    cout << "query time: " << clock.stop() << endl;
 

@@ -4,25 +4,47 @@ import sys,os
 import pprint
 
 fsfile=sys.argv[1] # fastsummary file
-taxtree=sys.argv[2] # ncbi_taxonomy.dat
-rankfile=sys.argv[3] # tid to rank mapping
-rank_lst_str=sys.argv[4] #ranks of interest
-odir=sys.argv[5] #output directory
-gsfile=""
-if len(sys.argv) >= 6 :
-   gsfile=sys.argv[6]
+rank_lst_str=sys.argv[2] #ranks of interest
+odir=sys.argv[3] #output directory
+rdir=os.getenv("LMAT_DIR")
+taxtree=rdir + "/" + "ncbi_taxonomy.segment.pruned.dat.nohl"
+rankfile=rdir + "/" + "ncbi_taxid_to_rank.pruned.txt"
+plasfile=rdir + "/" + "low_numid_plasmids.txt"
+plasnf=rdir + "/" + "plasmid.names.txt"
+plasmids={}
+a = open(plasfile)
+for lin in a :
+   lin = lin.rstrip()
+   plasmids[lin]=1
 
-#debug_str="[p1:="+fsfile+"]\n[p2:"+taxtree+"]\n[p3:"+rankfile+"]\n[p4:"+rank_lst_str+"]\n[p5:"+odir+"]"
-#print "debug",debug_str
+a = open(plasnf)
+plasname={}
+for lin in a :
+   lin = lin.rstrip()
+   vals=lin.split('\t')
+   plasname[vals[0]]=vals[len(vals)-1]
+   
+   
+def isPlasmid(plasmids,tid) :
+   res=False
+   if plasmids.has_key(tid) or (int(tid) >= 10000000 and int(tid) < 20000000) :
+      res=True
+   return res
+
+
+gsfile=""
+min_gene_cnt=2
+if len(sys.argv) >= 5 :
+   gsfile=sys.argv[4]
+   min_gene_cnt=int(sys.argv[5])
+
 ranktable={}
 
-print "open1",rankfile
 a = open(rankfile)
 for lin in a :
    vals=lin.split()
    ranktable[vals[0]] = vals[1]
 
-print "open2",taxtree
 a = open(taxtree)
 a.readline()
 a.readline()
@@ -47,19 +69,19 @@ while True :
 
 rank_lst=rank_lst_str.split(',')
 
-def getRankTid(rank,tid,ranks,parents) :
+def getRankTid(rank,tid,ranks,parents,plasmids) :
    stid=tid
-   res=-1
-   ## assume this is a plasmid
-   if not ranks.has_key(tid) and rank == "plasmid" :
-      return tid
-   while parent[stid] != stid :
-      #if  ranks[parent[stid]] == rank :
-      if  ranks.has_key(stid) and ranks[stid] == rank :
-         res=stid
-         break
-      stid = parent[stid]
-   return res
+   rank_tid=-1
+
+   if (ranks.has_key(stid) and rank == ranks[stid]) or (rank == "plasmid" and isPlasmid(plasmids,tid))  :
+      rank_tid=tid
+   else :
+      while parent[stid] != stid :
+         if  ranks.has_key(stid) and ranks[stid] == rank :
+            rank_tid=stid
+            break
+         stid = parent[stid]
+   return rank_tid
          
 orig={}
 store={}
@@ -69,19 +91,18 @@ for line in a :
    t = line.split('\t')
    wrc = t[0]
    count = t[1]
-   avg=float(wrc)/float(count)
    taxid = t[2]
    descrip=''
    orig[taxid]=t[3]
    if not parent.has_key(taxid) :
       if taxid != 1 :
-         taxid=-1
          print 'warning: did not find parent id for node (ignore)', taxid,'for entry:'
+         taxid=-1
          print line
       continue
    else :
       for rank in rank_lst :
-         tid=getRankTid(rank,taxid,ranktable,parent)
+         tid=getRankTid(rank,taxid,ranktable,parent,plasmids)
          if tid == -1 :
             continue
          if not store.has_key(rank) :
@@ -90,6 +111,7 @@ for line in a :
             store[rank][tid]=[]
          store[rank][tid].append( (taxid,wrc,count) )
 gene_store={}
+gene_cnt={}
 if gsfile != "" : 
    a = open(gsfile)
    for line in a :
@@ -97,26 +119,38 @@ if gsfile != "" :
       t = line.split('\t')
       rc = t[0]
       taxid = t[1]
-      type=t[6]
-      ### track how many reads were mapped to rRNA
-      if type != "rRNA" :
+      if taxid == '0' :
+         ## means this read was not assigned to a taxid
          continue
-      
+      geneid = t[3]
+      type=t[6]
+
       if not parent.has_key(taxid) :
-         taxid=-1
          print 'warning: did not parent node for', taxid,' entry: (rRNA gene not counted)'
+         taxid=-1
          print line
          continue
       else :
          for rank in rank_lst :
-            tid=getRankTid(rank,taxid,ranktable,parent)
+            tid=getRankTid(rank,taxid,ranktable,parent,plasmids)
+            ### track how many reads were mapped to rRNA
             if tid == -1 :
                continue
-            if not gene_store.has_key(rank) :
-               gene_store[rank]={}
-            if not gene_store[rank].has_key(tid) :
-               gene_store[rank][tid]=[]
-            gene_store[rank][tid].append( (taxid,rc) )
+            if type == "rRNA" :
+               if not gene_store.has_key(rank) :
+                  gene_store[rank]={}
+               if not gene_store[rank].has_key(tid) :
+                  gene_store[rank][tid]=[]
+               gene_store[rank][tid].append( (taxid,rc) )
+
+            if int(rc) > min_gene_cnt :
+               if not gene_cnt.has_key(rank) :
+                  gene_cnt[rank]={}
+               if not gene_cnt[rank].has_key(tid) :
+                  gene_cnt[rank][tid]={}
+               if not gene_cnt[rank][tid].has_key(geneid) :
+                  gene_cnt[rank][tid][geneid] = 0
+               gene_cnt[rank][tid][geneid] += int(rc)
 
 
 for rank in store.keys() :
@@ -126,20 +160,27 @@ for rank in store.keys() :
    fh=open(fsfileout,"w")
    save=[]
    for tid in store[rank].keys() :
-      if orig.has_key(tid) :
+      ## these plasmids do not have descriptive names so use the original headers
+      if plasmids.has_key(tid) and plasname.has_key(tid) and rank == "plasmid" :
+         name_str=plasname[tid]
+      elif orig.has_key(tid) :
          name_str=orig[tid]
       else :
          name_str=names[tid]
       ### taxid sum
       lst=store[rank][tid]
+      ## where plasmids are located at the species node, only report them
+      ## in species output when, there is a descendant
+      if len(lst) == 1 and isPlasmid(plasmids,tid) and rank != "plasmid" :
+         continue
       best_wrc,best_count=-1,-1
       top_strain=-1
       wrc_sum,count_sum=0,0
       for taxid,wrc,count in lst :
+         if isPlasmid(plasmids,taxid) :
+            ranktable[taxid] = "plasmid"
          wrc_sum += float(wrc)
          count_sum += int(count)
-         if not ranktable.has_key(taxid) :
-            ranktable[taxid] = "plasmid"
          if rank == "species" and ranktable[taxid] == "strain" :
             if best_wrc < float(wrc) :
                top_strain=taxid
@@ -155,14 +196,23 @@ for rank in store.keys() :
          gene_lst=gene_store[rank][tid]
          for taxid,count in gene_lst :
             rrna_csum += int(count)
-      tup=(wrc_sum,count_sum,tid,name_str,rrna_csum,strain_info)
+      gene_id_lst=[]
+      gene_read_cnt=0
+      if gene_cnt.has_key(rank) and gene_cnt[rank].has_key(tid) :
+         gene_id_lst=gene_cnt[rank][tid].keys()
+         for gid in gene_id_lst :
+            gene_read_cnt += gene_cnt[rank][tid][gid]
+
+      tup=(wrc_sum,count_sum,tid,name_str,rrna_csum,len(gene_id_lst),gene_read_cnt,strain_info)
       save.append(tup)
    sval=sorted(save, key=lambda val : val[0],reverse=True)
    for val in sval :
+      avg = float(val[0])/float(val[1])
+      astr="%.4f" % avg
       if gsfile != "" :
          pcnt = float(val[4])/float(val[1])
          fstr ="%.4f" % pcnt
-         out_str=str(val[0])+"\t"+str(val[1]) + "\t" + fstr + "\t" + str(val[2])+"\t"+val[3] + val[5]
+         out_str=astr+"\t"+str(val[0])+"\t"+str(val[1]) + "\t" + fstr + "\t" +str(val[5])+"\t"+str(val[6])+ "\t" + str(val[2])+"\t"+val[3] + val[7]
       else :
-         out_str=str(val[0])+"\t"+str(val[1]) + "\t" + str(val[2])+"\t"+val[3] + val[5]
+         out_str=astr+"\t"+str(val[0])+"\t"+str(val[1]) + "\t" + str(val[2])+"\t"+val[3] + val[7]
       fh.write(out_str +"\n")

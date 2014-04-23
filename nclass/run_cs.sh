@@ -7,7 +7,7 @@
 ### to better evaluate relative abundance of individual organism calls. k-mer distribution plots can 
 ### be produced for any named rank, but the default is for species, plasmid and genus calls
 ###
-### k-mer distribution plots are tradditionally used used to estimate coverage for the single organism case
+### k-mer distribution plots are tradditionally used to estimate coverage for the single organism case
 ### and this becomes a fundamentally hard problem for the metagenomics case since
 ### the correct choice of k depends on two unknown variables
 ### relative abundance of the organism (presumably unknown) and the percentage of the organism's genome that is rank
@@ -53,52 +53,29 @@ elif [ `basename $PWD` == "nclass" ] ; then
 fi
 ## Assume the perm-je library is here
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LMAT_DIR/../lib
-pipe_cmd=""
-overwrite=0
 #####################################################
 ## DEFAULT PARAMETER SETTINGS FOR CLASSIFICATION
 #####################################################
-## Memory mapped taxonomy database file
-dbfile=""
-markerdb=""
 
+## overwrite output
+overwrite=0
 ## NCBI taxonomy tree given in LMAT format
-## this version removes most of the intermediate human lineage nodes
-## to save compute time
-#taxtree="$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat.nohl"
-noprune_taxtree=$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat
-
+taxtree="$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat.nohl"
+## human readable reporting of taxonomy lineage
 taxfile="$LMAT_DIR/ncbi_taxonomy_rank.segment.pruned.txt"
-
 ## Used by content summarization to map taxids to rank (can this be merged with $species_map?)
 rankval="$LMAT_DIR/ncbi_taxid_to_rank.pruned.txt"
-
-## For content summarization, and read counting, ignore reads with scores below this threshold
-min_score=0
-marker_min_score=0
-
-## Working to deprecate this with improved null models, it increases the human tax scores by 1 standard deviation
-#hbias=1.5
-hbias=1.5
-
-
-## ignore reads with less valid k-mers than this value
-min_read_kmer=30
-
-## Additional user input default settings
-# 1== run content_summ, 0 = skip
-do_cs=1 
-# number of threads
-threads=80
 # set to 1 for debugging only (too much output for large runs)
 verbose=0
-# Must be specified by user on command line
-query_file=
 # specify directory to place output
 odir=.
-sdir=.
 lst=""
 fastsum_file=""
+## plasmids that were not associated with a chromosome did not 
+## get special taxids, this file identifies these plasmids
+## so that during content summarization, the minimum coverage parameter for
+## plasmids is correctly applied
+xtra_plas_file="$LMAT_DIR/low_numid_plasmids.txt"
 
 # run content summary on marker
 usage="Run LMAT pipeline 
@@ -108,7 +85,6 @@ option list:
    --label_lst=$lst: list of files containing LMAT's read label output 
    --filesum=$fastsum_file : LMAT's fastsummary output file
    --verbose=$verbose : Only used for debugging single read queries (too much output for larger datasets)
-   --sdir=$sdir : Place output in this directory (defaults to current)
    --odir=$odir : Place output in this directory (defaults to current)
    --overwrite (default=$overwrite) : overwrite output file if it exists 
 
@@ -131,8 +107,6 @@ while test -n "${1}"; do
       lst=$optarg;;
    --filesum=*)
       fastsum_file=$optarg;;
-   --sdir=*)
-      sdir=$optarg;;
    --odir=*)
       odir=$optarg;;
    --verbose)
@@ -147,11 +121,6 @@ while test -n "${1}"; do
    shift
 done
 
-## plasmids that were not associated with a chromosome did not 
-## get special taxids, this file identifies these plasmids
-## so that during content summarization, the minimum coverage parameter for
-## plasmids is correctly applied
-xtra_plas_file="$LMAT_DIR/low_numid_plasmids.txt"
 
 vstr=""
 if [ $verbose == 1 ] ; then
@@ -160,9 +129,6 @@ fi
 
 if [ ! $odir == '' ]; then
     odir="$odir/"
-fi
-if [ ! $sdir == '' ]; then
-    sdir="$sdir/"
 fi
 
 
@@ -176,7 +142,7 @@ if [ -e $fastsum_file ] ; then
    if [ ! -e $sumofile ] || [ $overwrite == 1 ] ; then
       rank_check="plasmid,species,genus"
       echo "Summary process $fastsum_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$sumofile] [k-values=$kcnt]"
-      /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -c $noprune_taxtree -l $fastsum_file -k $kcnt -f $lst -r $rankval -a $rank_check -o $sumofile >& $logfile
+      /usr/bin/time -v ${bin_dir}content_summ $hstr -p $xtra_plas_file -c $taxtree -l $fastsum_file -k $kcnt -f $lst -r $rankval -a $rank_check -o $sumofile >& $logfile
       ofile="$fastsum_ofile.ordered"
       ${bin_dir}summary.py $sumofile $rankval $fastsum_file $xtra_plas_file $ofile $rank_check
    else 

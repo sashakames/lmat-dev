@@ -5,7 +5,7 @@
 ###
 ### Steps:
 ###
-### Call gene_label assigne gene names to each read and count the reads assigned to each label
+### Call gene_label to assign genes to each read and count the reads assigned to each gene 
 ###
 #####################################
 if [ -z "$LMAT_DIR" ] ; then
@@ -24,41 +24,43 @@ fi
 ## Location of binaries
 if hash read_label >& /dev/null ; then
    bin_dir=
-
 elif [ -f read_label ] ; then
     bin_dir=./
 elif [ `basename $PWD` == "nclass" ] ; then
     bin_dir="../apps/"
  else
-   #echo "Could not find read_label in your path assume LMAT binaries/scripts are here: $bin_dir"
    bin_dir="$LMAT_DIR/../bin/"
 fi
 ## Assume the perm-je library is here
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LMAT_DIR/../lib
-pipe_cmd=""
-overwrite=0
-dbfile=""
-markerdb=""
-## Memory mapped gene database file
-genedbfile=/local/ramfs/gene.20mer.db
 
+
+
+
+#####################################
+## default parameter settings
+#####################################
+fs_file=""
+overwrite=0
+min_tax_score=0
+## Memory mapped gene database file
+genedbfile=""
 ## Used by gene_label to assign human readable names to genes
 genefile="$LMAT_DIR/gn_ref2.txt.gz"
-
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
 
+## minimum percentage of k-mer matches from a read found in a gene before a call can be made
+gene_score=0.01
+
 ## Additional user input default settings
-## Not yet supported
-do_fasta=0 
-# number of threads
-threads=80
 # set to 1 for debugging only (too much output for large runs)
 verbose=0
-# Must be specified by user on command line
-query_file=
 # specify directory to place output
-odir=  
+odir=.
+## minimum number of valid k-mers  present in read needed before considering the read for gene labeling
+num_gene_kmers=20
+lstr=""
 
 # in some cases you might not want to bother summarizing the human reads
 # turn on if there are a huge # of human reads and you want to save time
@@ -68,22 +70,21 @@ usage="Run LMAT pipeline
 Usage: $0 options 
 
 option list:
-   --fasta  : search a fasta file as input (not yet supported)
-   --db_file=$dbfile : Memory mapped database file
-   --marker_library=$markerdb : Memory mapped marker database file
+   --ilst=$lstr : File list LMAT read_label output
    --genedb_file=$genedbfile : Memory mapped gene database file
-   --query_file=$query_file : Metagenomic reads in fasta format
-   --threads=$threads : Number of threads to use 
-   --nullm=$nullm : File containing the list of null models
    --verbose=$verbose : Only used for debugging single read queries (too much output for larger datasets)
    --odir=$odir : Place output in this directory (defaults to current)
+   --filesum=$fs_file : fastsummary file generated from read_label. When file is specified (optional)
+                        a post processing script is automatically invoked to provide an updated taxonomy report, which includes additional information on gene content
+                        reports percentage of rRNA for each taxon and number distinct gene ids detected and number of reads mapped to these genes
+                        this feature is meant to give additional information on how much of the genome was used for taxnomic identification
    --overwrite (default=$overwrite) : overwrite output file if it exists 
-   --min_read_kmer (default=$min_read_kmer) : minimum number of valid k-mers present in read needed for analysis
-   --prune_thresh : threshold of maximum taxonomy IDs allowed per k-mer. 
-   --pipe_cmd=$pipe_cmd : provide a pipe cmd instead of query_file, example: cat file.fastq.gz | gunzip | seqtk -A |
+   --min_read_kmer (default=$num_gene_kmers) : minimum number of valid k-mers present in read needed for analysis
+   --min_gene_score (default=$gene_score) : minimum percentage of k-mers matching to reference gene (for gene summary step)
+   --min_tax_score (default=$min_tax_score) : minimum score for matched tax id (used for tracking rRNA assigned to specific tax ids)
 
 example usage:
-$0 --genedb_file=$genedbfile --query_file=HC1.fna --threads=$threads
+$0 --genedb_file=$genedbfile --ilst=run_lmat_output_file_lst.lst 
 
 "
 
@@ -97,32 +98,26 @@ while test -n "${1}"; do
    optarg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
 
    case $opt in
+   --ilst=*)
+      lstr=$optarg;;
    --odir=*)
       odir=$optarg;;
    --db_file=*)
       dbfile=$optarg;;
    --min_read_kmer=*)
-      min_read_kmer=$optarg;;
-   --marker_library=*)
-      markerdb=$optarg;;
-   --pipe_cmd=*)
-      pipe_cmd=$optarg;;
+      num_gene_kmers=$optarg;;
    --genedb_file=*)
       genedbfile=$optarg;;
-   --query_file=*)
-      query_file=$optarg;;
-   --prune_thresh=*)
-      PTHRESH=$optarg;;
-   --threads=*)
-      threads=$optarg;;
-   --nullm=*)
-      nullm=$optarg;;
+   --filesum=*)
+      fs_file=$optarg;;
    --verbose)
       verbose=1;;
    --overwrite)
       overwrite=1;;
-   --fasta)
-      do_fasta=1;;
+   --min_gene_score)
+      gene_score=$optarg;;
+   --min_tax_score)
+      min_tax_score=$optarg;;
    *)
       echo "Unrecognized argument [$opt]"
       echo "${usage}"
@@ -131,20 +126,7 @@ while test -n "${1}"; do
    shift
 done
 
-if [ $do_rl == 1 ] && [! -e $query_file ] ; then
-   echo "Error $query_file not found"
-   exit 0
-fi
-if [ ! -e $db_file ] && [ ! -e $markerdb ] ; then
-   echo "Error need to supply a markery library or full database file"
-   exit 0
-fi
-query_file_name=`basename $query_file`
 min_gene_read=0
-## minimum percentage of k-mer matches from a read found in a gene before a call can be made
-gene_score=0.01
-## minimum number of valid k-mers  present in read needed before considering the read for gene labeling
-num_gene_kmers=20
 
 vstr=""
 if [ $verbose == 1 ] ; then
@@ -157,32 +139,9 @@ fi
 
 ## assign gene names
 if [ $genedbfile ] ; then
-      dbname=`basename $dbfile`
-      if test -z $PTHRESH; then
-	      rlofile="$query_file.$dbname.lo.rl_output" 
-      else
-	      rlofile="$query_file.$dbname.$PTHRESH.lo.rl_output"	 
-      fi
       genedbname=`basename $genedbfile`
-      rlofile_name=`basename $rlofile`
-      lst=$rlofile_name.flst
-      if [ $do_fasta == 1 ] ; then
-         lstr=""
-         qstr="-i $query_file"
-      else
-         if [ -e $lst ] ; then
-             rm -f $lst
-         fi
-         counter=0
-         while [ $counter -lt $threads ] ; do
-            lfile=${rlofile}${counter}.out
-            echo $lfile >> $lst
-            let counter=counter+1
-         done
-         lstr="-l $lst"
-         qstr=""
-      fi
-
+      query_file_name=`basename $lstr`
+      qstr="-l $lstr"
       vstr=""
       ## note need to fix verbose setting to get here (if needed)
       if [ $verbose == 1 ] ; then
@@ -191,9 +150,17 @@ if [ $genedbfile ] ; then
       genofile="${odir}$query_file_name.$genedbname.rl_output"
       logfile="${odir}$query_file_name.$genedbname.rl_output.log"
       res=$genofile.$gene_score.$num_gene_kmers.genesummary
+      res2=$genofile.$gene_score.$num_gene_kmers.genesummary.min_tax_score.$min_tax_score
       if [ ! -e $res ] || [ $overwrite == 1 ] ; then
-         ${bin_dir}gene_label $vstr -q $num_gene_kmers -x $gene_score -p -r $lstr $qstr -d $genedbfile -o $genofile -g $genefile >& $logfile
+         ${bin_dir}gene_label $vstr -b $min_tax_score -q $num_gene_kmers -x $gene_score -p $qstr -d $genedbfile -o $genofile -g $genefile >& $logfile
          cat $res | sort -k1gr,1gr > tmp.$$
          mv tmp.$$ $res 
+         min_map_reads=10
+         if [ -e $fs_file ] ; then
+            ${bin_dir}fsreport.py $fs_out species,genus,plasmid $odir $res2 $min_map_reads
+         fi
       fi
+else
+   echo "Could not localte database file: $genedbfile"
+   exit 1
 fi
