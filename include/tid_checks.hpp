@@ -16,34 +16,6 @@
 inline bool isHuman(TID_T taxid)  {
    bool res = false;
    switch (taxid) {
-#if 0
-   case 10000348:
-   case 10000349:
-   case 10000350:
-   case 10000351:
-   case 10000352:
-   case 10000353:
-   case 10000354:
-   case 10000355:
-   case 10000356:
-   case 10000357:
-   case 10000358:
-   case 10000359:
-   case 10000360:
-   case 10000361:
-   case 10000362:
-   case 10000363:
-   case 10000364:
-   case 10000365:
-   case 10000366:
-   case 10000367:
-   case 10000368:
-   case 10000369:
-   case 10000370:
-   case 10000371:
-   case 10000372:
-   case 10000373:
-#endif
    case 9606:
    case 63221: //neanderthal:
    case 741158: //denisovan
