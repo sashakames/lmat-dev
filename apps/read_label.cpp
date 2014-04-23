@@ -175,6 +175,7 @@ struct CmpDepth1 {
 
 
 enum nomatch_t { eReadTooShort=0, eNoDbHits, eLowScore };
+
 static string nomatch2str(nomatch_t match) {
    string str = "error";
    switch(match) {
@@ -403,7 +404,6 @@ findReadLabelVer2(const vector<ufpair_t>& rank_label, float diff_thresh, const T
       }
    }
    if( plasmidTopHit ) {
-//static bool isAncestor(const TaxTree<TID_T>& tax_tree, TID_T prev_taxid /*ancestor */, TID_T curr_taxid /* descendant */ ) {
       if(verbose) cout<<"Check top hit plasmid to see if consistent with call: "<<endl;
       if( isAncestor(tax_tree,taxid_call.first,savePlasmidId) ) {
          taxid_call.first=savePlasmidId; 
@@ -651,7 +651,7 @@ static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usm
                // should really catch this earlier.
                if( cutoff[*it] <= 0) {
                   cutoff[*it] = 0.5;
-                  //if(taxid == 10847) cout<<"WarningDebug: "<<*it<<" "<<cutoff[*it]<<endl;
+                  if(verbose) cout<<"WarningDebug: "<<*it<<" "<<cutoff[*it]<<endl;
                }
             }
          }
@@ -831,7 +831,7 @@ construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& lab
    ufpair_t best_guess = make_pair(0,0);
    // bypass normal analysis and set this read to phiX
    if( screenPhiXGlobal && phiXscore >= top_score && fndPhiX) {
-      best_guess = make_pair(PHIX_TID,phiXscore);
+      best_guess = make_pair(ART_SEQ_TID,phiXscore);
       mtype = eDirectMatch;
       ofs<<(-1)<<" "<<(-1)<<" "<<cand_kmer_cnt<<"\t";
       ofs<<best_guess.first<<" "<<best_guess.second;
@@ -1602,9 +1602,8 @@ int main(int argc, char* argv[])
       cout<<"Read query file: "<<query_fn<<endl;                          
       ifs.open(query_fn.c_str());
       if(!ifs) {
-	cerr<<"did not open for reading: "<<query_fn<<endl;
-
-	exit(-1);
+	      cerr<<"did not open for reading: "<<query_fn<<endl;
+	      exit(-1);
       }
     }
 
@@ -1619,127 +1618,91 @@ int main(int argc, char* argv[])
     while (!finished)   {
 
       if ((in_finished == false) && (omp_get_thread_num() == 0)) {
+         int j = 0 ;
+         int queue_size = 0;
+         omp_set_lock(&buffer_lock);
+         queue_size = read_buffer_q.size();
+         omp_unset_lock(&buffer_lock);
+         while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
+            getline(ifs, line);
+            pos = ifs.tellg();
+            if (pos == -1) {
+               in_finished = true;
+               if(verbose) cout << read_count_in << " reads in\n";
+               if(verbose) cout << line.size() << " line length\n";
+            }
+            string lst_hdr_buff;
+            if (line[0] == '>' || (fastq && line[0] == '@') ) {
+               if(hdr_buff.length() > 0 )
+                  lst_hdr_buff = hdr_buff; 
+               // skip the ">"                                                        
+               hdr_buff=line.substr(1,line.length()-1);
+            }
 
-	int j = 0 ;
-
-	int queue_size = 0;
-
-	omp_set_lock(&buffer_lock);
-
-	queue_size = read_buffer_q.size();
-
-	omp_unset_lock(&buffer_lock);
-
-	while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
-
-          getline(ifs, line);
-
-	  pos = ifs.tellg();
-
-	  if (pos == -1) {
-
-	    in_finished = true;
-
-	    if(verbose) cout << read_count_in << " reads in\n";
-	    if(verbose) cout << line.size() << " line length\n";
-	  }
-     string lst_hdr_buff;
-	  if (line[0] == '>' || (fastq && line[0] == '@') ) {
-       lst_hdr_buff = hdr_buff; 
-
-	    // skip the ">"                                                        
-	    hdr_buff=line.substr(1,line.length()-1);
-	    //      if(fastq) readOne=true;                                    
-	  }
-
-	  if (line[0] != '>' && line.length() > 1 && !fastq) {
-	    read_buff += line;
-	  }
-
-	  if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
-	    read_buff += line;
-	  }
-	  if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
-	     line[0] == '-'))) && read_buff.length() > 0 ) {
-
-	    omp_set_lock(&buffer_lock);
-
-	    read_buffer_q.push(read_pair(read_buff, lst_hdr_buff));
-	    read_count_in++;
-	    omp_unset_lock(&buffer_lock);
-
-	    read_buff="";
-	    hdr_buff = "";
-	    j ++;
-	    if(fastq) getline(ifs, line); // skip quality values for now       
-
-	    if (in_finished) {
-
-	      cout << read_count_in << " reads in\n";
-	      break;
-
-	    }
-	  }
-
-	}
-
+            if (line[0] != '>' && line.length() > 1 && !fastq) {
+               read_buff += line;
+            }
+            if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
+               read_buff += line;
+            }
+            if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
+	            line[0] == '-'))) && read_buff.length() > 0 ) {
+               omp_set_lock(&buffer_lock);
+               read_buffer_q.push(read_pair(read_buff, lst_hdr_buff));
+               read_count_in++;
+               omp_unset_lock(&buffer_lock);
+               read_buff="";
+               hdr_buff = "";
+               j ++;
+               if(fastq) getline(ifs, line); // skip quality values for now       
+               if (in_finished) {
+                  cout << read_count_in << " reads in\n";
+                  break;
+               }
+	         }
+	      }
       }
-
       read_buff = "";
       save_hdr = "";
       omp_set_lock(&buffer_lock);
-
       if (!read_buffer_q.empty()) {
-
-	read_pair in_pair = read_buffer_q.front();
-	read_buff = in_pair.first;
-	save_hdr = in_pair.second;
-
-	read_buffer_q.pop();
-
-	read_count_out++;
+         read_pair in_pair = read_buffer_q.front();
+         read_buff = in_pair.first;
+         save_hdr = in_pair.second;
+         read_buffer_q.pop();
+         read_count_out++;
 
       }
 
       omp_unset_lock(&buffer_lock);
-      
       if (read_buff.length() > 0) {
-	
-	if(save_hdr[0] == '\0') {
-	  ostringstream ostrm;
-	  ostrm<<"unknown_hdr:"<<read_count_out;
-	  save_hdr=ostrm.str();
-	}
+         if(save_hdr[0] == '\0') {
+           ostringstream ostrm;
+           ostrm<<"unknown_hdr:"<<read_count_out;
+           save_hdr=ostrm.str();
+         }
+         ofs<<save_hdr<<"\t";
+         if( prn_read ) {
+           ofs<<read_buff<<"\t";
+         } else {
+           ofs<<"X"<<"\t";
+         }
 
-	ofs<<save_hdr<<"\t";
+         int thread = omp_get_thread_num();
 
-	if( prn_read ) {
-	  ofs<<read_buff<<"\t";
-	} else {
-	  ofs<<"X"<<"\t";
-	}
+         map<TID_T,int>& track_match = track_matchall[thread];
+         map<nomatch_t,int>& track_nomatch = track_nomatchall[thread];
+         map<TID_T,float>& track_tscore = track_tscoreall[thread];
 
-	int thread = omp_get_thread_num();
-
-	map<TID_T,int>& track_match = track_matchall[thread];
-	map<nomatch_t,int>& track_nomatch = track_nomatchall[thread];
-	map<TID_T,float>& track_tscore = track_tscoreall[thread];
-
-	proc_line(tax_tree, read_buff.length(), read_buff, k_size, taxtable, 
+        proc_line(tax_tree, read_buff.length(), read_buff, k_size, taxtable, 
 		  ofs, threshold,sopt, max_count, track_match, track_nomatch, 
 		  track_tscore,min_score, min_kmer, min_fnd_kmer);
-
-	read_buff="";
+	     read_buff="";
 	
       }
-    
-
-
       if ((read_count_in == read_count_out) && in_finished)
-	finished = true;
-    
+	   finished = true;
     }
-
     ofs.close();
   }
 
@@ -1794,7 +1757,6 @@ int main(int argc, char* argv[])
       sort_val[i] = (*it);
       const TID_T tid = sort_val[i].first;
       if( cand_tid.find( tid ) ==  cand_tid.end()) {
-         //cout<<"confirm: "<<tid<<endl;
          cand_tid.insert(tid);
       }
    }
@@ -1806,18 +1768,15 @@ int main(int argc, char* argv[])
    while(tax_strm.getline(buff,buff_size)) {
       string proc(buff);
       char* val = strtok(buff,"=,");
-      //cout<<"major: "<<buff<<" "<<val<<endl;
       while( val != NULL ) {
          if( strcmp(val,"taxid")==0 ) {
             val = strtok(NULL,"=,");
             istringstream istrm(val);
             TID_T cid;
             istrm>>cid;
-            //cout<<"found taxid: "<<val<<endl;
             if( cand_tid.find(cid) != cand_tid.end() ) {
                size_t pos = proc.rfind('\t');
                string id=proc.substr(pos+1,proc.length()-pos);
-               //cout<<"rankcheck: "<<val<<" "<<cid<<" "<<pos<<" ["<<id<<"] ["<<proc<<"]"<<endl;
                save_id.insert( make_pair(cid,id) );
             }
             break;
