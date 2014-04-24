@@ -28,10 +28,14 @@ using std::istringstream;
 //using namespace kencode_ns;
 using namespace metag;
 
-static bool verbose=false;
+#include "rkmer.hpp"
+
+bool verbose=false;
 
 bool add_root_on_kmer_drop = true;
-static bool gPERMISSIVE_MATCH = false;
+bool gPERMISSIVE_MATCH = false;
+map<TID_T,string> gRank_table;
+
 
 size_t perm_bytes_allocd;
 
@@ -71,16 +75,6 @@ struct CmpDepth {
    bool operator()(const pair<TID_T,float>& a, const pair<TID_T,float>& b) const {
       const int adepth = (*_imap.find(a.first)).second;
       const int bdepth = (*_imap.find(b.first)).second;
-      return adepth > bdepth;
-   }
-   const hmap_t& _imap;
-};
-
-struct CmpDepth1 {
-   CmpDepth1(const hmap_t& imap) : _imap(imap) {}
-   bool operator()(TID_T a, TID_T b) const {
-      const int adepth = (*_imap.find(a)).second;
-      const int bdepth = (*_imap.find(b)).second;
       return adepth > bdepth;
    }
    const hmap_t& _imap;
@@ -225,6 +219,7 @@ case 't': case 'T': t = 3; break; \
 default: k = 0; continue; \
 }
 
+#if 0
 /*
 
    Given a sequence of nucleotide characters,
@@ -278,10 +273,10 @@ int retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, const int sle
 
            TaxNodeStat<DBTID_T> *h = new TaxNodeStat<DBTID_T>(*table);
            if(verbose) cout<<"lookup kmer at posit:"<<j<<endl;
-#if (TID_SIZE == 32)
-           h->begin(kmer_id, tid_rank_map,  max_count, tid_map_is_strain_species);
+#if (TID_SIZE == 16)
+           h->begin(kmer_id, tid_rank_map,  max_count, tid_map_is_strain_species, &conv_map);
 #else
-	        h->begin(kmer_id, &conv_map);
+           h->begin(kmer_id, tid_rank_map,  max_count, tid_map_is_strain_species);
 #endif
            unsigned dcnt = 0, mtch = 0;
            list<TID_T> obs_tids;
@@ -365,6 +360,7 @@ int retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, const int sle
    }
    return valid_kmers;
 }
+#endif
 
 void proc_line(const TaxTree<TID_T>& tax_tree, 
                const string& line,
@@ -375,9 +371,25 @@ void proc_line(const TaxTree<TID_T>& tax_tree,
          return;
      } else {
         map<TID_T,int> cnt_tids;
-        const int valid_kmers = retrieve_kmer_labels(table, line.c_str(), ri_len, k_size,sopt._imap, tax_tree, max_count, cnt_tids);
+        vector<label_info_t> label_vec(ri_len-k_size+1,make_pair(-1,tax_data_t()));
+        list<TID_T> taxid_lst;
+        hmap_t tax2idx, idx2tax;
+        const pair<int,int> res = retrieve_kmer_labels(table, line.c_str(), ri_len, k_size,label_vec,taxid_lst,tax2idx,idx2tax, sopt._imap, tax_tree, max_count);
+        const int valid_kmers = res.first;
         if( valid_kmers > 0 ) {
-           construct_labels(tax_tree,max_match,cnt_match,sopt,valid_kmers, cnt_tids, gcbucket, num_gcbuckets); 
+           for(unsigned pos = 0; pos < label_vec.size(); ++pos) {
+              tax_data_t::const_iterator it = label_vec[pos].second.begin();
+              const tax_data_t::const_iterator is = label_vec[pos].second.end();
+              for(; it != is; ++it) {
+                 const TID_T tax_id = (*it).first;
+                 if( cnt_tids.find(tax_id) == cnt_tids.end() ) {
+                    cnt_tids.insert(make_pair(tax_id,1));
+                 } else {
+                    cnt_tids[tax_id] += 1;
+                 } 
+              } 
+            }
+            construct_labels(tax_tree,max_match,cnt_match,sopt,valid_kmers, cnt_tids, gcbucket, num_gcbuckets); 
         }
      }
   }
@@ -415,7 +427,7 @@ int random_roll = dice_roller();
    float threshold = 0.0, min_score = 0.0;
    int min_kmer = 35;
 
-   string rank_ids, kmer_db_fn, ofname, ofbase, tax_tree_fn, tax_tree_options, depth_file, rand_hits_file, rank_table_file, id_bit_conv_fn;
+   string rank_map_file, rank_ids, kmer_db_fn, ofname, ofbase, tax_tree_fn, tax_tree_options, depth_file, rand_hits_file, rank_table_file, id_bit_conv_fn;
    hmap_t imap;	
    ScoreOptions sopt(imap);
 
@@ -424,7 +436,7 @@ int random_roll = dice_roller();
    bool prn_read = true;
    unsigned num_reads = 0, read_len = 0;
 
-   while ((c = getopt(argc, argv, "u:ah:n:j:b:ye:wmpk:c:v:k:i:d:l:t:s:r:o:x:f:g:z:q:")) != -1) {
+   while ((c = getopt(argc, argv, "u:ah:n:j:b:ye:w:mpk:c:v:k:i:d:l:t:s:r:o:x:f:g:z:q:")) != -1) {
       switch(c) {
       case 'f':
         id_bit_conv_fn = optarg;
@@ -445,7 +457,7 @@ int random_roll = dice_roller();
          prn_read=false;
          break;
       case 'w':
-	      tid_map_is_strain_species = true;
+         rank_map_file = optarg;
 	      break;
       case 'h' :
         max_count = atoi(optarg);
@@ -500,6 +512,16 @@ int random_roll = dice_roller();
    if (ofbase == "") cout << "ofbase\n";
    if (n_threads == 0) cout << "n_threads\n";
    if (kmer_db_fn == "") cout << "kmer_db_fn\n";
+
+   if( rank_map_file.size() > 0) {
+      ifstream ifs1(rank_map_file.c_str());
+      TID_T tid;
+      string rank;
+      while(ifs1>>tid>>rank) {
+         gRank_table.insert(make_pair(tid,rank));
+      }
+   }
+
 
 #if TID_SIZE == 16
    if (id_bit_conv_fn == "") {
