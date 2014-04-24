@@ -31,6 +31,7 @@ using namespace metag;
 static bool verbose=false;
 
 bool add_root_on_kmer_drop = true;
+static bool gPERMISSIVE_MATCH = false;
 
 size_t perm_bytes_allocd;
 

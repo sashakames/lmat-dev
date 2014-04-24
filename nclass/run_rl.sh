@@ -213,7 +213,7 @@ fi
 if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    echo "Process $query_file [overwrite=$overwrite 1=yes, 0=no] [outputfile=$fastsum_file]"
 
-   /usr/bin/time -v $rprog $fstr $pstr -u $taxfile -s -w $rankval -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+   /usr/bin/time -v $rprog $fstr $pstr -u $taxfile -w $rankval -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
 
    min_reads=1
    if [ ! -e $fastsum_file ] ; then
