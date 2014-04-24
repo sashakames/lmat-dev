@@ -62,6 +62,8 @@ public:
     
     // load map file
     mp_idmap = pp_map;
+
+    m_kmer = kmer;
     
     bool good = m_table->begin_(kmer, m_taxid_count, m_offset, m_page);
     if (!good) {
@@ -146,12 +148,16 @@ public:
 
 	  // iterate on taxid priority queue in batches of taxons with
 	  // the same rank
+
+	    //	    cout << "kmer pruning ";
 	    while(!taxid_q.empty()) {
 
 	    // get current priorty
 	      int cur_priority = taxid_q.top().first;
 	      
 	    // pull out elements that match top priority
+
+	      //	      cout << " priority: " << cur_priority << " count " << taxid_q.size();
 	      while(taxid_q.top().first == cur_priority) {
 	    
 		const MyPair res = taxid_q.top(); 
@@ -162,17 +168,20 @@ public:
 		if (taxid_q.empty())
 		  break;
 	      }
-	      
+
+
 	    // if we are under the cut, then we can stop
 	      if (taxid_q.size() <= tid_cut) {
 		//	      cout << "Cut to rank: " << cur_priority << " org count  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";
 		m_taxid_count = taxid_q.size();
-
+		//		cout << " priority: " << taxid_q.top().first << " count " << taxid_q.size();
 		break;
 		
 	      } 
 	      
 	    }
+
+	    cout <<"\n";
 	    if (taxid_q.size() == 0) {
 	      m_taxid_count = 1;
 	      const MyPair pp(1, 1);

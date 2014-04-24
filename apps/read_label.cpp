@@ -1320,7 +1320,9 @@ int main(int argc, char* argv[])
    uint16_t max_count = ~0;
    bool prn_read = true;
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:w:pk:c:v:k:i:d:l:t:r:sm:o:x:f:g:z:q:")) != -1) {
+
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q")) != -1) {
+
       switch(c) {
       case 'h':
         screenPhiXGlobal=false;
@@ -1521,7 +1523,8 @@ int main(int argc, char* argv[])
       return -1;
    }
 
-   ifstream ifs(query_fn.c_str());
+
+
    string line;
 
    omp_lock_t buffer_lock;
@@ -1529,8 +1532,6 @@ int main(int argc, char* argv[])
    omp_init_lock(&buffer_lock);
 
    bool finished;
-
-   int64_t pos = 0 ;
 
    ofstream ofs;
 
@@ -1592,75 +1593,100 @@ int main(int argc, char* argv[])
 
    bool in_finished = false;
 
+   ifstream tmpstream;
 
-#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer)  private(ifs, finished, pos, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
+   istream ifs(cin.rdbuf());
+   if (query_fn != "-") {
+     tmpstream.open(query_fn.c_str());
+
+     if(!tmpstream) {
+	  cerr<<"did not open for reading: "<<query_fn<<endl;
+	  
+	  exit(-1);
+	  
+     }  
+     ifs.rdbuf(tmpstream.rdbuf());
+   }
+
+   
+
+
+
+
+#pragma omp parallel shared(k_size, query_fn, ofbase, taxtable, tax_tree, sopt,  prn_read,track_matchall,track_nomatchall,track_tscoreall,min_score,min_kmer, in_finished, read_count_in, read_count_out, min_fnd_kmer, ifs)  private(finished, ofs, ofname, line, read_buff, hdr_buff, save_hdr)
   {
 
     finished = false;
-
-    if (omp_get_thread_num() == 0) {
-      cout<<"Read query file: "<<query_fn<<endl;                          
-      ifs.open(query_fn.c_str());
-      if(!ifs) {
-	      cerr<<"did not open for reading: "<<query_fn<<endl;
-	      exit(-1);
-      }
-    }
 
     ofname = ofbase;
     std::stringstream outs;
     outs << omp_get_thread_num();
     ofname += outs.str();
     ofname += ".out" ;
-
     ofs.open(ofname.c_str());
+    bool eof = false;
 
     while (!finished)   {
-
       if ((in_finished == false) && (omp_get_thread_num() == 0)) {
-         int j = 0 ;
-         int queue_size = 0;
-         omp_set_lock(&buffer_lock);
-         queue_size = read_buffer_q.size();
-         omp_unset_lock(&buffer_lock);
-         while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads) {
-            getline(ifs, line);
-            pos = ifs.tellg();
-            if (pos == -1) {
-               in_finished = true;
-               if(verbose) cout << read_count_in << " reads in\n";
-               if(verbose) cout << line.size() << " line length\n";
-            }
-            string lst_hdr_buff;
-            if (line[0] == '>' || (fastq && line[0] == '@') ) {
-               if(hdr_buff.length() > 0 )
-                  lst_hdr_buff = hdr_buff; 
-               // skip the ">"                                                        
-               hdr_buff=line.substr(1,line.length()-1);
-            }
+	      int j = 0 ;
+	      int queue_size = 0;
+	      omp_set_lock(&buffer_lock);
+	      queue_size = read_buffer_q.size();
+	      omp_unset_lock(&buffer_lock);
+	      string last_hdr_buff;
+	      while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads && (!in_finished)) {
+            eof = !getline(ifs, line);
+   	      if (eof) {
+	            in_finished = true;
+	    
+	    if(verbose) cout << line.size() << " line length\n";
+	  }
 
-            if (line[0] != '>' && line.length() > 1 && !fastq) {
-               read_buff += line;
-            }
-            if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
-               read_buff += line;
-            }
-            if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
-	            line[0] == '-'))) && read_buff.length() > 0 ) {
-               omp_set_lock(&buffer_lock);
-               read_buffer_q.push(read_pair(read_buff, lst_hdr_buff));
-               read_count_in++;
-               omp_unset_lock(&buffer_lock);
-               read_buff="";
-               hdr_buff = "";
-               j ++;
-               if(fastq) getline(ifs, line); // skip quality values for now       
-               if (in_finished) {
-                  cout << read_count_in << " reads in\n";
-                  break;
-               }
-	         }
-	      }
+
+	  if (line[0] == '>' || (fastq && line[0] == '@') ) {
+
+	    last_hdr_buff = hdr_buff;
+	    // skip the ">"                                                        
+	    hdr_buff=line.substr(1,line.length()-1);
+	    //      if(fastq) readOne=true;                                    
+	  }
+
+	  if (line[0] != '>' && line.length() > 1 && !fastq) {
+	    read_buff += line;
+	  }
+
+	  if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
+	    read_buff += line;
+	  }
+	  if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
+	     line[0] == '-'))) && read_buff.length() > 0 ) {
+
+	    omp_set_lock(&buffer_lock);
+	    
+	    if (in_finished)
+		read_buffer_q.push(read_pair(read_buff, hdr_buff));
+	    else
+		read_buffer_q.push(read_pair(read_buff, last_hdr_buff));
+
+	    read_count_in++;
+	    omp_unset_lock(&buffer_lock);
+
+	    read_buff="";
+
+	    j ++;
+	    
+	    if(fastq) eof = !getline(ifs, line); // skip quality values for now       
+
+	  }
+
+	  if (in_finished) {
+	    
+	    cout << read_count_in << " reads in\n";
+	    break;
+
+	  }
+	}
+	
       }
       read_buff = "";
       save_hdr = "";

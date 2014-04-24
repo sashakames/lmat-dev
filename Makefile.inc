@@ -43,7 +43,7 @@ endif
 
 #location of PJMALLOC lib
 ifndef PJPATH
-PJPATH= $(METAG_DIR)/dev
+PJPATH= $(HOME)
 endif
 
 ifndef SDBIDX
@@ -52,7 +52,7 @@ endif
 
 #default METAG_DIR
 ifndef METAG_DIR
-METAG_DIR=$(HOME)/metag_repo
+METAG_DIR=$(HOME)/lmat-git
 endif
 
 ifndef TAXID_SIZE

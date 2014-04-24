@@ -22,10 +22,7 @@ if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
 fi
 
 ## Assume the perm-je library is here
-export LD_LIBRARY_PATH=$LMAT_DIR/../lib
-export PJPATH=/usr/mic/post1/metagenomics/perm-je-0.9.7
-export LD_LIBRARY_PATH=$PJPATH/lib:$LD_LIBRARY_PATH
-
+export LD_LIBRARY_PATH=$LMAT_DIR/../lib:$LD_LIBRARY_PATH
 
 
 db_file=""
@@ -136,7 +133,12 @@ while [ $beg -le $end ] ; do
    ofile=$odir/$oname
    logfile="$ofile.log"
 
-   ${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
+
+   #${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
+   #${bin_dir}rand_read_label_32 -w -r $dynprune -h 1000 -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile >& $logfile
+
+   ${bin_dir}rand_read_label -f $conv -g $num_reads -i $read_len $vstr -e $depthf -p -t $threads -d $db_file -c $taxtree -o $ofile -f $conv   >& $logfile
+
 
    sfile=$ofile.rand_lst
    sname=`basename $sfile`

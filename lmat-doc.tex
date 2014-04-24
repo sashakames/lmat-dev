@@ -46,8 +46,28 @@
 \tableofcontents
 
 \section{What's New in Version \lmatver}
+\begin{itemize}
+\item
+Support for reading query input from stdin in read\_label module.  use ``-i -'' to enable this feature.
+\item
+Fixed a bug where incorrect header information was included in LMAT raw output (individual read labels).
+\item New aggresive plasmid assignment.  Previously plasmids were under-reported due to their placement in the NCBI taxonomy heirarchy. The same plasmid associated with multiple strains will normally be classified as a species (or higher rank) call according to the LMAT lowest common ancestor placement logic. Now in addition to the standard LMAT classification procedure the highest scoring matches are saved.  If the highest scoring match list includes a plasmid consistent with the initial LMAT classification, the final classification is switched to the plasmid.  The drawback
+to this procedure is that multiple plasmids with tie scores are not explicitly represented in the final output label. LMAT, however, saves the scores of the competing matched sequences so a post processing step (not yet included) can easily tag plasmid calls that are non-specific to the initially reported taxonomy. 
 
-Version \lmatver~includes a number of major changes, which should be described in more technical detail in forthcoming publications.  Changes include:
+\end{itemize}
+
+{\it Earlier updates:}
+Version 1.2.1
+\begin{itemize}
+\item
+Support for full database download from the LMAT ftp site.
+\item
+read\_label no long re-prints the query input filename for every execution thread.
+\end{itemize}
+
+
+
+Version 1.2~includes a number of major changes, which should be described in more technical detail in forthcoming publications.  Changes include:
 \begin{itemize}
 \item The kmer/taxonomy search database (DB) index structure was changed from gnu\_hash to a custom designed index.
 This dramatically improves speed and dramatically reduces memory requirements
@@ -71,7 +91,7 @@ of the method is given later in the documentation.
 \item Pre-compiled binary files are no longer being provided.
 \end{itemize}
 
-{\it Earlier updates:}
+
 
 Version 1.1.2 differs from LMAT-1.1.1 in only the following:
 
@@ -108,14 +128,12 @@ Our approach is divided into two steps:
      ("Full" refers to a database that contains k-mers from
      all viral, prokaryote, fungal and protist genomes.)
 
-     Our current ``Full'' database (available for download soon) is
-     373 GB in size, smaller than what we used for our July 2013
-     publication in Bioinformatics due to several of the key
-     optimizations within this release.  We have thre smaller
-     ``marker'' database available for ftp download.
-     See the \nameref{sec:downloads} Section for more
-     information about the various LMAT databases availble for
-     download.
+     Our current ``Full'' database is 373 GB in size, smaller than
+     what we used for our July 2013 publication in Bioinformatics due
+     to several of the key optimizations within this release.  We have
+     thre smaller ``marker'' database available for ftp download.  See
+     the \nameref{sec:downloads} Section for more information about
+     the various LMAT databases availble for download.
 
      An additional download required for running LMAT is the
      collection of ``runtime-input'' files needed to go along with the
@@ -198,7 +216,10 @@ Our databases are available for download from the ftp site:
   buffer cache (from network attached or local HDD storage) prior to
   running LMAT.  LMAT uses memory mapped files so pages in the
   database are loaded on demand.  Regular system prefetching of pages
-  under the memory-mapped approach is slow unless run from an SSD.  To
+  under the memory-mapped approach is slow unless run from an SSD.
+  The effectiveness of precopy can depend on your system's buffer
+  cache policy: some evict pages early so the buffer will not hold the
+  LMAT database from the precopy to the following LMAT execution.  To
   perform the ``precopy'':
 
  \texttt{\% cat <database-filename> > /dev/null}.
@@ -391,7 +412,7 @@ kML-18mer-medium & kML.18mer.16bit.db  & 52 \\
 \hline
 kML-18mer-small & kML.18mer.16bit.reduced.db  & 16 \\
 \hline
-kFull-20mer (available soon) & m9.20mer.16bit.g1000.db & 373 \\
+kFull-20mer & m9.20mer.16bit.g1000.db & 373 \\
 \hline
 gene-20mer & gene.20mer.db & 52 \\
 \hline
@@ -647,7 +668,7 @@ Files needed for this step are placed in the rmodel subdirectory.  Two
 scripts must be run to generate the model files. First, need to
 prepare a count of k-mers per every taxonomy identifier.
 \item
-\texttt{countTaxidFrequency}: this executable takes as input the ascii output file from step \ref{tax-histo-fast-limited}. 
+\texttt{frequency\_counter}: this executable takes as input the ascii output file from step \ref{tax-histo-fast-limited}. 
 \item
 
 If run for multiple input files, use \texttt{combine\_counts.py} to aggregate to a single file., eg:
@@ -697,7 +718,10 @@ http://www.cbcb.umd.edu/software/phymm/exp\_datasets/01\_\_10\_X\_100\_bp\_test\
 The \texttt{read\_label} driver searches the Reference Database for all k-mers 
 in the queries, and outputs taxonomic lineages, as discussed in Section 2.2 and
 Figure 2 in our paper.  Output files have the format: \texttt{<prefix>N.out} - where N is 0 to
-$(numthreads-1)$ - even in single threaded execution. 
+$(numthreads-1)$ - even in single threaded execution.  
+
+Input to read\_label can come from stdin (supporing piped input) instead of an input file by using: \texttt{-i -}
+
 
 \texttt{run\_lmat.sh} is the wrapper script for running the LMAT pipeline; it takes several required 
 and optional paramaters; run with no arguments for usage and example invocation.
@@ -804,7 +828,7 @@ Output from the summary step is placed in a file \texttt{<prefix>.summ}
 
 There is now a gene identification step.  The user can download the gene database, which contains all microbial genes obtained from microbial genome database (current does not include all of NR). Reads are searched and the best gene match is reported.  Matches are in DNA space. Output is placed in a file \texttt{<prefix>.genesummary}
 
-\section{Advanced LMAT features.}
+\section{Advanced LMAT features}
 
 \subsection{16-bit ID Space}
 
@@ -812,7 +836,7 @@ The make\_db\_table utility contains an option to store taxonomy IDs as 16-bit v
 
 In order to use custom 16 bit IDs within a custom reference database, this mapping file  needs to be generated from file containing the complete list of taxonomy IDs.  If 32-bit IDs are adequate or necessary due to the ID space, you can skip most of these steps.  However, you should ensure that you have compiled the LMAT binaries with the following environment variable set:  \texttt{TAXID\_SIZE=32}  
 
-  The complete list of taxids used in a database can be obtained from the output of the countTaxidFrequency / combine\_counts.py execution.  Run Tid16_getMapping.py with that file as input.  Output the mapping file (user chooses the filename) which is used in the following steps
+  The complete list of taxids used in a database can be obtained from the output of the \texttt{frequency\_counter} / \texttt{combine\_counts.py} execution.  Run Tid16_getMapping.py with that file as input.  Output the mapping file (user chooses the filename) which is used in the following steps
 
 Ensure you have compiled (make) LMAT with the following enviroment variable set:  \texttt{TAXID\_SIZE=16}
 Use the -f <filename> option with make\_db\_table to specify the filename when creating the database index.

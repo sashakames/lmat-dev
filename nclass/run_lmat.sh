@@ -11,7 +11,8 @@
 ### 4) Call gene_label assigne gene names to each read and count the reads assigned to each label
 ###
 #####################################
-export LMAT_DIR=/p/lscratche/allen99/lmat/lmat-dev/runtime_inputs
+#export LMAT_DIR=/p/lscratche/allen99/lmat/lmat-dev/runtime_inputs
+
 if [ -z "$LMAT_DIR" ] ; then
    echo "Please set LMAT_DIR environment variable to point to the directory where LMAT datafiles are stored"
    exit 1
@@ -19,16 +20,21 @@ fi
 
 ## Some environments require explicit enabling of hyperthreading
 ## Other environments may already enable this
-if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
-   /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus 
-   export GOMP_CPU_AFFINITY=0-79
-fi
+#if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
+#   /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus 
+#   export GOMP_CPU_AFFINITY=0-79
+#fi
 
 ## Should improve this 
 ## Location of binaries
 if hash read_label >& /dev/null ; then
    bin_dir=
-else 
+
+elif [ -f read_label ] ; then
+    bin_dir=./
+elif [ `basename $PWD` == "nclass" ] ; then
+    bin_dir="../apps/"
+ else
    #echo "Could not find read_label in your path assume LMAT binaries/scripts are here: $bin_dir"
    bin_dir="$LMAT_DIR/../bin/"
 fi
@@ -187,10 +193,30 @@ while test -n "${1}"; do
    shift
 done
 
+fastq="false"
+
 if [ ! -e $query_file ] ; then
    echo "Error $query_file not found"
    exit 0
+else
+    first=`head -n1 $query_file | awk '{print substr($1,0,1)}'`
+    fqchar='@'
+    
+    if [ $first == $fqchar ] ; then
+	fastq="true"
+    else 
+	fachar='>'
+	if [ $first != $fachar ] ; then
+	    echo "Error: $query_file must be in fasta or fastq format"
+	    exit 1
+	fi
+    fi
 fi
+
+if [ $fastq == "true" ] ; then 
+    fastqstr="-q"
+fi
+
 if [ ! -e $db_file ] && [ ! -e $markerdb ] ; then
    echo "Error need to supply a markery library or full database file"
    exit 0
@@ -224,6 +250,8 @@ if [ ! $odir == '' ]; then
     odir="$odir/"
 fi
 
+
+
 dlst="$markerdb $dbfile"
 for db in $dlst ; do 
       dbname=`basename $db`
@@ -235,7 +263,7 @@ for db in $dlst ; do
       logfile="$rlofile.log" 
       tidmap="$LMAT_DIR/m9.32To16.map"
       ## File giving a list of null models - assumes this specific naming convention
-      nullm=$LMAT_DIR/$dbname.null_lst.txt
+
       ## The higher the number the more conservative the read label call
       ## This value specifices how much higher (in standard deviation units) the score of the assigned label must be
       fstr="-f $tidmap"
@@ -252,23 +280,40 @@ for db in $dlst ; do
          use_min_score=$marker_min_score
          echo "search marker library: $db"
       fi
-      if [ -e $nullm ] ; then
-         nullmstr="-n $nullm"
-      else 
-         nullmstr=""
+
+
+
+      if [ -z $nullm ] ; then
+	  echo Using default null model list file for $dbname
+	  nullm=$LMAT_DIR/$dbname.null_lst.txt
+          nullmstr="-n $nullm"
+      elif [ "$nullm" == "no" ] ; then
+	  echo Not using null model files
+	  nullmstr=""
+      elif [ -e $nullm ] ; then
+	  nullmstr="-n $nullm"
+      else
+	  echo "Please provide valid null models list file"
+	  exit 
       fi
+
+
       fastsum_file="$rlofile.$use_min_score.$min_read_kmer.fastsummary"
       if [ -e $db ] && [ $do_rl == 1 ] ; then
          if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
             echo "Process $query_file [overwrite=$overwrite (1=yes, 0=no)] [outputfile=$fastsum_file]"
-            /usr/bin/time -v $rprog -w $rankval $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+
+            /usr/bin/time -v $rprog $min_kmer_str $fstr $pstr -u $taxfile -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr $fastqstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile >& $logfile
+
             min_reads=1
             if [ ! -e $fastsum_file ] ; then
                echo "Error, did not create a fastsummary file [$fastsum_file]"
                exit 0
             fi
+
             min_num_reads=1 ## 
             ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads all
+
 
             if hash ktImportText > /dev/null 2>&1 ; then
                ktImportText $fastsum_file.lineage -o $fastsum_file.lineage.html
