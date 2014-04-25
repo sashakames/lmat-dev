@@ -1321,8 +1321,7 @@ int main(int argc, char* argv[])
    bool prn_read = true;
 
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q")) != -1) {
-
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:w:pk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q")) != -1) {
       switch(c) {
       case 'h':
         screenPhiXGlobal=false;
@@ -1407,7 +1406,6 @@ int main(int argc, char* argv[])
          cout << "Unrecognized option: "<<c<<", ignore."<<endl;
       }
    }
-
    if (depth_file == "") cout << "depth_file\n";
    if (ofbase == "") cout << "ofbase\n";
    if (n_threads == 0) cout << "n_threads\n";
@@ -1443,7 +1441,6 @@ int main(int argc, char* argv[])
      }
      fclose(tfp);
    }
-
 
    cout << "Start kmer DB load\n";
    INDEXDB<DBTID_T> *taxtable;
