@@ -2,6 +2,9 @@
 #include <string>
 #include <assert.h>
 
+#ifndef KENCODE_H
+#define KENCODE_H
+
 using namespace std;
 
 
@@ -27,7 +30,10 @@ The kmer size * bit size of the alphabet  must be <= 64 bits.
     case 'C': return 1;
     case 'G': return 2;
     case 'T': return 3;
-    default: assert(0);
+    default: 
+      cout << "character: '" << (int)c << "'\n" ; 
+      //      assert(0);
+      return 0;
     }
     
   }
@@ -100,3 +106,5 @@ public:
 };
 
 }
+
+#endif

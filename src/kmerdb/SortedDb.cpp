@@ -10,9 +10,11 @@
 #include <metag_const.h>
 #include "KmerFileMetaData.hpp"
 
+#include <kencode.hpp>
 
 using namespace std;
 using namespace metag;
+using namespace kencode_ns;
 
 int metag::kmer_rec_comp(const void *a, const void *b)
 {
@@ -29,8 +31,37 @@ size_t singletons = 0;
 size_t reduced_kmers = 0;
 size_t cut_kmers = 0;
 
+size_t new_human = 0;
+size_t matched_in = 0;
+size_t new_isect = 0;
+
+
+
+
+uint64_t read_encode(FILE *f, kencode_c &ken) {
+
+  char buf[33];
+
+
+  fscanf(f,"%s", buf);
+
+  if (strlen(buf) > 0) {
+
+    uint64_t kmer = ken.kencode(buf);
+    //    cout << kmer << "\n";
+  
+    return kmer;
+  }
+  else
+    return ~0;
+
+}
+
+
+
+
 template <class tid_T>
-void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false)
+void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL)
 {
   
 
@@ -49,6 +80,17 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
    if (use_tax_histo_format)
      assert(metadata.version() == TAX_HISTO_VERSION);
 
+   kencode_c ken(m_kmer_length);
+
+  static uint64_t last_human = 0;
+
+   if (human_kmers_fp)
+     
+     last_human=read_encode(human_kmers_fp, ken);      
+   else {
+     last_human=~0;
+   }
+     
    uint64_t kmer_ct = metadata.size();
    
    uint64_t sanity = ~0, test;
@@ -69,7 +111,11 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
   static uint16_t count_marker = 0;
 
+
+
   //  cout << "stopper set to: " << stopper << "\n";
+
+  
 
   for  ( uint64_t i=0; i<kmer_ct; i++)  {
 
@@ -85,6 +131,54 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
     if ((last_kmer > 0) &&  (kmer <= last_kmer)) {
       cout << "Kmers arriving out of order.  New: " << kmer << " last: " << last_kmer << "\n";
       exit(1);
+    }
+    
+    while (last_human < kmer) {
+      
+      // This is a new human k_mer
+
+      size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+
+
+    // check the slot if it has been written to yet
+
+      if (top_tier_block[top_index] == 0) {
+	
+
+
+	// if empty write the current offset - this will be the start of the short list within the second tier
+	start_offset = m_list_offset; 
+	start_count = 1;  
+      }
+
+      uint16_t kmer_lsb_in = MASK_2ND & kmer;
+      
+      top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
+      
+      kmer_table[m_list_offset].kmer_lsb = kmer_lsb_in;
+      
+      assert (top_tier_block[top_index] >> 48 == start_count);
+      kmer_table[m_list_offset].page_id = MAX_PAGE;
+      kmer_table[m_list_offset].page_offset = 2685;
+      
+      new_human++;      
+      m_list_offset++;
+      start_count++;
+
+
+      last_human=read_encode(human_kmers_fp, ken);      
+
+    }
+
+    bool add_human = false;
+    
+    if (last_human == kmer) {
+      
+      matched_in ++;
+
+      add_human = true;
+
+      last_human=read_encode(human_kmers_fp, ken);
     }
 
 
@@ -124,7 +218,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
     uint16_t tmp_tid_count = tid_count;
 
-    set<uint32_t> write_set;
+    //    set<uint32_t> write_set;
     priority_queue<MyPair> taxid_q;
      
     if (tid_cutoff > 0 && tid_count > tid_cutoff) {
@@ -142,13 +236,16 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	  cout << "functionality disabled!\n";
 	  exit(1);
+
+	  /*
 	  for (uint16_t k=0; k<tid_count; k++) {
 
 	    
 	    assert(fread(&tid, 4, 1, in) == 1);        
 	    
 	    if (species_map.find(tid) == species_map.end()) {
-	      // alternate version - try to not write the tid because doing so might be keeping the accuracy down 
+	      // alternate version - try to not write the tid because
+	      // doing so might be keeping the accuracy down
 	      write_set.insert(tid);
 	      
 	    } else {
@@ -164,18 +261,35 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	// if not enough reduction , then we revert to the old method
 	  if (tmp_tid_count > tid_cutoff)
 	    tmp_tid_count = 0;
-	} else {
+	  */
+	}
+	else {  // NOT STRAIN SPECIES
 	  	  
+
 	  for (uint16_t k=0; k<tid_count; k++) {
 
 	    assert(fread(&tid, 4, 1, in) == 1);        
+
+	    if (add_human && tid == 9606) {
+	      add_human = false;
+	    }
 
 	    const MyPair  pp(species_map[tid], tid);
 	    taxid_q.push(pp);
 	    
 	    
 	  }
+	  
+	  if (add_human) {
+	    
 
+	    new_isect++;
+	    const MyPair  pp(species_map[9606], 9606);
+	    taxid_q.push(pp);
+	    matched_in--;
+	  }
+
+	  
 	  // iterate on taxid priority queue in batches of taxons with          
 	  // the same rank                                                  
 	
@@ -197,7 +311,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    }
 	    // if we are under the cut, then we can stop                        
 	    if (taxid_q.size() <= tid_cutoff) {
-	      //            cout << "Cut to rank: " << cur_priority << " org \
+	      //            cout << "Cut to rank: " << cur_priority << " org
 	      // cout  " << m_taxid_count << " new count" <<  m_filtered_list.size()  << "\n";  
 	      tmp_tid_count = taxid_q.size();
 
@@ -246,9 +360,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       if (p_br_map) {
 	uint16_t tid_16 = (*p_br_map)[tid];
-	if (!(tid_16 < p_br_map->size()+3))  // pad for starting the count at 2
+	if ((tid_16 > p_br_map->size()+1) || tid_16 ==0)  // pad for starting the count at 2
 	{
-	  cout << "bad single: " << tid << " " << tid_16 << "\n";
+	  cout << "bad single: kmer " << kmer << " - "  << tid << " " << tid_16 << "\n";
 	  assert(0);
 	}
 	kmer_table[m_list_offset].page_offset = tid_16;
@@ -258,15 +372,16 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	kmer_table[m_list_offset].page_offset = tid;
       }
 
-    } else if (tmp_tid_count == 1) {
+    }
+    else if (tmp_tid_count == 1) {
 
-           
+      // reduced to the lca
       tid = taxid_q.top().second;
       kmer_table[m_list_offset].page_id = MAX_PAGE;
 
       if (p_br_map) {
 	uint16_t tid_16 = (*p_br_map)[tid];
-	if (!(tid_16 < p_br_map->size()+1))
+	if (tid_16 > p_br_map->size()+1 || tid_16 == 0)
 	  {
 	    cout << "bad single: " << tid << " " << tid_16 << "\n";
 	    assert(0);
@@ -277,14 +392,17 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       }
       reduced_kmers++;
-    } else {
+    } 
+    else {
+      // cut to 1 (root) for the k-mer
       assert(tmp_tid_count == 0);      
       kmer_table[m_list_offset].page_id = MAX_PAGE;
       kmer_table[m_list_offset].page_offset = 1;
       cut_kmers++;
     }
     
-    
+    // Cases with more than one taxid
+      
     m_list_offset++;
     start_count++;
 
@@ -292,8 +410,8 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	//write the kmer
       //      memcpy(m_data[m_cur_page]+m_cur_offset, &kmer, 8);
-    if (taxid_q.size() > 1 && tmp_tid_count > 1)	{
-      
+    if (taxid_q.size() > 0 && tmp_tid_count > 0)	{
+
 	// check for no reduction
 
       reduced_kmers++;
@@ -305,43 +423,59 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	
       mcpyinsdb(tmp_tid_count, 2);
       m_cur_offset += 2;
-      
+
+      if (add_human) 
+	cout << "kmer-match: " << kmer;
 
       for (int i=0; i < tmp_tid_count; i++) {
 	
 	tid = taxid_q.top().second;
+	
+	if (add_human) 
+	  cout << " " << taxid_q.top().first << " " << tid;
+
 	taxid_q.pop();
 	
 	if (p_br_map) {
 
 	  uint16_t tid_16 = (*p_br_map)[tid];
-	  if (!(tid_16 < p_br_map->size()+1)) {
+	  if (tid_16 == p_br_map->size()+1 || tid_16 == 0) {
 	    cout << "bad set: " << tid << " " << tid_16 << "\n";
 	    assert(0);
 	  }
-	  assert (tid_16 > 0);
-	  mcpyinsdb(tid_16,2);
-	  m_cur_offset += 2;
+	  //	  assert (tid_16 > 0);
+	      mcpyinsdb(tid_16,2);
+	      m_cur_offset += 2;
 	}  else {
 
-	  mcpyinsdb(tid,4);
-	  m_cur_offset += 4;
+	      mcpyinsdb(tid,4);
+	      m_cur_offset += 4;
 	    }
 
 	ext_taxids++;
-      }
-      
+      } // end for 
+      if (add_human) 
+	cout << "\n";
       
     }
     // no attempt to reduce list; copy in the taxid list
-    else if (write_set.size() == 0 && tmp_tid_count > 1) {
+    else if (taxid_q.size() == 0 && tmp_tid_count > 1) {
 	  
       if (kmer % 4096 == 0) {
 	mcpyinsdb(kmer, 8);
 	m_cur_offset += 8;
       }
-      
+ 
+
+      uint32_t save_offset = m_cur_offset;
+
       mcpyinsdb(tid_count, 2);
+
+
+
+      // save the offset in case we have a human match to something else      
+
+      
       m_cur_offset += 2;
 
       uint16_t tmpcount;
@@ -352,12 +486,52 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	count_marker = tmpcount;
 
       }
+
+      char convbuf[12];
+
+      string outbuf;
       
       //write the tuples
       for (uint16_t k=0; k<tid_count; k++) {
 	
 	  ext_taxids++;
 	  assert(fread(&tid, 4, 1, in) == 1);        
+	  
+	  if (tid == 9606)
+	    add_human = false;
+
+	  if (add_human) {
+	    
+
+	    sprintf(convbuf, " %d", tid);
+	    outbuf += convbuf;
+	  }
+
+	if (p_br_map) {
+
+
+	  uint16_t tid_16 = (*p_br_map)[tid];
+	  if ( tid_16 > p_br_map->size()+1 || tid_16 == 0) {
+	    cout << "bad read: " << tid << " " << tid_16 << "\n";
+	    assert(0);
+	  }
+	  
+
+	  mcpyinsdb(tid_16, 2);
+	  m_cur_offset += 2;
+	} else {
+
+	  mcpyinsdb(tid, 4);
+	  m_cur_offset += 4;
+	}
+
+      }
+
+
+
+      if (add_human)  {
+
+	tid = 9606;
 
 	if (p_br_map) {
 
@@ -370,6 +544,8 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  
 	  assert (tid_16 > 0);
 
+	  //	  cout << "adding-tid " ; 
+
 	  mcpyinsdb(tid_16, 2);
 	  m_cur_offset += 2;
 	} else {
@@ -378,7 +554,28 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  m_cur_offset += 4;
 	}
 
+
+	// here we have to go back and increment the count
+
+	uint32_t tmp_offset = m_cur_offset;
+
+	m_cur_offset = save_offset;
+
+	uint16_t inc_tid_count = tid_count + 1;
+
+	
+	mcpyinsdb(inc_tid_count, 2);
+
+	m_cur_offset = tmp_offset;
+
+	cout << "kmer-match no pruning: " << kmer;
+	cout << " inc " << inc_tid_count;
+	cout << outbuf.c_str();
+	cout << "\n";
+	new_isect++;
       }
+
+
     } else {
       assert (tid_count == 1 || tmp_tid_count < 2);
       
@@ -411,207 +608,15 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   cout << "taxids in storage: " << ext_taxids << "\n";
   cout << "kmers reduced: " << reduced_kmers << "\n";
   cout << "kmers cut to 1: " << cut_kmers << "\n";
+  cout << "new human k-mers: " << new_human << "\n";
+  cout << "matched human k-mers: " << matched_in << "\n";
+  cout << "new human + other k-mers: " << new_isect << "\n";
+
+
 
 }
 
 
-template <class tid_T>
-void SortedDb<tid_T>::add_data(const char *filename, size_t stopper, const int n_threads, const int thread_no)
-{
-  
-  assert(0);
-  cout << "adding file " << filename << " thread number " << thread_no << endl;
-
-  FILE *in = fopen(filename, "r");
-  assert(in != NULL);
-  //assert(fread(&kmer_count, 8, 1, fp) == 1);
-  //for (uint64_t j=0; j<kmer_count; j++) 
-  fseek(in, 0, SEEK_END);
-  long f = ftell(in);
-  fseek(in, 0, SEEK_SET);
-
-
-  uint64_t kmer;
-  uint32_t tid;
-  uint16_t tid_count, genome_count, p_count, tuple_count;
-
-  ////uint16_t genome_count;
-
-  size_t i =0;
-  
-
-
-  long long int start_count = -1;
-  long long int start_offset;
-
-
-  while (true) {
-
-    i++;
-    
-    if (i == stopper)
-      break;
-
-    //loop exit condition
-    if (ftell(in) == f) break;
-
-    //read kmer, taxid count, and tuple count
-    assert(fread(&kmer, 8, 1, in) == 1);        
-    assert(fread(&genome_count, 2, 1, in) == 1);        
-    assert(fread(&tid_count, 2, 1, in) == 1);        
-    assert(fread(&tuple_count, 2, 1, in) == 1);        
-
-    
-
-    /*
-    if(genome_count == 1 && tid_count == 1 && tuple_count == 1) {
-        
-      assert(fread(&tid, 4, 1, in) == 1);        
-      assert (tid <= MAX_TID && tid != INVALID_TID_2 );
-        
-      //        memcpy(m_data[m_cur_page]+m_cur_offset, &tid, 4);
-
-
-      uint16_t present;
-      assert(fread(&present, 2, 1, in) == 1);        
-      assert(present == 1); 
-    */
-        
-      //      (*this)[kmer] =  pair<uint32_t, uint8_t>(tid , MAX_PAGE);
-
-	//set entry in hash: kmer -> <offset, page>
-
-      // 	(*this)[kmer] = pair<uint32_t, uint8_t>(m_cur_offset, m_cur_page);
-
-      // First get the mapping - the msb for the kmer - assuming 27 for now
-      // TODO: make this configurable at runtime 
-
-
-
-    uint32_t top_index =  (kmer >> BITS_PER_2ND); // & 0x0000000007ffffff;
-
-      // check the slot if it has been written to yet
-
-      if (top_tier_block[top_index] == 0) {
-	
-
-	// if empty write the current offset - this will be the start of the short list within the second tier
-	start_offset = list_offset_arr[thread_no]; 
-	start_count = 1;  
-      } else if (start_count == -1) {
-	start_count = top_tier_block[top_index] >> 48;
-	assert (start_count < LENGTH_MAX_2ND && start_count > 0);
-      }
-	
-
-
-      uint16_t kmer_lsb_in = 0x00000000000001ff & kmer;
-	
-      top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
-
-      kmer_table[list_offset_arr[thread_no]].kmer_lsb = kmer_lsb_in;
-      
-      assert (top_tier_block[top_index] >> 48 == start_count);
-
-
-
-      
-      if (tuple_count > 1) {
-	if (16+m_cur_offset_arr[thread_no]+tuple_count*6 > PAGE_SIZE) {
-	
-	  m_cur_page_arr[thread_no] += n_threads;
-	  m_cur_offset_arr[thread_no] = 0;
-	  cout << "Page Added: " << m_cur_page_arr[thread_no] << "-  ";
-	  cout << "Kmers ingested: " << i << "\n"; 
-
-	}
-
-	kmer_table[list_offset_arr[thread_no]].page_id = m_cur_page_arr[thread_no];
-	kmer_table[list_offset_arr[thread_no]].page_offset = m_cur_offset_arr[thread_no];
-      }
-      else {
-
-	assert(fread(&tid, 4, 1, in) == 1);        
-	//	assert (tid <= MAX_TID && tid != INVALID_TID_2 );
-
-	uint16_t present;
-	assert(fread(&present, 2, 1, in) == 1);        
-
-	kmer_table[list_offset_arr[thread_no]].page_id = MAX_PAGE;
-	kmer_table[list_offset_arr[thread_no]].page_offset = tid;
-      }
-
-
-      list_offset_arr[thread_no]++;
-      start_count++;
-
-      assert(start_count <= LENGTH_MAX_2ND);
-
-
-	//write the kmer
-      //      memcpy(m_data[m_cur_page]+m_cur_offset, &kmer, 8);
-
-      if (tuple_count > 1) {
-
-	if (kmer % 4096 == 0) {
-	  mcpyinsdbt(kmer, 8, thread_no);
-	  m_cur_offset_arr[thread_no] += 8;
-
-	  
-	}
-	
-      //write taxid count, genome count, and tuple count
-      // memcpy(m_data[m_cur_page]+m_cur_offset, &tid_count, 2);
-	//	mcpyinsdb(tid_count, 2);
-	//	m_cur_offset += 2;
-      //      memcpy(m_data[m_cur_page]+m_cur_offset, &genome_count, 2);
-	//	mcpyinsdb(genome_count, 2);
-	//	m_cur_offset += 2;
-      //      memcpy(m_data[m_cur_page]+m_cur_offset, &tuple_count, 2);
-
-	mcpyinsdbt(tuple_count, 2, thread_no);
-	m_cur_offset_arr[thread_no] += 2;
-
-      //write the tuples
-	for (uint16_t k=0; k<tuple_count; k++) {
-
-	  assert(fread(&tid, 4, 1, in) == 1);        
-	  assert (tid <= MAX_TID && tid != INVALID_TID_2 );
-	
-	//        memcpy(m_data[m_cur_page]+m_cur_offset, &tid, 4);
-	  mcpyinsdbt(tid, 4, thread_no);
-	  m_cur_offset_arr[thread_no] += 4;
-
-	  uint16_t present;
-	  assert(fread(&present, 2, 1, in) == 1);        
-
-	//        memcpy(m_data[m_cur_page]+m_cur_offset, &present, 2);
-	  //	  mcpyinsdb(present, 2);
-
-	  //	  m_cur_offset += 2;
-	  //cout << tid << " ";
-	  /*
-	    assert(fread(&p_count, 2, 1, in) == 1);        
-	    memcpy(m_data[m_cur_page]+m_cur_offset, &p_count, 2);
-	    m_cur_offset += 2;
-	  */
-	}
-	//cout << endl;
-      }
-  }
-
-#pragma omp critical
-  {
-    m_n_kmers += (i-1);
-
-  }
-
-  cout << "kmer count: " << m_n_kmers << "\n";
-  
-  fclose(in);
-
-
-}
 
 template class SortedDb<DBTID_T>;
 

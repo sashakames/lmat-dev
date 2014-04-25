@@ -36,6 +36,8 @@ void usage() {
     "  -g <int>  - taxid list cutoff \n"
     "  -m <fn>   - pruning taxid table file  \n"    
     "  -f <fn>   - use 32 to 16-it id conversion using <fn>  \n"    
+    "  -j <fin>  - file containing human kmers \n"
+    "  -c <int>  - count of human kmers \n"
     "  -w        - pruing uses strain-to-species mapping\n" 
     "guidance for setting -s: from our paper, our full reference DB required 619G;\n"
     "this was for a fasta file that was ~19G\n";
@@ -116,7 +118,9 @@ int main(int argc, char *argv[]) {
 
   int tid_cut = 0;
 
-  string species_map_fn, id_bit_conv_fn;
+  size_t xtra_kmers = 0;
+
+  string species_map_fn, id_bit_conv_fn, human_kmer_fn;
 
   bool strainspecies = false;
   //  while ((c = getopt(argc, argv, "t:g:q:k:i:o:s:t:h:r l a ")) != -1) {
@@ -127,9 +131,14 @@ int main(int argc, char *argv[]) {
   }
   cout << endl;
 
+
+
  
- while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:w ")) != -1) {
+ while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:")) != -1) {
     switch(c) {
+    case 'j':
+      human_kmer_fn=optarg;
+      break;
     case 'w':
       strainspecies = true;
       break;
@@ -155,6 +164,9 @@ int main(int argc, char *argv[]) {
     case 'i':
       ++count;
       inputfn = optarg;
+      break;
+    case 'c':
+      xtra_kmers = strtoull(optarg, NULL, 10);
       break;
     case 'o':
       ++count;
@@ -215,7 +227,7 @@ int main(int argc, char *argv[]) {
 
   size_t space = ((TT_BLOCK_COUNT * 8) + (hash_size * 8));
 
-  storage_size = (size_t)((mmap_size - space) * (double).95);
+  storage_size = (size_t)((mmap_size - space) * (double).95) - (size_t)(xtra_kmers*8);
 
  
   cout << "storage requested: " << storage_size << endl;
@@ -240,6 +252,23 @@ int main(int argc, char *argv[]) {
 
      fclose(tfp);
   }
+  
+  FILE *human_fp = NULL;
+
+  if (human_kmer_fn.length() > 0) {
+
+    
+    human_fp = fopen(human_kmer_fn.c_str()  ,"r");
+    
+    if (human_fp)
+      cout << "opened human k-kmer file at " << human_kmer_fn << "\n" ;
+	
+    
+  }
+
+  if (! human_fp)
+    cout << "No human k-mer file.\n";
+
    
    if (  (tid_cut > 0) && species_map_fn.length() > 0) {
      
@@ -281,7 +310,7 @@ int main(int argc, char *argv[]) {
     if (kmer_len < 16)
       hash_size=(1<<(kmer_len*2));
 
-    ttable = PERM_NEW(SortedDb<DBTID_T>)(hash_size, storage_size);
+    ttable = PERM_NEW(SortedDb<DBTID_T>)(hash_size+xtra_kmers, storage_size);
 
   }
 
@@ -323,7 +352,7 @@ int main(int argc, char *argv[]) {
 	bitreduce_map_t *p_map = NULL;
 	if (br_map.size() > 0)
 	  p_map = & br_map;
-	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies);
+	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp);
 	cout << "elapsed time: " << clock2.stop() << endl;
 	} // end for
 
@@ -355,7 +384,7 @@ int main(int argc, char *argv[]) {
     bitreduce_map_t *p_map = NULL;
     if (br_map.size() > 0)
       p_map = & br_map;
-    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies); 
+    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp); 
   }
   
 

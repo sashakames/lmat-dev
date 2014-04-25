@@ -105,12 +105,12 @@ done
 # copy include
 
 ## I don't think kencode.hpp is used anymore
-for n in metag_const.h perm.h tid_checks.hpp
+for n in metag_const.h perm.h tid_checks.hpp kencode.hpp
 do
 cp ../include/$n $reldir/include
 done
 
-
+cp ../apps/rkmer.hpp $reldir/src/
 
 #copy preprocessing scripts
 for n in merge_fastq_reads_with_N_separator.pl Tid16_getMapping.py build_tid_numeric_rank_table.py build_species_level_map.py Tid16_get32BitTaxIDs.py get_gi_numbers.py build_header_table.py

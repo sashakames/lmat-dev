@@ -19,6 +19,8 @@
 #include <metag_const.h>
 #include "metag_typedefs.hpp"
 
+
+
 #if (WITH_PJMALLOC == 0)
 #define JEMALLOC_P(x) x
 #endif
@@ -118,22 +120,7 @@
 
 #endif
 
-
-
-
-#ifdef USE_BOOST
-#include <boost/interprocess/offset_ptr.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
-
-#include <boost/interprocess/managed_mapped_file.hpp>
-#include <boost/version.hpp>
-
-namespace bip = boost::interprocess;
-
-#else
-
 #include <perm.h>
-#endif
 
 
 typedef  __gnu_cxx::hash_map<uint32_t,uint32_t> my_map;
@@ -179,96 +166,15 @@ typedef struct {
 public:
 
 
-#if USE_BOOST
 
-  SortedDb(const size_t n_kmers, const size_t space_size, const bip::managed_mapped_file &in_heap, const int n_threads )
-  {
-
-    bip::managed_mapped_file *p_heap =   const_cast<bip::managed_mapped_file*>(&in_heap);
-;
-
-    m_top_tier_block_op = new( p_heap->allocate(sizeof(uint64_t)*TT_BLOCK_COUNT)) uint64_t[TT_BLOCK_COUNT]; 
-    m_kmer_table_op = new ( p_heap->allocate(sizeof(kmer_record)*n_kmers)) kmer_record[n_kmers];
-    m_storage_space_op = new ( p_heap->allocate(sizeof(char)*space_size)) char[space_size];
-
-    //    allocator_str = "\n\ndatabase built with boost\n\n";
-    // boost_version = BOOST_LIB_VERSION; // taken from the boost version.hpp
-
-    idx_config = IDX_CONFIG;
-
-    conv_ptrs();
-
-#else
-
-    SortedDb(size_t n_kmers, size_t space_size, const int n_threads)
+    SortedDb(size_t n_kmers, size_t space_size) 
 
   {
 
     top_tier_block = new (JEMALLOC_P(malloc)(sizeof(uint64_t)*TT_BLOCK_COUNT)) uint64_t[TT_BLOCK_COUNT];
     kmer_table = new (JEMALLOC_P(malloc)(sizeof(kmer_record)*n_kmers)) kmer_record[n_kmers];
     m_storage_space = new (JEMALLOC_P(malloc)(sizeof(char)*space_size)) char[space_size];
-
-    //    allocator_str = "\n\ndatabase built with perm-je\n\n";
-    idx_config = IDX_CONFIG;
-
-#endif
-
-
-    m_n_kmers = 0;
-
-
-
-    list_offset_arr = new size_t[n_threads];
-    m_cur_page_arr = new uint16_t[n_threads];
-    m_cur_offset_arr = new uint32_t[n_threads];
-
-    int i;
-
-    
-    for (i = 0 ; i < n_threads; i++) {
-
-
-      m_cur_offset_arr[i] = 0;
-      m_cur_page_arr[i] = i;
-      list_offset_arr[i] = n_kmers / n_threads * i;
-      std::cout << "thread: " << i << " offset " << list_offset_arr[i] << "\n";
-    }
-
-    bzero((void*)top_tier_block, sizeof(uint64_t) *TT_BLOCK_COUNT);
-    
-    std::cout << " init db with " << n_kmers << " kmers and " << space_size << " for storage\n" ;
-
-  }
-
-
-#if USE_BOOST
-
-  SortedDb(const size_t n_kmers, const size_t space_size, const bip::managed_mapped_file &in_heap )
-  {
-
-    bip::managed_mapped_file *p_heap =   const_cast<bip::managed_mapped_file*>(&in_heap);
-;
-
-    m_top_tier_block_op = new( p_heap->allocate(sizeof(uint64_t)*TT_BLOCK_COUNT)) uint64_t[TT_BLOCK_COUNT]; 
-    m_kmer_table_op = new ( p_heap->allocate(sizeof(kmer_record)*n_kmers)) kmer_record[n_kmers];
-    m_storage_space_op = new ( p_heap->allocate(sizeof(char)*space_size)) char[space_size];
-    
-    
-
-    conv_ptrs();
-    
-#else
-
-  SortedDb(size_t n_kmers, size_t space_size)
-
-  {
-
-    top_tier_block = new (JEMALLOC_P(malloc)(sizeof(uint64_t)*TT_BLOCK_COUNT)) uint64_t[TT_BLOCK_COUNT];
-    kmer_table = new (JEMALLOC_P(malloc)(sizeof(kmer_record)*n_kmers)) kmer_record[n_kmers];
-    m_storage_space = new (JEMALLOC_P(malloc)(sizeof(char)*space_size)) char[space_size];
-#endif
-
-
+    assert (m_storage_space);
 
     m_n_kmers = 0;
 
@@ -280,13 +186,13 @@ public:
     
     std::cout << " init db with " << n_kmers << " kmers and " << space_size << " for storage\n" ;
 
+    
   }
 
+    
 
 
-    void add_data(const char *filename, size_t stopper, const int n_threads, const int thread_no);
-
-    void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool);
+    void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool, FILE *);
 
 
     bool begin_(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out, uint8_t &page_out) {
@@ -583,7 +489,6 @@ private:
   size_t * list_offset_arr ;
   uint16_t * m_cur_page_arr;
   uint32_t * m_cur_offset_arr;
-
 
 
   };
