@@ -5,7 +5,7 @@
 #include <sstream>
 #include <set>
 #include <ext/hash_map>
-#include <ext/hash_set>
+
 
 #include <queue>
 
@@ -39,10 +39,6 @@ size_t matched_in = 0;
 size_t new_isect = 0;
 
 
-
-
-
-
 uint64_t read_encode(FILE *f, kencode_c &ken) {
 
   char buf[33];
@@ -62,11 +58,25 @@ uint64_t read_encode(FILE *f, kencode_c &ken) {
 
 }
 
+kmer_set_t *get_kmer_set(FILE *in_kmers_fp, kencode_c &ken )
+{
+  
+  uint64_t next_kmer;
+
+  kmer_set_t *kmer_set_tmp = new kmer_set_t;
+
+  while (next_kmer = read_encode(in_kmers_fp, ken) != (~0)) {
+    kmer_set_tmp->insert(next_kmer);
+
+  }
+  return kmer_set_tmp;
+
+}
 
 
-
+/* This should really be refactored!! */
 template <class tid_T>
-void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL)
+void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL,  FILE * illum_kmers_fp = NULL, uint32_t adaptor_tid = 0)
 {
   
 
@@ -95,6 +105,12 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
    else {
      last_human=~0;
    }
+
+   kmer_set_t *p_adaptor_set = NULL;
+
+   if (illum_kmers_fp)
+     p_adaptor_set = get_kmer_set(illum_kmers_fp, ken);
+
      
    uint64_t kmer_ct = metadata.size();
    
@@ -120,10 +136,13 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
   //  cout << "stopper set to: " << stopper << "\n";
 
+  uint16_t HUMAN_16 = 0;
+  uint16_t ADAPTOR_16 = 0;
 
-  uint16_t HUMAN_16 = (*p_br_map)[9606];
-  
-  
+  if (p_br_map) {
+    HUMAN_16 = (*p_br_map)[9606];
+    ADAPTOR_16 = (*p_br_map)[adaptor_tid];
+  }
 
   for  ( uint64_t i=0; i<kmer_ct; i++)  {
 
@@ -167,8 +186,24 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       
       assert (top_tier_block[top_index] >> 48 == start_count);
       kmer_table[m_list_offset].page_id = MAX_PAGE;
-      kmer_table[m_list_offset].page_offset = HUMAN_16;
-      
+
+
+      if (p_adaptor_set && p_adaptor_set->find(last_human) != p_adaptor_set->end()) {
+	if (ADAPTOR_16)
+	  kmer_table[m_list_offset].page_offset = ADAPTOR_16;
+	else
+	  kmer_table[m_list_offset].page_offset = adaptor_tid;
+	
+
+      } 
+
+
+	  else {
+	    if (HUMAN_16)
+	      kmer_table[m_list_offset].page_offset = HUMAN_16;
+	    else
+	      kmer_table[m_list_offset].page_offset = 9606;
+	  }
       new_human++;      
       m_list_offset++;
       start_count++;
@@ -228,8 +263,23 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
     //    set<uint32_t> write_set;
     priority_queue<MyPair> taxid_q;
+
+    if (p_adaptor_set && p_adaptor_set->find(kmer) != p_adaptor_set->end()) {
+
+      for (uint16_t k=0; k<tid_count; k++) 
+
+	assert(fread(&tid, 4, 1, in) == 1);        
+      
+      if (ADAPTOR_16)
+	kmer_table[m_list_offset].page_offset = ADAPTOR_16;
+      else
+	kmer_table[m_list_offset].page_offset = adaptor_tid;
+	
+      
+    } else {
+
      
-    if (tid_cutoff > 0 && tid_count > tid_cutoff) {
+      if (tid_cutoff > 0 && tid_count > tid_cutoff) {
 
       if (species_map.size() == 0) {
 	tmp_tid_count = 0;
@@ -344,9 +394,10 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       
     }
 
-    if (tmp_tid_count > 1) {
       
-      if (16+m_cur_offset+tmp_tid_count*4 > PAGE_SIZE) {
+      if (tmp_tid_count > 1) {
+      
+	if (16+m_cur_offset+tmp_tid_count*4 > PAGE_SIZE) {
 	  
 	m_cur_page ++;
 	m_cur_offset = 0;
@@ -359,6 +410,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
     else if (tid_count == 1) {
 
       assert(fread(&tid, 4, 1, in) == 1);        
+      
 
       // we need to handle the case where a single tid matches a human k-mer
 
@@ -652,7 +704,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       assert (tid_count == 1 || tmp_tid_count < 2);
       
     }
-
+    }
     
     if (use_tax_histo_format) {
 	
@@ -670,7 +722,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   }
 
   m_n_kmers += kmer_ct;
-  
+
+       if (p_adaptor_set)
+	 delete p_adaptor_set;
   fclose(in);
 
   cout << "storage used for tax ids, counts, etc.."  << m_cur_page << " - "  << m_cur_offset << "\n";

@@ -19,6 +19,8 @@ using namespace metag;
 
 bool use_tax_histo_format = true;
 
+#define ILLU_TAXID  32630
+
 //typedef pair<size_t, int> kmer_info_t; 
 
 void usage() {
@@ -39,6 +41,7 @@ void usage() {
     "  -j <fin>  - file containing human kmers \n"
     "  -c <int>  - count of human kmers \n"
     "  -w        - pruing uses strain-to-species mapping\n" 
+    "  -u        - file for illumina adaptor k-mers\n"
     "guidance for setting -s: from our paper, our full reference DB required 619G;\n"
     "this was for a fasta file that was ~19G\n";
 }
@@ -120,7 +123,7 @@ int main(int argc, char *argv[]) {
 
   size_t xtra_kmers = 0;
 
-  string species_map_fn, id_bit_conv_fn, human_kmer_fn;
+  string species_map_fn, id_bit_conv_fn, human_kmer_fn, illu_kmer_fn;
 
   bool strainspecies = false;
   //  while ((c = getopt(argc, argv, "t:g:q:k:i:o:s:t:h:r l a ")) != -1) {
@@ -134,10 +137,13 @@ int main(int argc, char *argv[]) {
 
 
  
- while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:")) != -1) {
+ while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:u:")) != -1) {
     switch(c) {
     case 'j':
       human_kmer_fn=optarg;
+      break;
+    case 'u':
+      illu_kmer_fn=optarg;
       break;
     case 'w':
       strainspecies = true;
@@ -269,6 +275,17 @@ int main(int argc, char *argv[]) {
   if (! human_fp)
     cout << "No human k-mer file.\n";
 
+
+  FILE *illu_fp = NULL;
+
+  if (illu_kmer_fn.length() > 0) 
+    
+    illu_fp = fopen(illu_kmer_fn.c_str()  ,"r");
+    
+
+  if (! illu_fp)
+    cout << "No Illumina k-mer file.\n";
+
    
    if (  (tid_cut > 0) && species_map_fn.length() > 0) {
      
@@ -352,7 +369,7 @@ int main(int argc, char *argv[]) {
 	bitreduce_map_t *p_map = NULL;
 	if (br_map.size() > 0)
 	  p_map = & br_map;
-	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp);
+	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID);
 	cout << "elapsed time: " << clock2.stop() << endl;
 	} // end for
 
@@ -384,7 +401,7 @@ int main(int argc, char *argv[]) {
     bitreduce_map_t *p_map = NULL;
     if (br_map.size() > 0)
       p_map = & br_map;
-    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp); 
+    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID); 
   }
   
 

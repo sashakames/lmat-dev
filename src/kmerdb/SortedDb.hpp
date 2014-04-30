@@ -6,6 +6,8 @@
 #include <iostream>
 #include <set>
 #include <ext/hash_map>
+#include <ext/hash_set>
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -18,7 +20,6 @@
 
 #include <metag_const.h>
 #include "metag_typedefs.hpp"
-
 
 
 #if (WITH_PJMALLOC == 0)
@@ -125,6 +126,7 @@
 
 typedef  __gnu_cxx::hash_map<uint32_t,uint32_t> my_map;
 typedef  __gnu_cxx::hash_map<uint32_t,uint16_t> bitreduce_map_t;
+typedef   __gnu_cxx::hash_set<uint64_t> kmer_set_t;
 
 #define mcpyoutsdb(dest, page, off, len) memcpy(&dest, m_storage_space+(PAGE_SIZE*page)+off, len) 
 #define mcpyinsdb(src, len) memcpy(m_storage_space+(m_cur_page*PAGE_SIZE)+m_cur_offset, &src, len) 
@@ -192,7 +194,7 @@ public:
     
 
 
-    void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool, FILE *);
+    void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool, FILE *, FILE *, uint32_t);
 
 
     bool begin_(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out, uint8_t &page_out) {
