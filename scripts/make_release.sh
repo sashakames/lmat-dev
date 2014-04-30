@@ -120,7 +120,7 @@ done
 
 #copy nclass scripts
 
-for n in run_gl.sh run_cs.sh summary.py run_lmat.sh tolineage.py combine_fast.pl losummary_fast.pl losummary_fast_mc.sh pull_reads_mc.sh pull_reads.pl build_taxid_lst.sh build_taxid_lst.pl
+for n in run_gl.sh run_cs.sh summary.py run_rl.sh tolineage.py combine_fast.pl losummary_fast.pl losummary_fast_mc.sh pull_reads_mc.sh pull_reads.pl build_taxid_lst.sh build_taxid_lst.pl genusspecies2html.py make_html.py fsreport.py
 do
     if [ ! -f ../nclass/$n ] ; then
 	echo $n not found

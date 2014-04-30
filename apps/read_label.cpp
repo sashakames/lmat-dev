@@ -1291,7 +1291,7 @@ void proc_line(const TaxTree<TID_T>& tax_tree, int ri_len, string &line, int k_s
 void usage(char *execname)
 {
   cout << "Usage:\n" ;
-  cout << execname << " -d <input db file (list)> -i <query fasta file> -t <number of threads> -o <output path> [-l read length]\n";
+  cout << execname << " -d <input db file (list)> -i <query fasta file> -t <number of threads> -o <output path> [-l <human bias>]\n";
   cout << "[-v <pct cutoff>]  -c <tax tree file> -k <kmer size> [-z:verbose] [-r:rank table]\n";
   cout << "[-m <rank/tid-map-file>] [-g <tid-cutoff>] [-w <with-strain-species-map> (affects -m option)]\n";
   cout << "[-h:turn phiX screening off]\n";
@@ -1321,7 +1321,7 @@ int main(int argc, char* argv[])
    bool prn_read = true;
 
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:wpk:c:v:k:i:d:l:t:r:s:m:o:x:f:g:z:q")) != -1) {
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:w:pk:c:v:k:i:d:l:t:r:sm:o:x:f:g:z:q")) != -1) {
 
       switch(c) {
       case 'h':
@@ -1639,7 +1639,8 @@ int main(int argc, char* argv[])
    	      if (eof) {
 	            in_finished = true;
 	    
-	    if(verbose) cout << line.size() << " line length\n";
+		    if(verbose) cout << line.size() << " line length\n";
+		    line = "";
 	  }
 
 
@@ -1653,10 +1654,12 @@ int main(int argc, char* argv[])
 
 	  if (line[0] != '>' && line.length() > 1 && !fastq) {
 	    read_buff += line;
+	    line = "";
 	  }
 
 	  if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
 	    read_buff += line;
+	    line = "";
 	  }
 	  if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
 	     line[0] == '-'))) && read_buff.length() > 0 ) {
