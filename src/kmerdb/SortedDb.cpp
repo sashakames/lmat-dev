@@ -5,6 +5,8 @@
 #include <sstream>
 #include <set>
 #include <ext/hash_map>
+#include <ext/hash_set>
+
 #include <queue>
 
 #include <metag_const.h>
@@ -27,6 +29,7 @@ int metag::kmer_rec_comp(const void *a, const void *b)
 
 size_t ext_taxids = 0 ;
 size_t singletons = 0;
+size_t doubles = 0;
 
 size_t reduced_kmers = 0;
 size_t cut_kmers = 0;
@@ -34,6 +37,8 @@ size_t cut_kmers = 0;
 size_t new_human = 0;
 size_t matched_in = 0;
 size_t new_isect = 0;
+
+
 
 
 
@@ -115,6 +120,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
   //  cout << "stopper set to: " << stopper << "\n";
 
+
+  uint16_t HUMAN_16 = (*p_br_map)[9606];
+  
   
 
   for  ( uint64_t i=0; i<kmer_ct; i++)  {
@@ -132,13 +140,13 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       cout << "Kmers arriving out of order.  New: " << kmer << " last: " << last_kmer << "\n";
       exit(1);
     }
-    
+
+
     while (last_human < kmer) {
       
       // This is a new human k_mer
 
-      size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
-
+      size_t top_index =  (last_human >> BITS_PER_2ND);  // & 0x0000000007ffffff;
 
     // check the slot if it has been written to yet
 
@@ -151,7 +159,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	start_count = 1;  
       }
 
-      uint16_t kmer_lsb_in = MASK_2ND & kmer;
+      uint16_t kmer_lsb_in = MASK_2ND & last_human;
       
       top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
       
@@ -159,7 +167,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       
       assert (top_tier_block[top_index] >> 48 == start_count);
       kmer_table[m_list_offset].page_id = MAX_PAGE;
-      kmer_table[m_list_offset].page_offset = 2685;
+      kmer_table[m_list_offset].page_offset = HUMAN_16;
       
       new_human++;      
       m_list_offset++;
@@ -349,33 +357,108 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       kmer_table[m_list_offset].page_offset = m_cur_offset;
     }
     else if (tid_count == 1) {
-      
-      singletons++;
-	
+
       assert(fread(&tid, 4, 1, in) == 1);        
+
+      // we need to handle the case where a single tid matches a human k-mer
+
+      if (add_human && tid != 9606) {
+	
+	doubles++;
+	matched_in--;  // modify the counters
+
+	if (m_cur_offset+24 > PAGE_SIZE) {
+	  m_cur_page++;
+	  m_cur_offset = 0;
+	}
+	kmer_table[m_list_offset].page_id = m_cur_page;
+	kmer_table[m_list_offset].page_offset = m_cur_offset;
+
+	uint16_t tmp_count =  2;
+	
+	mcpyinsdb(tmp_count, 2);
+	m_cur_offset += 2;	
+
+
+	// add the first tid from tax_histo input
+
+	if (p_br_map) {
+
+	  uint16_t tid_16 = (*p_br_map)[tid];
+	  if (!(tid_16 < p_br_map->size()+1)) {
+	    cout << "bad read: " << tid << " " << tid_16 << "\n";
+	    assert(0);
+	  }
+	  
+	  assert (tid_16 > 0);
+
+	  //	  cout << "adding-tid " ; 
+
+	  mcpyinsdb(tid_16, 2);
+	  m_cur_offset += 2;
+
+	  // reassign and add the human one
+
+	  tid = 9606;
+
+	  tid_16 = (*p_br_map)[tid];
+	  if (!(tid_16 < p_br_map->size()+1)) {
+	    cout << "bad read: " << tid << " " << tid_16 << "\n";
+	    assert(0);
+	  }
+	  
+	  assert (tid_16 > 0);
+
+	  //	  cout << "adding-tid " ; 
+
+	  mcpyinsdb(tid_16, 2);
+	  m_cur_offset += 2;
+
+
+
+	} else {
+
+	  mcpyinsdb(tid, 4);
+	  m_cur_offset += 4;
+	  tid = 9606;
+	  mcpyinsdb(tid, 4);
+	  m_cur_offset += 4;
+
+
+	}
+
+
+	
+      } else {
+
+      
+	singletons++;
+	
+
 	//	assert (tid <= MAX_TID && tid != INVALID_TID_2 );
       
 
-      kmer_table[m_list_offset].page_id = MAX_PAGE;
+	kmer_table[m_list_offset].page_id = MAX_PAGE;
 
-      if (p_br_map) {
-	uint16_t tid_16 = (*p_br_map)[tid];
-	if ((tid_16 > p_br_map->size()+1) || tid_16 ==0)  // pad for starting the count at 2
-	{
-	  cout << "bad single: kmer " << kmer << " - "  << tid << " " << tid_16 << "\n";
-	  assert(0);
+	if (p_br_map) {
+	  uint16_t tid_16 = (*p_br_map)[tid];
+	  if ((tid_16 > p_br_map->size()+1) || tid_16 ==0)  // pad for starting the count at 2
+	    {
+	      cout << "bad single: kmer " << kmer << " - "  << tid << " " << tid_16 << "\n";
+	      assert(0);
+	    }
+	  kmer_table[m_list_offset].page_offset = tid_16;
 	}
-	kmer_table[m_list_offset].page_offset = tid_16;
-      }
-      else {
+	else {
 
-	kmer_table[m_list_offset].page_offset = tid;
-      }
+	  kmer_table[m_list_offset].page_offset = tid;
+	}
 
-    }
+      }
+    } 
     else if (tmp_tid_count == 1) {
 
-      // reduced to the lca
+           
       tid = taxid_q.top().second;
       kmer_table[m_list_offset].page_id = MAX_PAGE;
 
@@ -392,17 +475,14 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       }
       reduced_kmers++;
-    } 
-    else {
-      // cut to 1 (root) for the k-mer
+    } else {
       assert(tmp_tid_count == 0);      
       kmer_table[m_list_offset].page_id = MAX_PAGE;
       kmer_table[m_list_offset].page_offset = 1;
       cut_kmers++;
     }
     
-    // Cases with more than one taxid
-      
+    
     m_list_offset++;
     start_count++;
 
@@ -425,14 +505,14 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       m_cur_offset += 2;
 
       if (add_human) 
-	cout << "kmer-match: " << kmer;
+	//cout << "kmer-match: " << kmer;
 
       for (int i=0; i < tmp_tid_count; i++) {
 	
 	tid = taxid_q.top().second;
 	
 	if (add_human) 
-	  cout << " " << taxid_q.top().first << " " << tid;
+	  //cout << " " << taxid_q.top().first << " " << tid;
 
 	taxid_q.pop();
 	
@@ -454,8 +534,8 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	ext_taxids++;
       } // end for 
-      if (add_human) 
-	cout << "\n";
+      //      if (add_human) 
+	//cout << "\n";
       
     }
     // no attempt to reduce list; copy in the taxid list
@@ -477,15 +557,6 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       
       m_cur_offset += 2;
-
-      uint16_t tmpcount;
-
-      if (tmpcount != count_marker) {
-
-	cout << "changed to " << tmpcount << " at " << kmer << "\n";
-	count_marker = tmpcount;
-
-      }
 
       char convbuf[12];
 
@@ -567,11 +638,12 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	mcpyinsdb(inc_tid_count, 2);
 
 	m_cur_offset = tmp_offset;
-
+	/*
 	cout << "kmer-match no pruning: " << kmer;
 	cout << " inc " << inc_tid_count;
 	cout << outbuf.c_str();
-	cout << "\n";
+	cout << "\n"; */
+
 	new_isect++;
       }
 
@@ -605,6 +677,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   cout << "kmer count: " << m_n_kmers << "\n";
   cout << "offset at: " << m_list_offset << "\n";
   cout << "singletons: " << singletons << "\n";
+  cout << "doubles: " << doubles << "\n";
   cout << "taxids in storage: " << ext_taxids << "\n";
   cout << "kmers reduced: " << reduced_kmers << "\n";
   cout << "kmers cut to 1: " << cut_kmers << "\n";
