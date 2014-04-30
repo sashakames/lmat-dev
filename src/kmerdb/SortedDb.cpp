@@ -367,15 +367,24 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	doubles++;
 	matched_in--;  // modify the counters
 
-	if (m_cur_offset+24 > PAGE_SIZE) {
+	if (m_cur_offset+32 > PAGE_SIZE) {
 	  m_cur_page++;
 	  m_cur_offset = 0;
 	}
+
+
+
 	kmer_table[m_list_offset].page_id = m_cur_page;
 	kmer_table[m_list_offset].page_offset = m_cur_offset;
 
-	uint16_t tmp_count =  2;
+	if (kmer % 4096 == 0) {
+	  mcpyinsdb(kmer, 8);
+	  m_cur_offset += 8;
+	  
+	}	
 	
+	uint16_t tmp_count =  2;
+
 	mcpyinsdb(tmp_count, 2);
 	m_cur_offset += 2;	
 
