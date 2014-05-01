@@ -410,7 +410,6 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  m_cur_offset += 2;
 
 
-
 	} else {
 
 	  mcpyinsdb(tid, 4);
@@ -499,14 +498,14 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       mcpyinsdb(tmp_tid_count, 2);
       m_cur_offset += 2;
 
-      if (add_human) 
+      //      if (add_human) 
 	//cout << "kmer-match: " << kmer;
 
       for (int i=0; i < tmp_tid_count; i++) {
 	
 	tid = taxid_q.top().second;
 	
-	if (add_human) 
+	//	if (add_human) 
 	  //cout << " " << taxid_q.top().first << " " << tid;
 
 	taxid_q.pop();
