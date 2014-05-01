@@ -6,6 +6,8 @@ Create a mmap kmer db file of the desired data structure
 #include "all_headers.hpp"
 #include "SortedDb.hpp"
 
+#include "version.h"
+
 #define DATA_DIR "../../src/kmerdb/examples/tests/data/"
 
 #include <fstream>
@@ -24,6 +26,7 @@ bool use_tax_histo_format = true;
 //typedef pair<size_t, int> kmer_info_t; 
 
 void usage() {
+  cout << "LMAT version " << LMAT_VERSION  << "\n";
   cout<<"Usage: \n"
     //      "  -f 16|32  - determines if 16 or 32 bit tax IDS are used [required]\n"
     "  -i <fn>   - input file -or- filename of file that contains a listing of the input binary files\n"
@@ -42,6 +45,7 @@ void usage() {
     "  -c <int>  - count of human kmers \n"
     "  -w        - pruing uses strain-to-species mapping\n" 
     "  -u        - file for illumina adaptor k-mers\n"
+    "  -V        - print version and exit\n"
     "guidance for setting -s: from our paper, our full reference DB required 619G;\n"
     "this was for a fasta file that was ~19G\n";
 }
@@ -137,7 +141,7 @@ int main(int argc, char *argv[]) {
 
 
  
- while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:u:")) != -1) {
+ while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:u:V")) != -1) {
     switch(c) {
     case 'j':
       human_kmer_fn=optarg;
@@ -194,6 +198,9 @@ int main(int argc, char *argv[]) {
     case 'm':
       species_map_fn = optarg;
       break;
+    case 'V':
+      cout << "LMAT version " << LMAT_VERSION  << "\n" ; 
+	exit(0);
     default:
       usage();
       exit(1);

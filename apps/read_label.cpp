@@ -16,6 +16,8 @@
 #include <tr1/unordered_set>
 #include <gzstream.h>
 
+#include <version.h>
+
 #define MMAP_SIZE 0
 #define TID_T uint32_t
 
@@ -1290,6 +1292,7 @@ void proc_line(const TaxTree<TID_T>& tax_tree, int ri_len, string &line, int k_s
 
 void usage(char *execname)
 {
+  cout << "LMAT version " << LMAT_VERSION  << "\n";
   cout << "Usage:\n" ;
   cout << execname << " -d <input db file (list)> -i <query fasta file> -t <number of threads> -o <output path> [-l <human bias>]\n";
   cout << "[-v <pct cutoff>]  -c <tax tree file> -k <kmer size> [-z:verbose] [-r:rank table]\n";
@@ -1403,6 +1406,9 @@ int main(int argc, char* argv[])
       case 'o':
          ofbase = optarg;
          break;
+    case 'V':
+      cout << "LMAT version " << LMAT_VERSION  << "\n";
+	exit(0);
       default:
          cout << "Unrecognized option: "<<c<<", ignore."<<endl;
       }

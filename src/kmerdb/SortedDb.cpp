@@ -287,7 +287,11 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	kmer_table[m_list_offset].page_offset = ADAPTOR_16;
       else
 	kmer_table[m_list_offset].page_offset = adaptor_tid;
-	
+
+      m_list_offset++;
+      start_count++;
+
+      assert(start_count <= LENGTH_MAX_2ND );	
       
     } else {
 

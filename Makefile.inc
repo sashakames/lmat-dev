@@ -2,7 +2,7 @@ CXX = g++
 INCLUDE = -I$(PJPATH)/include -I. -I$(METAG_DIR)/src/kmerdb -I$(METAG_DIR)/include 
 
 
-CXXFLAGS = -O3  -g  -Wall -fopenmp $(INCLUDE) -D$(PJOPT)  \
+CXXFLAGS = -O3 -g  -Wall -fopenmp $(INCLUDE) -D$(PJOPT)  \
             -DIDX_CONFIG=$(SDBIDX) -DTID_SIZE=$(TAXID_SIZE)  -DDBTID_T=$(TID_T) -Wno-deprecated \
 	    -DUSE_SORTED_DB=$(USE_SORTED_DB)
 

@@ -105,10 +105,12 @@ done
 # copy include
 
 ## I don't think kencode.hpp is used anymore
-for n in metag_const.h perm.h tid_checks.hpp kencode.hpp
+for n in metag_const.h perm.h tid_checks.hpp kencode.hpp version.h
 do
 cp ../include/$n $reldir/include
 done
+
+sed -i "s/DEV/$verno/g" $reldir/include/version.h
 
 cp ../apps/rkmer.hpp $reldir/src/
 
