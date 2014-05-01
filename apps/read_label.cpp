@@ -604,6 +604,7 @@ static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usm
             // for now raise the threshold before considering this match
             if( num_obs == 0 && kmer_cnt >= 100000 ) {
                max_val = 0.5;  
+               cutoff[bin] = max_val;
             // for small genomes 0 values may be due to to lack of observations
             // so fill with closest observed bin
             }  else if( num_obs == 0 && kmer_cnt < 100000) {
