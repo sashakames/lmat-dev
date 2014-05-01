@@ -606,6 +606,7 @@ static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usm
             // for now raise the threshold before considering this match
             if( num_obs == 0 && kmer_cnt >= 100000 ) {
                max_val = 0.5;  
+               cutoff[bin] = max_val;
             // for small genomes 0 values may be due to to lack of observations
             // so fill with closest observed bin
             }  else if( num_obs == 0 && kmer_cnt < 100000) {
@@ -1324,7 +1325,8 @@ int main(int argc, char* argv[])
    bool prn_read = true;
 
 
-   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:w:pk:c:v:k:i:d:l:t:r:sm:o:x:f:g:z:q")) != -1) {
+
+   while ((c = getopt(argc, argv, "u:ahn:j:b:ye:w:pk:c:v:k:i:d:l:t:r:sm:o:x:f:g:z:qV")) != -1) {
 
       switch(c) {
       case 'h':
@@ -1413,7 +1415,6 @@ int main(int argc, char* argv[])
          cout << "Unrecognized option: "<<c<<", ignore."<<endl;
       }
    }
-
    if (depth_file == "") cout << "depth_file\n";
    if (ofbase == "") cout << "ofbase\n";
    if (n_threads == 0) cout << "n_threads\n";
@@ -1449,7 +1450,6 @@ int main(int argc, char* argv[])
      }
      fclose(tfp);
    }
-
 
    cout << "Start kmer DB load\n";
    INDEXDB<DBTID_T> *taxtable;
