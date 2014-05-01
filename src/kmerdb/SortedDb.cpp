@@ -117,6 +117,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
    static kmer_set_t *p_adaptor_set = NULL;
 
    if (!p_adaptor_set && illum_kmers_fp)
+
      p_adaptor_set = get_kmer_set(illum_kmers_fp, ken);
 
      
@@ -197,6 +198,8 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 
       if (p_adaptor_set && p_adaptor_set->find(last_human) != p_adaptor_set->end()) {
+	cout << "adaptor human k-mer " << last_human << "\n";
+	
 	if (ADAPTOR_16)
 	  kmer_table[m_list_offset].page_offset = ADAPTOR_16;
 	else
@@ -274,10 +277,12 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
     if (p_adaptor_set && p_adaptor_set->find(kmer) != p_adaptor_set->end()) {
 
+      cout << "adaptor tax-histo k-mer " << kmer << "\n" ;
       for (uint16_t k=0; k<tid_count; k++) 
 
 	assert(fread(&tid, 4, 1, in) == 1);        
-      
+
+      kmer_table[m_list_offset].page_id = MAX_PAGE;      
       if (ADAPTOR_16)
 	kmer_table[m_list_offset].page_offset = ADAPTOR_16;
       else
