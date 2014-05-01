@@ -134,10 +134,17 @@ public:
 		  } */
 
 
-	      if (pp_map) 
+	      if (pp_map) {
 		m_taxid = (*pp_map)[in_taxid];
+		if (m_taxid == 0)
+		  {
+		    cout << "bad taxid: " <<  in_taxid << " kmer: " << m_kmer << " count: " << m_taxid_count << "\n";
+		    assert(0);		    
+		  }
+	      }
 	      else
 		m_taxid = in_taxid;
+	      
 	      
 
 	      const MyPair  pp(p_map[m_taxid], m_taxid);
@@ -226,6 +233,7 @@ public:
 
       if (m_taxid == 0) {
 	cout << "bad taxid: " << tid_16bit << " kmer: " << m_kmer << " count: " << m_taxid_count << "\n";
+	assert(0);
       }
       
     } else {

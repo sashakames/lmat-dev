@@ -141,7 +141,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
   static uint16_t count_marker = 0;
 
-
+  uint16_t two_count =  2;
 
   //  cout << "stopper set to: " << stopper << "\n";
 
@@ -448,9 +448,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  
 	}	
 	
-	uint16_t tmp_count =  2;
 
-	mcpyinsdb(tmp_count, 2);
+
+	mcpyinsdb(two_count, 2);
 	m_cur_offset += 2;	
 
 
@@ -459,35 +459,20 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	if (p_br_map) {
 
 	  uint16_t tid_16 = (*p_br_map)[tid];
-	  if (!(tid_16 < p_br_map->size()+1)) {
+	  if (tid_16 > p_br_map->size()+1 || tid_16 == 0) {
 	    cout << "bad read: " << tid << " " << tid_16 << "\n";
 	    assert(0);
 	  }
 	  
-	  assert (tid_16 > 0);
 
 	  //	  cout << "adding-tid " ; 
 
 	  mcpyinsdb(tid_16, 2);
 	  m_cur_offset += 2;
 
-	  // reassign and add the human one
 
-	  tid = 9606;
-
-	  tid_16 = (*p_br_map)[tid];
-	  if (!(tid_16 < p_br_map->size()+1)) {
-	    cout << "bad read: " << tid << " " << tid_16 << "\n";
-	    assert(0);
-	  }
-	  
-	  assert (tid_16 > 0);
-
-	  //	  cout << "adding-tid " ; 
-
-	  mcpyinsdb(tid_16, 2);
+	  mcpyinsdb(HUMAN_16, 2);
 	  m_cur_offset += 2;
-
 
 
 	} else {
@@ -564,7 +549,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	//write the kmer
       //      memcpy(m_data[m_cur_page]+m_cur_offset, &kmer, 8);
-    if (taxid_q.size() > 0 && tmp_tid_count > 0)	{
+    if (taxid_q.size() > 1 && tmp_tid_count > 1)	{
 
 	// check for no reduction
 
@@ -578,14 +563,14 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       mcpyinsdb(tmp_tid_count, 2);
       m_cur_offset += 2;
 
-      if (add_human) 
+      //      if (add_human) 
 	//cout << "kmer-match: " << kmer;
 
       for (int i=0; i < tmp_tid_count; i++) {
 	
 	tid = taxid_q.top().second;
 	
-	if (add_human) 
+	//	if (add_human) 
 	  //cout << " " << taxid_q.top().first << " " << tid;
 
 	taxid_q.pop();
@@ -593,7 +578,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	if (p_br_map) {
 
 	  uint16_t tid_16 = (*p_br_map)[tid];
-	  if (tid_16 == p_br_map->size()+1 || tid_16 == 0) {
+	  if (tid_16 > p_br_map->size()+1 || tid_16 == 0) {
 	    cout << "bad set: " << tid << " " << tid_16 << "\n";
 	    assert(0);
 	  }
@@ -682,12 +667,12 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 
 	  uint16_t tid_16 = (*p_br_map)[tid];
-	  if (!(tid_16 < p_br_map->size()+1)) {
+	  if (tid_16 > p_br_map->size()+1 || tid_16 == 0) {
 	    cout << "bad read: " << tid << " " << tid_16 << "\n";
 	    assert(0);
 	  }
 	  
-	  assert (tid_16 > 0);
+
 
 	  //	  cout << "adding-tid " ; 
 
