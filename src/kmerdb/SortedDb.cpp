@@ -44,7 +44,10 @@ uint64_t read_encode(FILE *f, kencode_c &ken) {
   char buf[33];
 
 
-  fscanf(f,"%s", buf);
+  int rc = fscanf(f,"%s", buf);
+
+  if (rc == EOF)
+    return ~0;
 
   if (strlen(buf) > 0) {
 
@@ -61,14 +64,19 @@ uint64_t read_encode(FILE *f, kencode_c &ken) {
 kmer_set_t *get_kmer_set(FILE *in_kmers_fp, kencode_c &ken )
 {
   
-  uint64_t next_kmer;
+  uint64_t next_kmer = read_encode(in_kmers_fp, ken);
 
   kmer_set_t *kmer_set_tmp = new kmer_set_t;
 
-  while (next_kmer = read_encode(in_kmers_fp, ken) != (~0)) {
-    kmer_set_tmp->insert(next_kmer);
+  int i=0;
 
+  while (next_kmer != (~0)) {
+    kmer_set_tmp->insert(next_kmer);
+    next_kmer = read_encode(in_kmers_fp, ken);
+    i++;
   }
+
+  cout << i << " adaptor k-mers \n";
   return kmer_set_tmp;
 
 }
@@ -106,9 +114,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
      last_human=~0;
    }
 
-   kmer_set_t *p_adaptor_set = NULL;
+   static kmer_set_t *p_adaptor_set = NULL;
 
-   if (illum_kmers_fp)
+   if (!p_adaptor_set && illum_kmers_fp)
      p_adaptor_set = get_kmer_set(illum_kmers_fp, ken);
 
      
@@ -732,8 +740,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
   m_n_kmers += kmer_ct;
 
-       if (p_adaptor_set)
-	 delete p_adaptor_set;
+
   fclose(in);
 
   cout << "storage used for tax ids, counts, etc.."  << m_cur_page << " - "  << m_cur_offset << "\n";
