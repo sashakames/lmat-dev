@@ -71,7 +71,7 @@ Usage: $0 options
 
 option list:
    --ilst=$lstr : File list LMAT read_label output
-   --genedb_file=$genedbfile : Memory mapped gene database file
+   --db_file=$genedbfile : Memory mapped gene database file
    --verbose=$verbose : Only used for debugging single read queries (too much output for larger datasets)
    --odir=$odir : Place output in this directory (defaults to current)
    --filesum=$fs_file : fastsummary file generated from read_label. When file is specified (optional)
@@ -85,7 +85,7 @@ option list:
    --rank_report=$rank_report : read binning for different ranks (user provides a comma separated list of ranks). plasmid is treated as a separate rank
 
 example usage:
-$0 --genedb_file=$genedbfile --ilst=run_lmat_output_file_lst.lst 
+$0 --db_file=$genedbfile --ilst=run_lmat_output_file_lst.lst 
 
 "
 
@@ -103,11 +103,9 @@ while test -n "${1}"; do
       lstr=$optarg;;
    --odir=*)
       odir=$optarg;;
-   --db_file=*)
-      dbfile=$optarg;;
    --min_read_kmer=*)
       num_gene_kmers=$optarg;;
-   --genedb_file=*)
+   --db_file=*)
       genedbfile=$optarg;;
    --filesum=*)
       fs_file=$optarg;;
