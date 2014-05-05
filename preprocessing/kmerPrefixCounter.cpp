@@ -11,6 +11,7 @@
 #include "all_headers.hpp"
 #include "Encoder.hpp"
 #include <ext/hash_set>
+#include <version.h>
 
 using namespace std;
 using namespace metag;
@@ -46,7 +47,7 @@ int main(int argc, char *argv[]) {
   uint64_t mem = 100000000;
 
   int count = 0;
-  const string opt_string="i:k:h o:p:l:q:f:m:";
+  const string opt_string="i:k:h o:p:l:q:f:m:V";
   char c;
   while ((c = getopt(argc, argv, opt_string.c_str())) != -1) {
     switch (c) {
@@ -80,6 +81,9 @@ int main(int argc, char *argv[]) {
       ++count;
       p_len = atoi(optarg);
       break;
+    case 'V':
+      cout << "LMAT version " << LMAT_VERSION  << "\n";
+	exit(0);
     default:
       cerr << "Unrecognized option: "<<c<<", ignore."<<endl;
       prn_help = true;

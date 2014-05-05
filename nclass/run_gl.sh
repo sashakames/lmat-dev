@@ -22,9 +22,9 @@ fi
 
 ## Should improve this 
 ## Location of binaries
-if hash read_label >& /dev/null ; then
+if hash gene_label >& /dev/null ; then
    bin_dir=
-elif [ -f read_label ] ; then
+elif [ -f gene_label ] ; then
     bin_dir=./
 elif [ `basename $PWD` == "nclass" ] ; then
     bin_dir="../apps/"
@@ -121,6 +121,8 @@ while test -n "${1}"; do
       rank_report=$optarg;;
    --min_tax_score)
       min_tax_score=$optarg;;
+  --version)
+      ${bin_dir}read_label -V ; exit;;
    *)
       echo "Unrecognized argument [$opt]"
       echo "${usage}"

@@ -10,7 +10,7 @@
 #include "TaxNodeStat.hpp"
 #include <gzstream.h>
 #include <cmath>
-
+#include <version.h>
 
 #define MMAP_SIZE 0
 #define TID_T uint32_t
@@ -354,7 +354,7 @@ int main(int argc, char* argv[])
    size_t mmap_size = 0;
    uint16_t max_count = ~0;
 
-   while ((c = getopt(argc, argv, "b:h:n:jye:wmpk:c:v:k:i:d:l:t:s:r o:x:f:g:z:q:a ")) != -1) {
+   while ((c = getopt(argc, argv, "b:h:n:jye:wmpk:c:v:k:i:d:l:t:s:r o:x:f:g:z:q:aV")) != -1) {
       switch(c) {
       case 'b' :
          min_tax_score = atof(optarg);
@@ -410,6 +410,9 @@ int main(int argc, char* argv[])
       case 'o':
          ofbase = optarg;
          break;
+    case 'V':
+      cout << "LMAT version " << LMAT_VERSION  << "\n";
+	exit(0);
       default:
          cout << "Unrecognized option: "<<c<<", ignore."<<endl;
       }

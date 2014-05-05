@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <stdint.h>
+#include <version.h>
 
 using namespace std;
 using namespace metag;
@@ -30,7 +31,7 @@ int main(int argc, char **argv) {
 
   bool prn_help = false;
   string input_fn, output_base_name;
-  const string opt_string="i:o:h f:q:";
+  const string opt_string="i:o:h f:q:V";
   int which;
   int count = 0;
   char c;
@@ -55,6 +56,11 @@ int main(int argc, char **argv) {
       ++count;
       output_base_name = optarg;
       break;
+    case 'V':
+      cout << "LMAT version " << LMAT_VERSION  << "\n";
+      exit(0);
+    default:
+      cout << "Unrecognized option: "<<c<<", ignore."<<endl;
     }
   }
 

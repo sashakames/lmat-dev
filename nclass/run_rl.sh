@@ -142,6 +142,8 @@ while test -n "${1}"; do
       verbose=1;;
    --overwrite)
       overwrite=1;;
+   --version)
+      ${bin_dir}read_label -V ; exit;;
    *)
       echo "Unrecognized argument [$opt]"
       echo "${usage}"

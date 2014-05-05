@@ -9,6 +9,7 @@
 #include "all_headers.hpp"
 #include "TaxTree.hpp"
 #include "metag_typedefs.hpp"
+#include <version.h>
 
 using std::cout;
 using std::endl;
@@ -102,7 +103,7 @@ int main(int argc, char* argv[]) {
   int count = 0;
   int which = 0;
 
-  const string opt_string="q:o:t:d:h:r:f:";
+  const string opt_string="q:o:t:d:h:r:f:V";
   while ((c = getopt(argc, argv, opt_string.c_str())) != -1) {
     switch (c) {
     case 'f' :
@@ -130,6 +131,9 @@ int main(int argc, char* argv[]) {
     case 'h':
       prn_help = true;
       break;
+    case 'V':
+      cout << "LMAT version " << LMAT_VERSION  << "\n";
+	exit(0);
     default:
       cout << "Unrecognized option: "<<c<<", ignore."<<endl;
       prn_help = true;

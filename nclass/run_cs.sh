@@ -113,6 +113,8 @@ while test -n "${1}"; do
       verbose=1;;
    --overwrite)
       overwrite=1;;
+  --version)
+      ${bin_dir}conten_summ -V ; exit;;
    *)
       echo "Unrecognized argument [$opt]"
       echo "${usage}"

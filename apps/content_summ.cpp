@@ -14,6 +14,8 @@
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 #include <gzstream.h>
+#include <version.h>
+
 
 #define MMAP_SIZE 0
 
@@ -238,7 +240,7 @@ int main(int argc, char* argv[])
    string low_num_plasmid_file, k_size_str, rank_check_str;
    hmap_t imap;	
    bool skipHuman=false;
-   while ((c = getopt(argc, argv, "m:f:a:h:n:jb:ye:wp:k:c:v:k:i:d:l:t:sr:o:x:f:g:z:q:")) != -1) {
+   while ((c = getopt(argc, argv, "m:f:a:h:n:jb:ye:wp:k:c:v:k:i:d:l:t:sr:o:x:f:g:z:q:V")) != -1) {
       switch(c) {
       case 'a':
          rank_check_str = optarg;
@@ -276,6 +278,9 @@ int main(int argc, char* argv[])
       case 'o':
          ofbase = optarg;
          break;
+    case 'V':
+      cout << "LMAT version " << LMAT_VERSION  << "\n";
+	exit(0);
       default:
          cout << "Unrecognized option: "<<c<<", ignore."<<endl;
       }
