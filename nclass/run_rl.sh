@@ -61,14 +61,13 @@ taxfile="$LMAT_DIR/ncbi_taxonomy_rank.segment.pruned.txt"
 ## For content summarization, and read counting, ignore reads with scores below this threshold
 min_score=0
 
-## Working to deprecate this with improved null models, it increases the human tax scores by 1 standard deviation
+## Should be deprecated with version 1.2.3 (it increases the human tax scores by 1 standard deviation)
 hbias=0
 
 ## The higher the number the more conservative the read label call
 ## This value specifies how much higher (in standard deviation units) the score of the assigned label must be
 ## relative to the competing taxonomic calls
 sdiff=1.0  
-
 
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
@@ -104,7 +103,8 @@ option list:
    --min_score=$min_score : minimum score assigned to read for it to be included in binning
    --overwrite (default=$overwrite) : overwrite output file if it exists 
    --min_read_kmer (default=$min_read_kmer) : minimum number of valid k-mers present in read needed for analysis
-   --prune_thresh : threshold of maximum taxonomy IDs allowed per k-mer. 
+   --prune_thresh=X : threshold of maximum taxonomy IDs allowed per k-mer (default is to use default settings of prepruned database)
+   --version : print version number and exit
 
 example usage:
 $0 --db_file=$dbfile --query_file=query.fna 
@@ -236,7 +236,11 @@ if [ ! -e $db ] ; then
    exit 0
 fi
 if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
-   echo "Process $query_file [overwrite=$overwrite 1=yes, 0=no] [outputfile=$fastsum_file]"
+   ostr=""
+   if [ $overwrite == 1 ] ; then
+      ostr="(overwrite existing files)"
+   fi
+   echo "Process $query_file outputfile=$fastsum_file $ostr"
 
    /usr/bin/time -v $rprog $fstr $pstr -u $taxfile -w $rankval -x $use_min_score -j $min_read_kmer -l $hbias -b $sdiff $vstr $nullmstr -e $depthf -p -t $threads -i $query_file -d $db -c $taxtree -o $rlofile $fastqstr >& $logfile
    min_reads=1
@@ -249,7 +253,9 @@ if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads $min_avg
    ${bin_dir}fsreport.py $fastsum_file plasmid,species,genus $odir
 
-   python ${bin_dir}genusspecies2html.py $odir/$fastsum_file.species $odir/$fastsum_file.genus $taxfile > $odir/$fastsum_file.html
+
+   python ${bin_dir}genusspecies2html.py ${odir}$fastsum_file.species ${odir}$fastsum_file.genus $taxfile > ${odir}$fastsum_file.html
+
 
 
    if hash ktImportText > /dev/null 2>&1 ; then

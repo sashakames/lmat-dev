@@ -87,6 +87,7 @@ option list:
    --verbose=$verbose : Only used for debugging single read queries (too much output for larger datasets)
    --odir=$odir : Place output in this directory (defaults to current)
    --overwrite (default=$overwrite) : overwrite output file if it exists 
+   --version : display version number and exit
 
 example usage:
 $0 --ilst=file_lst_of_lmat_output --filesum=*.fastsummary 
