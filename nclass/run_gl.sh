@@ -83,6 +83,7 @@ option list:
    --min_gene_score (default=$gene_score) : minimum percentage of k-mers matching to reference gene (for gene summary step)
    --min_tax_score (default=$min_tax_score) : minimum score for matched tax id (used for tracking rRNA assigned to specific tax ids)
    --rank_report=$rank_report : read binning for different ranks (user provides a comma separated list of ranks). plasmid is treated as a separate rank
+   --version : report version number and exit
 
 example usage:
 $0 --db_file=$genedbfile --ilst=run_lmat_output_file_lst.lst 

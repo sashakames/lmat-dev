@@ -310,16 +310,35 @@ tar zxvf example.tgz
 cd ..
 
 cd bin
-./run_lmat.sh --marker_library=<path-to-library/kML.18mer.16bit.db --query_file=../example/simple_list.1000.fna --odir=../tmp --genedb_file=<path-to-gene-database>/gene.20mer.db
+
+There are three main analysis commands: 
+1) assign taxonomic labels to reads
+2A) assign gene labels to reads
+2B) compute k-mer abundance statistics
+Step 1 must be run prior to running the optional steps 2A and 2B. Steps 2A and 2B can be run independetly of each other.
+Note that output can vary slightly depending on the choice of the database.
+
+## 1) Assign taxonomic labels to each read and report summary of organism contents
+./run_rl.sh --db_file=<path-to-library/kML.18mer.16bit.db --query_file=../example/simple_list.1000.fna --odir=../tmp --genedb_file=<path-to-gene-database>/gene.20mer.db
 
 # Output files:
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary - Shows the initial LMAT search output, bins reads into rank flexible categories
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.summ - Reassigns higher order ranked reads to a target organism call
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output.0.01.20.genesummary - gene content summary
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output[0-9]*.out - initial individually labeled reads
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output[0-9]*out.ras.1 - rebinned reads where higher ranked reads were assigned to target organisms
+simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.species - Bins reads by species rank and reports the top strain match (where possible)
+simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.plasmid - Bins reads assigned to plasmids.
+simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.genus - Bin reads by genus rank
+simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary - Bins for the raw LMAT search results, read bins are in rank flexible categories
+simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.[0-9]*.out - individually taxonomically labeled reads; NOTE these files will take up substantial disk space as more runs are completed. They are retained for quick access for pulling reads of interest for further analysis 
 
-Note that output can vary slightly depending on the choice of the database.
+## 2A) Assign gene identifiers to each read a report sumary of gene contents
+find ../tmp -name simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst
+./run_gl.sh --db_file=<path-to-gene-database/gene.20mer.db --ilst=../tmp/rl_output.flst --odir=../tmp 
+
+# Output files:
+simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output.0.01.20.genesummary - gene content summary
+simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output[0-9]*.out - individually gene labeled reads
+
+## 2B) Assign gene identifiers to each read a report sumary of gene contents
+find ../tmp -name simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst
+./run_cs.sh --db_file=<path-to-gene-database/gene.20mer.db --ilst=../tmp/rl_output.flst --odir=../tmp --filesum=../tmp/simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary
 
 # Output files with supplementary information
 simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output.0.30.nomatchsum - Count reads not assigned a taxonomic ID
@@ -327,26 +346,23 @@ simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.summ.lefto
 
 # Description of tab delimited columns for each type of output file
 *.fastsummary file - Weighted (by taxid assigned score) read count, non-weighted read count, NCBI taxonomy identifier, taxonomy rank and name
-*.summ - Normalized organism abundance, Estimated genome copies, Percentage of genome sequenced, Count of reads assigned to organism, Weighted reads assigned to organism, Organism specific weighted read count, organism read count, NCBI taxnomic ID, taxonomic rank and name
+*.species - Average read score, Total weighted read count, Count of reads assigned to organism, NCBI taxnomic species ID, taxonomic name, Total strain read score, Count of reads assigned to top strain, NCBI taxonomy strain ID, taxonomy name
+(When strain information is not reported it means no strain information could be recovered)
+*.genus - Average read score, Total weighted read count, Count of reads assigned to organism, NCBI taxnomic genus ID, taxonomic name
+*.plasmid - Average read score, Total weighted read count, Count of reads assigned to organism, taxnomic plasmid ID (frequently a custom LMAT ID), taxonomic name (frequently a fasta header from the original plasmid source sequence)
+
 *.genesummary - read count assigned to gene, LMAT NCBI taxonomic ID, NCBI taxonomic ID for source gene, NCBI Gene ID, NCBI Locus tag, description, gene type and protein accession.
 *.lo.rl_output[0-9]*.out - query read identifier, query read sequence, scoring statistics (average,standard deviation, # of k-mers), list of taxid,score pairs, final LMAT taxid call with score and match type. Match types are MultiMatch (lowest common ancestor), DirectMatch (best match), NoMatch (no database match).
-*.out.ras.1 - same output as above, but only shows final LMAT call, and the Match type includes "Reassigned" to identify reads that were reassigned to taxonomic IDs based on the reassignment rebinning phase.
 
 # Additional example run configurations
 
-# run with full database and marker library 
-./run_lmat.sh --db_file=<path-to-database>/m9.0904.16 --marker_library=<path-to-library>/marker_lib.20.v1.1 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --genedb_file=<path-to-gene-database>
-# run just the marker library
-./run_lmat.sh --marker_library=<path-to-library>/marker_lib.20.v1.1 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --genedb_file=<path-to-gene-database>
 # run just the full database
-./run_lmat.sh --db_file=<path-to-database>/m9.0904.16 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --genedb_file=<path-to-gene-database>
-# to bypass the gene annotation step type:
-./run_lmat.sh --db_file=<path-to-library>/marker_lib.20.v1.1 --query_file=<your-fasta-file> --odir=<path-to-output-directory> --gl_off
+./run_lmat.sh --db_file=<path-to-database>/m9.0904.16 --query_file=<your-fasta-file> --odir=<path-to-output-directory>
 \end{verbatim}
 
-The purpose of having two different types of reference databases (--marker_library and --db_file) is for the convenience of tuning the cutoff values for the two database types differently. The marker libraries have a smaller range values making 0 (or values close to 0) the best cutoff.  For the full libraries the range values is larger giving the user some flexibility to choose higher cutoff values of 1 or 2 to select only the highest confidence tax calls (although 0 is still a reasonable default cutoff).
+Note that the marker libraries have a smaller range of values making 0 (or values close to 0) the best cutoff.  For the full libraries the range of values is larger giving the user some flexibility to choose higher cutoff values of 1 or 2 to select only the highest confidence tax calls (although 0 is still a reasonable default cutoff).  Choice of cutoff depends on the type of sample and analysis. The default (threshold of 0) is meant to maximize sensitivity to detect more distantly related organisms.  It is recommended to run with 0 cutoff first, and sort the *.species file by the first column (average read score), which will give you an indication for the range of read scores and where to set the cutoff higher to reduce the potential for false positive calls.
 
-Check http://computation-rnd.llnl.gov/lmat/example.php for additional example information.
+Check https://sourceforge.net/p/lmat/wiki/ for additional example information.
 
 If the pre-built executable does not load on your system, proceed with the \nameref{sec:compile} step below.
 
@@ -433,11 +449,6 @@ kFull-20mer & m9.20mer.16bit.g1000.db & 373 \\
 gene-20mer & gene.20mer.db & 52 \\
 \hline
 \end{tabular}
-
-
-
-
-
 
 \section{Searchable K-mer/Taxonomy Database Preparation}
 
@@ -806,37 +817,19 @@ Most of the utility scripts that operate on sequencer reads require
 GNU parallel (http://www.gnu.org/software/parallel/), which is included with the LMAT distribution for conveniance.
 
 \section{Content Summarization}
-There is now a content summary module (called {content_summ} in
- {run_lmat.sh}).  {read_label} generates the rank-flexible list of
+There are major changes to the content summary module (called {content_summ} in
+ {run_cs.sh}).  {read_label} generates the rank-flexible list of
  taxonomic IDs (TIDs), reporting the number of reads assigned to each
  TID and the weighted read count (the sum of scores from each read
- assignment). The most rank-specific TIDs are extracted from the
- original list to serve as the list of candidate organisms
- present. For example, if there are two candidate strains reported,
- both strains will be considered. If no strain TID is found, but the
- species TID is reported, then the species TID serves as the
- candidate. The non-negative scores for each read are re-examined to
- find the highest scoring label in the lineage of a candidate
- organism. If a high scoring TID associated with a higher rank of a
- candidate organism is found then the associated organism is greedily
- selected. This is done to avoid missassignment when multiple
- candidate near-neighbor organisms are considered at different rank
- levels. Consider two candidates: organism A identified at rank
- species and organism B identified at rank strain belonging to a
- different species than A but from the same genus. For a read
- initially assigned to the genus where the true closest origin is the
- B strain, but the read includes a variant or error that puts it
- closer to a neighbor strain of B. Here the B strain score may be
- lower than the A species score so it is important to consider the
- species for B to avoid greedy assignment to A by virtue of its higher
- rank-order. In the case of ties, where something is identically
- scored across the genus level, the method is left taking a greedy
- approach where it assigns the reads to the candidate organism that
- was initially associated with the greatest number of reads (counting
- reads from all ranks).
-
- 
-During the TID re-assignment stage the total number of distinct k-mers from each read are counted for the assigned TID. Each candidate organism is evaluated in order sorted by the ratio of the number of distinct k-mers attributed to the TID in the dataset divided by the number of distinct k-mers for the TID in the database. The distinct k-mers attributed to the TID are inferrred trivially from the reads assigned to the TID (including the reassignments) plus the higher rank read assignments (up to the rank of class). This calculation serves as a proxy for estimating how much of the genome was sequenced in the sample. The expectation is that most of the reads at this point of analysis are associated with lower ranks. The re-assignment process, requires at least one iteration of the process, since multiple strains may be initially considered candidates. But after one iteration, if the top scoring strain doesn't have sufficient genome coverage (for simplicity sake), then the presence of additional strains is ignored, and all reads initially assigned to neighbor strains must be re-assigned to the top scoring strain.
+ assignment). Reads inititially assigned to higher ranks, are no longer
+aggresively re-assigned to lower order ranks, based on the first pass
+assement of sample contents. This so far has proven to be an overly aggresive
+analysis - over reaching the amount of taxonomic information that could be extracted from
+individual reads. Instead, a more emperical reporting is attempted by reporting the
+k-mer coverage distributions for various values of k for each species call.  The working
+hypothesis is that this information can be used to infer the coverage of individual genomes,
+obviating the need to map the reads to individual genomes and compute coverage statistics.
+This option is made available for further consideration.
 
 Output from the summary step is placed in a file \texttt{<prefix>.summ}
 
