@@ -7,6 +7,8 @@
 ###
 ### 1) Call read_label to taxonomically label all reads, and count reads assigned to each label
 ### 2) call tolineage.py generates human readable taxonomy lineage, can be input to Krona, which is then run if the binary is found, to produce an html file
+### 3)  Call fsreport to report at genus, species and strain levels, plus a plasmids report
+### 4) Generate html output from genus and species/strain report
 ###
 #####################################
 if [ -z "$LMAT_DIR" ] ; then
@@ -16,10 +18,10 @@ fi
 
 ## Some environments require explicit enabling of hyperthreading
 ## Other environments may already enable this
-if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
-   /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus 
-   export GOMP_CPU_AFFINITY=0-79
-fi
+#if [ -e /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus ] ; then
+#   /collab/usr/global/tools/mpi/utils/hyperthreading/enable_cpus 
+#   export GOMP_CPU_AFFINITY=0-79
+#fi
 
 ## Should improve this 
 ## Location of binaries
@@ -247,7 +249,7 @@ if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads $min_avg
    ${bin_dir}fsreport.py $fastsum_file plasmid,species,genus $odir
 
-   python ${bin_dir}genusspecies2html $odir/$fastsum_file.species $odir/$fastsum_file.genus $taxfile > $odir/$fastsum_file.html
+   python ${bin_dir}genusspecies2html.py $odir/$fastsum_file.species $odir/$fastsum_file.genus $taxfile > $odir/$fastsum_file.html
 
 
    if hash ktImportText > /dev/null 2>&1 ; then

@@ -868,6 +868,11 @@ the cutoff value specified with -g <max taxid-list length> ;  table file specifi
 
 The LMAT software distribution comes with scripts to generate these files.  \texttt{build_tid_numeric_rank_table.py} requires a ``taxonomy\_rank.txt'' file as input and produces the ``numeric rank'' mapping table file for (2) above.  \texttt{build\_species\_level\_map.py}  requires both the ``taxonomy\_rank.txt'' and  ``taxonomy.dat'' files to  produce the table file for (1).
 
+\subsection{Additional database creation feeds}
+
+The \texttt{make\_db\_table} utility included to produce the database index file (used by the LMAT classifier) has the ability to add human (ncbi: 9606) specific k-mers from an additional feed.  K-mers in this feed should be in ascii form with out duplicates, lexicographically sorted, and in canonicalized form.  Use \texttt{-j} command-line option to specify the input file for this feed of k-mers.  Additionally, \texttt{-c} must specify the count of these k-mers.
+
+The second additional feed is used to specify k-mers from "synthetic construct" sequences that should map exclusively to that taxonomy id (ncbi: 32630).  This feature will assist LMAT in identifying reads to such sequences without ambiguity given that these sequences often contaminate reference sequences.  Use \texttt{-u} command-line option to specify the filename.  As with the human k-mer feed, k-mers in this feed should be in ascii form with out duplicates, lexicographically sorted, and in canonicalized form.
 
 \section{AUSPICES STATEMENT}
 
