@@ -1040,7 +1040,6 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                   label_vec[pos].first = ng;
                }
                //collect the unique set of tax ids
-               //const uint16_t pr_cnt = h->present();
                const uint16_t pr_cnt = 1;
                obs_tids.push_back(tid);
                if(gPERMISSIVE_MATCH) {
@@ -1119,7 +1118,6 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                    TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
                    vector<TID_T> path;
                    tax_tree_tmp.getPathToRoot(tid,path);
-                   //const int depth = (*dmap.find(tid)).second;
                    for(unsigned p = 0; p < path.size(); ++p) {
                      const TID_T ptid = path[p];
                      non_leaf.insert(ptid);
@@ -1178,7 +1176,6 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                const set<tax_elem_t>::const_iterator se=label_vec[pos].second.end(); 
                for(; sb != se; ++sb) {
                   TID_T tid = (*sb).first;
-                  //cout<<"What's happened here: "<<tid<<" "<<(*sb).second<<" "<<pos<<endl;
                   if( rep_strain.find(tid) != rep_strain.end() || gRank_table[tid] != "strain"  ) {
                      TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
                      vector<TID_T> path;
@@ -1525,8 +1522,6 @@ int main(int argc, char* argv[])
    }
 
 #endif
-   //cout << "End kmer DB load\n";
-   //cout << "DB size is " << table->size() << endl;
    if( low_num_plasmid_file.length() > 0 ) {
       loadLowNumPlasmids(low_num_plasmid_file);
    }
@@ -1666,7 +1661,6 @@ int main(int argc, char* argv[])
 	    last_hdr_buff = hdr_buff;
 	    // skip the ">"                                                        
 	    hdr_buff=line.substr(1,line.length()-1);
-	    //      if(fastq) readOne=true;                                    
 	  }
 
 	  if (line[0] != '>' && line.length() > 1 && !fastq) {
