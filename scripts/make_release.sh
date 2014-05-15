@@ -2,7 +2,7 @@
 #  set version number
 
 
-verno=1.2.3c
+verno=1.2.3
 
 
 reldir=../../LMAT-$verno
