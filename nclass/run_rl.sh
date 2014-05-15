@@ -251,10 +251,17 @@ if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    min_num_reads=10 ## minimum abundance cutoffs to help with Krona plots
    min_avg=0 ## minimum average read score (off)
    ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads $min_avg
-   ${bin_dir}fsreport.py $fastsum_file plasmid,species,genus $odir
+
+   if [ -f $LMAT_DIR/plasmid.names.txt ] ; then
+       fsrstr=plasmid,species,genus
+   else
+       fsrstr=species,genus
+   fi
+   ${bin_dir}fsreport.py $fastsum_file $fsrstr $odir
 
 
-   python ${bin_dir}genusspecies2html.py ${odir}$fastsum_file.species ${odir}$fastsum_file.genus $taxfile > ${odir}$fastsum_file.html
+  # disabled for now
+#   python ${bin_dir}genusspecies2html.py ${odir}$fastsum_file.species ${odir}$fastsum_file.genus $taxfile > ${odir}$fastsum_file.html
 
 
 

@@ -49,7 +49,13 @@ genedbfile=""
 genefile="$LMAT_DIR/gn_ref2.txt.gz"
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
-rank_report="species,plasmid,genus"
+
+if [ -f $LMAT_DIR/plasmid.names.txt ] ; then
+
+    rank_report="species,plasmid,genus"
+else
+    rank_report="species,genus"
+fi
 ## minimum percentage of k-mer matches from a read found in a gene before a call can be made
 gene_score=0.01
 
