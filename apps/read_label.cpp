@@ -654,7 +654,7 @@ static void loadRandHits(const string& file_lst, u_ufmap_t& rand_hits_all, u_usm
                // should really catch this earlier.
                if( cutoff[*it] <= 0) {
                   cutoff[*it] = 0.5;
-                  //if(verbose) cout<<"WarningDebug: "<<*it<<" "<<cutoff[*it]<<endl;
+                  if(verbose) cout<<"WarningDebug: "<<*it<<" "<<cutoff[*it]<<endl;
                }
             }
          }
@@ -935,13 +935,13 @@ construct_labels(const TaxTree<TID_T>& tax_tree, const vector<label_info_t>& lab
    return make_pair(best_guess,mtype);
 }
 
-#define ENCODE(t, c, k,gc_cnt,tot_cnt) \
+#define ENCODE(t, c, k) \
 switch (c) { \
 case 'a': case 'A': t = 0; break; \
 case 'c': case 'C': t = 1; break; \
 case 'g': case 'G': t =2; break; \
 case 't': case 'T': t = 3; break; \
-default: k = 0; gc_cnt=0; tot_cnt=0; continue; \
+default: k = 0; continue; \
 }
 
 /*
@@ -979,36 +979,24 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
     kmer_t kmer_id; /* canonical k-mer */
     set<kmer_t> no_dups;
     cmap_t leaf_track;
-    int valid_kmers=0, gc_cnt=0, valid_gc_cnt = 0, valid_tot_cnt = 0, tot_cnt = 0;
+    int valid_kmers=0, gc_cnt=0;
     for (j = 0; j < slen; j++) {
         register int t;
         const char base=str[j];
-        ENCODE(t, base, k,gc_cnt,tot_cnt);
+        ENCODE(t, base, k);
+        gc_cnt = (base == 'g' || base=='G'||base=='c'||base=='C') ? gc_cnt+1 : gc_cnt;
         forward = ((forward << 2) | t) & mask;
         reverse = ((kmer_t)(t^3) << highbits) | (reverse >> 2);
-        if(base == 'g' || base=='G'||base=='c'||base=='C') {
-         ++gc_cnt;
-         ++tot_cnt;
-        } else if(base == 'a' || base=='A'||base=='t'||base=='T') {
-         ++tot_cnt;
-        } 
-      
-        //gc_cnt = (base == 'g' || base=='G'||base=='c'||base=='C') ? gc_cnt+1 : gc_cnt;
         if (++k >= (signed)klen) {
            valid_kmers++;
-           valid_gc_cnt += gc_cnt; 
-           valid_tot_cnt += tot_cnt; 
-           if(verbose) cout<<"check j:"<<valid_gc_cnt<<" "<<valid_tot_cnt<<" "<<gc_cnt<<" "<<tot_cnt<<" "<<j<<" "<<base<<endl;
-           gc_cnt=0;
-           tot_cnt=0;
            kmer_id = (forward < reverse) ? forward : reverse;
-           if( no_dups.find(kmer_id) != no_dups.end() ) continue;
             /* zero based position of forward k-mer is (j-klen+1) */
             /* zero based position of reverse k-mer is (slen-j-1) */
            const int pos = j-klen+1;
            /* kmer_lookup(kmer); do k-mer lookup here... */
            label_vec[pos].first = 0; // marks the position as having a valid k-mer (for case where n-masked reads are used)
            if(verbose) cout<<"debug valid: "<<j<<" "<<pos<<endl;
+           if( no_dups.find(kmer_id) != no_dups.end() ) continue;
            no_dups.insert(kmer_id);
 
            TaxNodeStat<DBTID_T> *h = new TaxNodeStat<DBTID_T>(*table);
@@ -1040,6 +1028,7 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                   label_vec[pos].first = ng;
                }
                //collect the unique set of tax ids
+               //const uint16_t pr_cnt = h->present();
                const uint16_t pr_cnt = 1;
                obs_tids.push_back(tid);
                if(gPERMISSIVE_MATCH) {
@@ -1118,6 +1107,7 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                    TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
                    vector<TID_T> path;
                    tax_tree_tmp.getPathToRoot(tid,path);
+                   //const int depth = (*dmap.find(tid)).second;
                    for(unsigned p = 0; p < path.size(); ++p) {
                      const TID_T ptid = path[p];
                      non_leaf.insert(ptid);
@@ -1176,6 +1166,7 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
                const set<tax_elem_t>::const_iterator se=label_vec[pos].second.end(); 
                for(; sb != se; ++sb) {
                   TID_T tid = (*sb).first;
+                  //cout<<"What's happened here: "<<tid<<" "<<(*sb).second<<" "<<pos<<endl;
                   if( rep_strain.find(tid) != rep_strain.end() || gRank_table[tid] != "strain"  ) {
                      TaxTree<TID_T>& tax_tree_tmp = const_cast<TaxTree<TID_T>&>(tax_tree);
                      vector<TID_T> path;
@@ -1197,9 +1188,10 @@ pair<int,int> retrieve_kmer_labels(INDEXDB<DBTID_T>* table, const char* str, con
          }
       }
    }
-   float gc_pcnt = ((float)valid_gc_cnt / (float)valid_tot_cnt) * 100.0;
+
+   float gc_pcnt = ((float)gc_cnt / (float)j) * 100.0;
    int bin_sel = gc_pcnt / 10; // better to not hard code this 
-   if(verbose) cout<<"GC info: "<<gc_pcnt<<" "<<bin_sel<<" "<<valid_gc_cnt<<" "<<valid_tot_cnt<<endl;
+   if(verbose) cout<<"GC info: "<<gc_pcnt<<" "<<bin_sel<<endl;
    return make_pair(valid_kmers,bin_sel);
 }
 
@@ -1522,6 +1514,8 @@ int main(int argc, char* argv[])
    }
 
 #endif
+   //cout << "End kmer DB load\n";
+   //cout << "DB size is " << table->size() << endl;
    if( low_num_plasmid_file.length() > 0 ) {
       loadLowNumPlasmids(low_num_plasmid_file);
    }
@@ -1661,6 +1655,7 @@ int main(int argc, char* argv[])
 	    last_hdr_buff = hdr_buff;
 	    // skip the ">"                                                        
 	    hdr_buff=line.substr(1,line.length()-1);
+	    //      if(fastq) readOne=true;                                    
 	  }
 
 	  if (line[0] != '>' && line.length() > 1 && !fastq) {
