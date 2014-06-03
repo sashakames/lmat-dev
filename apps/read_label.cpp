@@ -1441,23 +1441,6 @@ int main(int argc, char* argv[])
      return -1;
 
    }
-   if (id_bit_conv_fn.length() > 0) {
-     cout << "Loading map file,\n";
-     FILE * tfp = fopen(id_bit_conv_fn.c_str(), "r");
-     if( !tfp ) {
-         cout<<"Unable to read 16-bit map file:"<<id_bit_conv_fn<<endl;
-         return -1;
-     }
-
-     uint32_t src;
-     uint16_t dest;
-
-     while (fscanf(tfp,"%d%hd", &src, &dest) > 0) {
-
-       conv_map[dest] = src;
-     }
-     fclose(tfp);
-   }
 
    cout << "Start kmer DB load\n";
    INDEXDB<DBTID_T> *taxtable;
@@ -1506,6 +1489,24 @@ int main(int argc, char* argv[])
 
 
      }
+
+   if (id_bit_conv_fn.length() > 0) {
+     cout << "Loading map file,\n";
+     FILE * tfp = fopen(id_bit_conv_fn.c_str(), "r");
+     if( !tfp ) {
+         cout<<"Unable to read 16-bit map file:"<<id_bit_conv_fn<<endl;
+         return -1;
+     }
+
+     uint32_t src;
+     uint16_t dest;
+
+     while (fscanf(tfp,"%d%hd", &src, &dest) > 0) {
+
+       conv_map[dest] = src;
+     }
+     fclose(tfp);
+   }
 
 
 
