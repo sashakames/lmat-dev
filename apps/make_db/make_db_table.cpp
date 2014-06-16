@@ -21,6 +21,8 @@ using namespace metag;
 
 bool use_tax_histo_format = true;
 
+index_config metag::index_config_consts ; 
+
 #define ILLU_TAXID  32630
 
 //typedef pair<size_t, int> kmer_info_t; 
@@ -132,6 +134,8 @@ int main(int argc, char *argv[]) {
   bool strainspecies = false;
   //  while ((c = getopt(argc, argv, "t:g:q:k:i:o:s:t:h:r l a ")) != -1) {
 
+  int cfg;
+
   cout << "invocation: ";
   for (int j=0; j<argc; j++) {
     cout << argv[j] << " ";
@@ -201,6 +205,9 @@ int main(int argc, char *argv[]) {
     case 'V':
       cout << "LMAT version " << LMAT_VERSION  << "\n" ; 
 	exit(0);
+    case 'e':
+      cfg = atoi(optarg);
+      break;
     default:
       usage();
       exit(1);
@@ -237,8 +244,13 @@ int main(int argc, char *argv[]) {
   // for now keep 1 extra GB for keeping 
   //(TODO: narrow that down to necessary amount)
 
+  index_config tmpcfg;
 
-  size_t space = ((TT_BLOCK_COUNT * 8) + (hash_size * 8));
+  SortedDb<DBTID_T>::load_struct(cfg, tmpcfg);
+  
+  
+
+  size_t space = ((tmpcfg.TT_BLOCK_COUNT * 8) + (hash_size * 8));
 
   storage_size = (size_t)((mmap_size - space) * (double).95) - (size_t)(xtra_kmers*8);
 
@@ -314,7 +326,7 @@ int main(int argc, char *argv[]) {
 #if USE_BOOST == 1
   bip::managed_mapped_file mfile(bip::create_only, (const char*) outputfn.c_str(
 										) , mmap_size );  
-  ttable = mfile.construct<SortedDb<uint32_t> >("KmerDB")(hash_size, storage_size, mfile);
+  ttable = mfile.construct<SortedDb<uint32_t> >("KmerDB")(hash_size, storage_size, cfg, mfile);
   // ,n_threads);
   
 
@@ -334,7 +346,7 @@ int main(int argc, char *argv[]) {
     if (kmer_len < 16)
       hash_size=(1<<(kmer_len*2));
 
-    ttable = PERM_NEW(SortedDb<DBTID_T>)(hash_size+xtra_kmers, storage_size);
+    ttable = PERM_NEW(SortedDb<DBTID_T>)(hash_size+xtra_kmers, storage_size, cfg);
 
   }
 

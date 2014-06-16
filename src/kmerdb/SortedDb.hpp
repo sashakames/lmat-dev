@@ -51,76 +51,6 @@
 #define MASK_2ND_20 0x0000000000001fff
 #define LENGTH_MAX_2ND_20 8193
 
-
-#if (IDX_CONFIG == 2031)
-
-
-#define TT_BLOCK_COUNT 2147483648 
-#define BITS_PER_2ND 9
-#define MASK_2ND 0x00000000000001ff
-#define LENGTH_MAX_2ND 513
-
-#elif (IDX_CONFIG == 2030)
-
-#define TT_BLOCK_COUNT 1073741824 
-#define BITS_PER_2ND 10
-#define MASK_2ND 0x00000000000003ff
-#define LENGTH_MAX_2ND 1025
-
-
-#elif (IDX_CONFIG == 2029)
-
-#define TT_BLOCK_COUNT 536870912 
-#define BITS_PER_2ND 11
-#define MASK_2ND 0x00000000000007ff
-#define LENGTH_MAX_2ND 2049
-
-#elif (IDX_CONFIG == 2028)
-
-#define TT_BLOCK_COUNT 268435456
-#define BITS_PER_2ND 12
-#define MASK_2ND 0x0000000000000fff
-#define LENGTH_MAX_2ND 4097
-
-#elif (IDX_CONFIG == 2027)
-
-#define TT_BLOCK_COUNT  134217728
-#define BITS_PER_2ND 13
-#define MASK_2ND 0x0000000000001fff
-#define LENGTH_MAX_2ND 8193
-
-#elif (IDX_CONFIG == 2026)
-
-#define TT_BLOCK_COUNT  67108864
-#define BITS_PER_2ND 14
-#define MASK_2ND 0x0000000000003fff
-#define LENGTH_MAX_2ND 16385
-
-#elif (IDX_CONFIG == 2025)
-
-#define TT_BLOCK_COUNT  33554432
-#define BITS_PER_2ND 15
-#define MASK_2ND 0x0000000000007fff
-#define LENGTH_MAX_2ND 32769
-
-
-#elif (IDX_CONFIG == 2024)
-
-#define TT_BLOCK_COUNT  16777216
-#define BITS_PER_2ND 16
-#define MASK_2ND 0x000000000000ffff
-#define LENGTH_MAX_2ND 65537
-
-
-#elif (IDX_CONFIG == 1827)
-
-#define TT_BLOCK_COUNT 134217728
-#define BITS_PER_2ND 9
-#define MASK_2ND 0x00000000000001ff
-#define LENGTH_MAX_2ND 513
-
-#endif
-
 #include <perm.h>
 
 
@@ -132,6 +62,7 @@ typedef   __gnu_cxx::hash_set<uint64_t> kmer_set_t;
 #define mcpyinsdb(src, len) memcpy(m_storage_space+(m_cur_page*PAGE_SIZE)+m_cur_offset, &src, len) 
 
 #define mcpyinsdbt(src, len, i) memcpy(m_storage_space+(m_cur_page_arr[i]*PAGE_SIZE)+m_cur_offset_arr[i], &src, len) 
+
 
 
 
@@ -152,46 +83,138 @@ public:
 
 
 
-typedef struct {
+  typedef struct {
   uint16_t kmer_lsb;
   uint16_t page_id;
   uint32_t page_offset;
 	  
 } kmer_record;
 
+  typedef  struct {
+
+    uint64_t TT_BLOCK_COUNT;
+    uint8_t BITS_PER_2ND;
+    uint64_t MASK_2ND;
+    uint16_t LENGTH_MAX_2ND;
+} index_config;
+
+extern index_config index_config_consts;
+
   int kmer_rec_comp(const void *a, const void *b);
+  
 
 
+  
   template<class tid_T>
   class SortedDb {
 
 public:
 
+    static void load_struct(int idx_config,  index_config &ic ) {
+
+    switch(idx_config) {
+      
+    case 2031 : 
+      ic.TT_BLOCK_COUNT = 2147483648 ;
+      ic.BITS_PER_2ND  = 9;
+      ic.MASK_2ND = 0x00000000000001ff;
+      ic.LENGTH_MAX_2ND =  513;
+      break;
+    case 2030 :
+
+      ic.TT_BLOCK_COUNT = 1073741824 ;
+      ic.BITS_PER_2ND  = 10 ;
+      ic.MASK_2ND = 0x00000000000003ff ;
+      ic.LENGTH_MAX_2ND = 1025 ;
+      break;
+
+    case 2029 :
+
+      ic.TT_BLOCK_COUNT =  536870912 ; 
+      ic.BITS_PER_2ND = 11 ; 
+      ic.MASK_2ND = 0x00000000000007ff ;
+      ic.LENGTH_MAX_2ND = 2049 ;
+      break;
+ 
+    case 2028 :
+
+      ic.TT_BLOCK_COUNT = 268435456 ; 
+      ic.BITS_PER_2ND = 12 ;
+      ic.MASK_2ND = 0x0000000000000fff ;
+      ic.LENGTH_MAX_2ND = 4097;
+      break;
+    case 2027 :
+
+      ic.TT_BLOCK_COUNT = 134217728;
+      ic.BITS_PER_2ND = 13;
+      ic.MASK_2ND = 0x0000000000001fff ;
+      ic.LENGTH_MAX_2ND = 8193;
+      break;
+    case 2026:
+
+      ic.TT_BLOCK_COUNT = 67108864 ; 
+      ic.BITS_PER_2ND = 14 ;
+      ic.MASK_2ND = 0x0000000000003fff ;
+      ic.LENGTH_MAX_2ND = 16385 ;
+      break;
+
+    case 2025:
+
+      ic.TT_BLOCK_COUNT = 33554432 ;
+      ic.BITS_PER_2ND = 15 ; 
+      ic.MASK_2ND = 0x0000000000007fff ;
+      ic.LENGTH_MAX_2ND = 32769 ; 
+      break;
+
+    case 2024:
+
+      ic.TT_BLOCK_COUNT = 16777216 ;
+      ic.BITS_PER_2ND = 16 ;
+      ic.MASK_2ND = 0x000000000000ffff ; 
+      ic.LENGTH_MAX_2ND = 65537 ; 
+      break;
+
+    case 1827:
+
+      ic.TT_BLOCK_COUNT = 134217728;
+      ic.BITS_PER_2ND = 9 ;
+      ic.MASK_2ND = 0x00000000000001ff;
+      ic.LENGTH_MAX_2ND = 513;
+      break;
+    }
+  }
 
 
-    SortedDb(size_t n_kmers, size_t space_size) 
+    SortedDb(size_t n_kmers, size_t space_size, int idxcfg) 
 
-  {
+    {
 
-    top_tier_block = new (JEMALLOC_P(malloc)(sizeof(uint64_t)*TT_BLOCK_COUNT)) uint64_t[TT_BLOCK_COUNT];
-    kmer_table = new (JEMALLOC_P(malloc)(sizeof(kmer_record)*n_kmers)) kmer_record[n_kmers];
-    m_storage_space = new (JEMALLOC_P(malloc)(sizeof(char)*space_size)) char[space_size];
-    assert (m_storage_space);
+      
+      // set the object specific config for this db.
+      idx_config=idxcfg;
+      
+      set_config();
 
-    m_n_kmers = 0;
-
-    m_cur_offset = 0;
-    m_cur_page = 0;
-    m_list_offset = 0;
-
-    bzero((void*)top_tier_block, sizeof(uint64_t) *TT_BLOCK_COUNT);
+      top_tier_block = new (JEMALLOC_P(malloc)(sizeof(uint64_t)*index_config_consts.TT_BLOCK_COUNT)) uint64_t[index_config_consts.TT_BLOCK_COUNT];
+      kmer_table = new (JEMALLOC_P(malloc)(sizeof(kmer_record)*n_kmers)) kmer_record[n_kmers];
+      m_storage_space = new (JEMALLOC_P(malloc)(sizeof(char)*space_size)) char[space_size];
+      assert (m_storage_space);
+      
+      m_n_kmers = 0;
+      
+      m_cur_offset = 0;
+      m_cur_page = 0;
+      m_list_offset = 0;
+      
+      bzero((void*)top_tier_block, sizeof(uint64_t) *index_config_consts.TT_BLOCK_COUNT);
     
-    std::cout << " init db with " << n_kmers << " kmers and " << space_size << " for storage\n" ;
+      std::cout << " init db with " << n_kmers << " kmers and " << space_size << " for storage\n" ;
 
-    
+      
   }
 
     
+
 
 
     void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool, FILE *, FILE *, uint32_t);
@@ -400,12 +423,13 @@ bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out
    void get_values(uint32_t *in_arr, uint32_t size)
 
    {
+     extern index_config index_config_consts;
 
-     int factor = TT_BLOCK_COUNT / size;
+     int factor = index_config_consts.TT_BLOCK_COUNT / size;
 
      size_t i;
 
-     for (i = 0 ; i < TT_BLOCK_COUNT; i++) {
+     for (i = 0 ; i < index_config_consts.TT_BLOCK_COUNT; i++) {
        int idx = i / factor;
 
        if (i % size == 0) 
@@ -436,10 +460,17 @@ bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out
   bool check_config() {
     return  (idx_config == IDX_CONFIG);
   }
+
+    void set_config() {
+      extern index_config index_config_consts;
+
+      load_struct(idx_config, index_config_consts);
+
+    }
+
   void set_kmer_length(char c)
   {
     m_kmer_length = c;
-    idx_config = IDX_CONFIG;
   }
 
   char get_kmer_length() {
@@ -450,6 +481,7 @@ bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out
   size_t size() {
     return m_n_kmers;
   }
+
 
 private:
 

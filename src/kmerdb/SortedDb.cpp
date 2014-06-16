@@ -27,6 +27,8 @@ int metag::kmer_rec_comp(const void *a, const void *b)
 
 }
 
+
+
 size_t ext_taxids = 0 ;
 size_t singletons = 0;
 size_t doubles = 0;
@@ -86,7 +88,7 @@ kmer_set_t *get_kmer_set(FILE *in_kmers_fp, kencode_c &ken )
 template <class tid_T>
 void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL,  FILE * illum_kmers_fp = NULL, uint32_t adaptor_tid = 0)
 {
-  
+
 
   static uint64_t last_kmer = 0;
 
@@ -174,7 +176,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       
       // This is a new human k_mer
 
-      size_t top_index =  (last_human >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+      size_t top_index =  (last_human >> index_config_consts.BITS_PER_2ND);  // & 0x0000000007ffffff;
 
     // check the slot if it has been written to yet
 
@@ -187,7 +189,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	start_count = 1;  
       }
 
-      uint16_t kmer_lsb_in = MASK_2ND & last_human;
+      uint16_t kmer_lsb_in = index_config_consts.MASK_2ND & last_human;
       
       top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
       
@@ -248,7 +250,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
     // First get the mapping - the msb for the kmer - assuming 27 for now
     // TODO: make this configurable at runtime 
 
-    size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+    size_t top_index =  (kmer >> index_config_consts.BITS_PER_2ND);  // & 0x0000000007ffffff;
 
 
     // check the slot if it has been written to yet
@@ -262,7 +264,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       start_count = 1;  
     }
 
-    uint16_t kmer_lsb_in = MASK_2ND & kmer;
+    uint16_t kmer_lsb_in = index_config_consts.MASK_2ND & kmer;
 
     top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
     
@@ -291,7 +293,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       m_list_offset++;
       start_count++;
 
-      assert(start_count <= LENGTH_MAX_2ND );	
+      assert(start_count <= index_config_consts.LENGTH_MAX_2ND );	
       
     } else {
 
@@ -490,16 +492,11 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	}
 
-
 	
       } else {
 
-      
 	singletons++;
-	
-
 	//	assert (tid <= MAX_TID && tid != INVALID_TID_2 );
-      
 
 	kmer_table[m_list_offset].page_id = MAX_PAGE;
 
@@ -549,7 +546,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
     m_list_offset++;
     start_count++;
 
-    assert(start_count <= LENGTH_MAX_2ND );
+    assert(start_count <= index_config_consts.LENGTH_MAX_2ND );
 
 	//write the kmer
       //      memcpy(m_data[m_cur_page]+m_cur_offset, &kmer, 8);
@@ -749,11 +746,9 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   cout << "matched human k-mers: " << matched_in << "\n";
   cout << "new human + other k-mers: " << new_isect << "\n";
 
-
-
 }
 
-
-
 template class SortedDb<DBTID_T>;
+
+
 
