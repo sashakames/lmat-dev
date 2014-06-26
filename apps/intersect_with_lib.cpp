@@ -6,7 +6,7 @@
 #include <vector>
 #include <list>
 #include <omp.h>
-#include "kencode.hpp"
+
 #include "all_headers.hpp"
 #include "TaxNodeStat.hpp"
 #include <tr1/unordered_map>
@@ -20,7 +20,10 @@ using std::endl;
 using std::string;
 using std::vector;
 
-using namespace kencode_ns;
+
+#include <kencode2.hpp>
+
+using namespace kencode_ns2;
 using namespace metag;
 
 size_t perm_bytes_allocd;
