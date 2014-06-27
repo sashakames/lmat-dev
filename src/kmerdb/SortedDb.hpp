@@ -63,8 +63,18 @@ typedef   __gnu_cxx::hash_set<uint64_t> kmer_set_t;
 
 #define mcpyinsdbt(src, len, i) memcpy(m_storage_space+(m_cur_page_arr[i]*PAGE_SIZE)+m_cur_offset_arr[i], &src, len) 
 
+  typedef  struct {
+
+    uint64_t TT_BLOCK_COUNT;
+    uint8_t BITS_PER_2ND;
+    uint64_t MASK_2ND;
+    uint16_t LENGTH_MAX_2ND;
+} index_config;
 
 
+
+
+extern index_config index_config_consts;
 
 namespace metag {
 
@@ -90,15 +100,7 @@ public:
 	  
 } kmer_record;
 
-  typedef  struct {
 
-    uint64_t TT_BLOCK_COUNT;
-    uint8_t BITS_PER_2ND;
-    uint64_t MASK_2ND;
-    uint16_t LENGTH_MAX_2ND;
-} index_config;
-
-extern index_config index_config_consts;
 
   int kmer_rec_comp(const void *a, const void *b);
   
@@ -110,79 +112,8 @@ extern index_config index_config_consts;
 
 public:
 
-    static void load_struct(int idx_config,  index_config &ic ) {
+    void load_struct(int idx_config,  index_config &ic );
 
-    switch(idx_config) {
-      
-    case 2031 : 
-      ic.TT_BLOCK_COUNT = 2147483648 ;
-      ic.BITS_PER_2ND  = 9;
-      ic.MASK_2ND = 0x00000000000001ff;
-      ic.LENGTH_MAX_2ND =  513;
-      break;
-    case 2030 :
-
-      ic.TT_BLOCK_COUNT = 1073741824 ;
-      ic.BITS_PER_2ND  = 10 ;
-      ic.MASK_2ND = 0x00000000000003ff ;
-      ic.LENGTH_MAX_2ND = 1025 ;
-      break;
-
-    case 2029 :
-
-      ic.TT_BLOCK_COUNT =  536870912 ; 
-      ic.BITS_PER_2ND = 11 ; 
-      ic.MASK_2ND = 0x00000000000007ff ;
-      ic.LENGTH_MAX_2ND = 2049 ;
-      break;
- 
-    case 2028 :
-
-      ic.TT_BLOCK_COUNT = 268435456 ; 
-      ic.BITS_PER_2ND = 12 ;
-      ic.MASK_2ND = 0x0000000000000fff ;
-      ic.LENGTH_MAX_2ND = 4097;
-      break;
-    case 2027 :
-
-      ic.TT_BLOCK_COUNT = 134217728;
-      ic.BITS_PER_2ND = 13;
-      ic.MASK_2ND = 0x0000000000001fff ;
-      ic.LENGTH_MAX_2ND = 8193;
-      break;
-    case 2026:
-
-      ic.TT_BLOCK_COUNT = 67108864 ; 
-      ic.BITS_PER_2ND = 14 ;
-      ic.MASK_2ND = 0x0000000000003fff ;
-      ic.LENGTH_MAX_2ND = 16385 ;
-      break;
-
-    case 2025:
-
-      ic.TT_BLOCK_COUNT = 33554432 ;
-      ic.BITS_PER_2ND = 15 ; 
-      ic.MASK_2ND = 0x0000000000007fff ;
-      ic.LENGTH_MAX_2ND = 32769 ; 
-      break;
-
-    case 2024:
-
-      ic.TT_BLOCK_COUNT = 16777216 ;
-      ic.BITS_PER_2ND = 16 ;
-      ic.MASK_2ND = 0x000000000000ffff ; 
-      ic.LENGTH_MAX_2ND = 65537 ; 
-      break;
-
-    case 1827:
-
-      ic.TT_BLOCK_COUNT = 134217728;
-      ic.BITS_PER_2ND = 9 ;
-      ic.MASK_2ND = 0x00000000000001ff;
-      ic.LENGTH_MAX_2ND = 513;
-      break;
-    }
-  }
 
 
     SortedDb(size_t n_kmers, size_t space_size, int idxcfg) 
@@ -194,6 +125,8 @@ public:
       idx_config=idxcfg;
       
       set_config();
+
+
 
       top_tier_block = new (JEMALLOC_P(malloc)(sizeof(uint64_t)*index_config_consts.TT_BLOCK_COUNT)) uint64_t[index_config_consts.TT_BLOCK_COUNT];
       kmer_table = new (JEMALLOC_P(malloc)(sizeof(kmer_record)*n_kmers)) kmer_record[n_kmers];
@@ -222,22 +155,10 @@ public:
 
     bool begin_(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out, uint8_t &page_out) {
       
-      switch ( m_kmer_length) {
-      case 20:
-	return    begin_20(kmer_in, taxid_count_out,  offset_out, page_out);
-      case 18:	
-	return    begin_18(kmer_in, taxid_count_out,  offset_out, page_out);
-      default:
-	std::cerr << "K size " << m_kmer_length << " not supported by this application version!\n";
-	assert( 0);
-      }
-      
-    }
-    
-    bool begin_18(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out, uint8_t &page_out) {
+
 
       // perform first level lookup
-      size_t top_index =  (kmer_in >> BITS_PER_2ND_18) ; //  & 0x0000000007ffffff;
+  size_t top_index =  (kmer_in >> index_config_consts.BITS_PER_2ND) ; //  & 0x0000000007ffffff;
 
 
       uint64_t tt_val = top_tier_block[top_index];
@@ -251,12 +172,12 @@ public:
 
       // if this fails there probably is db corruption
 
-      assert (k_count < LENGTH_MAX_2ND_18);
+      assert (k_count < index_config_consts.LENGTH_MAX_2ND);
 
       if (k_count == 1) {
 	// simple case of one kmer - no search needed to but need to
 	// check the suffix bits, bail if not matching
-	if (kmer_table[kmer_offset].kmer_lsb != (kmer_in & MASK_2ND_18))
+	if (kmer_table[kmer_offset].kmer_lsb != (kmer_in & index_config_consts.MASK_2ND))
 	  return false;
 
 	offset_out = kmer_table[kmer_offset].page_offset;
@@ -266,84 +187,7 @@ public:
       else {
 
 	kmer_record rec_in;
-	rec_in.kmer_lsb=  kmer_in & MASK_2ND_18; 
-
-	kmer_record *res = reinterpret_cast<kmer_record*>(bsearch(&rec_in, kmer_table + kmer_offset ,  k_count, sizeof(kmer_record), kmer_rec_comp));
-	if (!res)
-	  return false;
-
-	offset_out = res->page_offset;
-	page_out = res->page_id;
-	
-      }
-      
-      // we found the kmer so now we can move onto the taxid list info
-      // if we got this far we return true at the end
-      
-      // special case for one taxid
-      if (page_out == MAX_PAGE) {
-	taxid_count_out =1;
-	
-      } else {
-	
-	if (kmer_in % 4096 == 0) {
-	  uint64_t km;
-	  mcpyoutsdb(km, page_out,offset_out, 8);
-        //    memcpy(&km, m_data[page_out]+offset_out, 8);
-	  assert(km == kmer_in);
-	  offset_out += 8;
-	}
-      
-	//    memcpy(&taxid_count_out, m_data[page_out]+offset_out, 2);
-	//	mcpyoutsdb(taxid_count_out,page_out,offset_out,2);
-	//	offset_out += 2;
-	//    memcpy(&genome_count_out, m_data[page_out]+offset_out, 2);
-	//mcpyoutsdb(genome_count_out,page_out,offset_out,2);
-	//offset_out += 2;
-	//    memcpy(&tuple_count_out, m_data[page_out]+offset_out, 2);
-	mcpyoutsdb(taxid_count_out,page_out,offset_out,2);
-	offset_out += 2;
-
-
-
-      }
-      return true;
-
-    }
-
-bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out, uint8_t &page_out) {
-
-      // perform first level lookup
-  size_t top_index =  (kmer_in >> BITS_PER_2ND_20) ; //  & 0x0000000007ffffff;
-
-
-      uint64_t tt_val = top_tier_block[top_index];
-      // no kmers present for that prefix
-      if (tt_val == 0)
-	return false;
-	
-      // there are kmers present so we now search in the second level
-      uint16_t k_count =   (tt_val >> 48) ;
-      long long int kmer_offset = tt_val & 0x0000ffffffffffff;
-
-      // if this fails there probably is db corruption
-
-      assert (k_count < LENGTH_MAX_2ND_20);
-
-      if (k_count == 1) {
-	// simple case of one kmer - no search needed to but need to
-	// check the suffix bits, bail if not matching
-	if (kmer_table[kmer_offset].kmer_lsb != (kmer_in & MASK_2ND_20))
-	  return false;
-
-	offset_out = kmer_table[kmer_offset].page_offset;
-	page_out = kmer_table[kmer_offset].page_id;
-      }
-      // this case we search the array and bail if it is not found
-      else {
-
-	kmer_record rec_in;
-	rec_in.kmer_lsb=  kmer_in & MASK_2ND_20; 
+	rec_in.kmer_lsb=  kmer_in & index_config_consts.MASK_2ND; 
 
 	kmer_record *res = reinterpret_cast<kmer_record*>(bsearch(&rec_in, kmer_table + kmer_offset ,  k_count, sizeof(kmer_record), kmer_rec_comp));
 	if (!res)
@@ -423,7 +267,6 @@ bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out
    void get_values(uint32_t *in_arr, uint32_t size)
 
    {
-     extern index_config index_config_consts;
 
      int factor = index_config_consts.TT_BLOCK_COUNT / size;
 
@@ -462,7 +305,6 @@ bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out
   }
 
     void set_config() {
-      extern index_config index_config_consts;
 
       load_struct(idx_config, index_config_consts);
 

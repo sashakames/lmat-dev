@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
 
 
  
- while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:u:V")) != -1) {
+ while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:u:e:V")) != -1) {
     switch(c) {
     case 'j':
       human_kmer_fn=optarg;

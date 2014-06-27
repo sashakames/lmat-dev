@@ -746,7 +746,86 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   cout << "matched human k-mers: " << matched_in << "\n";
   cout << "new human + other k-mers: " << new_isect << "\n";
 
+
 }
+template <class tid_T>
+ void SortedDb<tid_T>::load_struct(int idx_config,  index_config &ic )
+
+ {
+
+    switch(idx_config) {
+      
+    case 2031 : 
+      ic.TT_BLOCK_COUNT = 2147483648 ;
+      ic.BITS_PER_2ND  = 9;
+      ic.MASK_2ND = 0x00000000000001ff;
+      ic.LENGTH_MAX_2ND =  513;
+      break;
+    case 2030 :
+
+      ic.TT_BLOCK_COUNT = 1073741824 ;
+      ic.BITS_PER_2ND  = 10 ;
+      ic.MASK_2ND = 0x00000000000003ff ;
+      ic.LENGTH_MAX_2ND = 1025 ;
+      break;
+
+    case 2029 :
+
+      ic.TT_BLOCK_COUNT =  536870912 ; 
+      ic.BITS_PER_2ND = 11 ; 
+      ic.MASK_2ND = 0x00000000000007ff ;
+      ic.LENGTH_MAX_2ND = 2049 ;
+      break;
+ 
+    case 2028 :
+
+      ic.TT_BLOCK_COUNT = 268435456 ; 
+      ic.BITS_PER_2ND = 12 ;
+      ic.MASK_2ND = 0x0000000000000fff ;
+      ic.LENGTH_MAX_2ND = 4097;
+      break;
+    case 2027 :
+
+      ic.TT_BLOCK_COUNT = 134217728;
+      ic.BITS_PER_2ND = 13;
+      ic.MASK_2ND = 0x0000000000001fff ;
+      ic.LENGTH_MAX_2ND = 8193;
+      break;
+    case 2026:
+
+      ic.TT_BLOCK_COUNT = 67108864 ; 
+      ic.BITS_PER_2ND = 14 ;
+      ic.MASK_2ND = 0x0000000000003fff ;
+      ic.LENGTH_MAX_2ND = 16385 ;
+      break;
+
+    case 2025:
+
+      ic.TT_BLOCK_COUNT = 33554432 ;
+      ic.BITS_PER_2ND = 15 ; 
+      ic.MASK_2ND = 0x0000000000007fff ;
+      ic.LENGTH_MAX_2ND = 32769 ; 
+      break;
+
+    case 2024:
+
+      ic.TT_BLOCK_COUNT = 16777216 ;
+      ic.BITS_PER_2ND = 16 ;
+      ic.MASK_2ND = 0x000000000000ffff ; 
+      ic.LENGTH_MAX_2ND = 65537 ; 
+      break;
+
+    case 1827:
+
+      ic.TT_BLOCK_COUNT = 134217728;
+      ic.BITS_PER_2ND = 9 ;
+      ic.MASK_2ND = 0x00000000000001ff;
+      ic.LENGTH_MAX_2ND = 513;
+      break;
+    }
+  }
+
+
 
 template class SortedDb<DBTID_T>;
 

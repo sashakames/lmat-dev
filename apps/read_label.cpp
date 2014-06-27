@@ -66,6 +66,7 @@ static std::tr1::unordered_set<int> gLowNumPlasmid;
 
 #define isPlasmid(tid) (((tid >=10000000 && tid < 11000000) || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
 
+index_config index_config_consts;
 
 
 my_map tid_rank_map;
@@ -1457,9 +1458,7 @@ int main(int argc, char* argv[])
 #else
 
 
-#if WITH_PJMALLOC == 1
 
-   if (restore) {
       
      perm(&taxtable, sizeof(taxtable));
      if( mopen(kmer_db_fn.c_str(), "r", mmap_size) != 0 ) {
@@ -1472,57 +1471,35 @@ int main(int argc, char* argv[])
      cout << "num kmers: " << taxtable->size() << " - " << k_size  <<   endl ;
 
 
-   } else 
+
+
     
 #endif
 
-{
 
 
-#if (USE_SORTED_DB == 0)
-     taxtable = new INDEXDB<DBTID_T>;
-
-     ifstream qifs(kmer_db_fn.c_str());
-     if( !qifs ) {
-       cerr<<"Unable to open: "<<kmer_db_fn<<endl;
-       return -1;
-
-
-     }
-
-   if (id_bit_conv_fn.length() > 0) {
-     cout << "Loading map file,\n";
-     FILE * tfp = fopen(id_bit_conv_fn.c_str(), "r");
-     if( !tfp ) {
+     if (id_bit_conv_fn.length() > 0) {
+       cout << "Loading map file,\n";
+       FILE * tfp = fopen(id_bit_conv_fn.c_str(), "r");
+       if( !tfp ) {
          cout<<"Unable to read 16-bit map file:"<<id_bit_conv_fn<<endl;
          return -1;
+       }
+
+       uint32_t src;
+       uint16_t dest;
+       
+       while (fscanf(tfp,"%d%hd", &src, &dest) > 0) {
+	 
+	 conv_map[dest] = src;
+       }
+       fclose(tfp);
      }
 
-     uint32_t src;
-     uint16_t dest;
-
-     while (fscanf(tfp,"%d%hd", &src, &dest) > 0) {
-
-       conv_map[dest] = src;
-     }
-     fclose(tfp);
-   }
 
 
+   taxtable->set_config();
 
-     string fname;
-     
-     while(qifs>>fname) {
-       cout<<"register file: "<<fname<<endl;
-       taxtable->registerFile(fname.c_str());
-     }
-     taxtable->ingest();
-#endif
-
-
-   }
-
-#endif
    if( low_num_plasmid_file.length() > 0 ) {
       loadLowNumPlasmids(low_num_plasmid_file);
    }
