@@ -139,10 +139,14 @@ int main(int argc, char *argv[]) {
   cout << endl;
 
 
-
+  uint32_t human_tid;
  
- while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:u:V")) != -1) {
+  while ((c = getopt(argc, argv, "z:g:q:k:i:o:s: l h m:f:wj:c:u:V")) != -1) {
     switch(c) {
+    case 'z':
+
+      human_tid = atoi(optarg);
+      break;
     case 'j':
       human_kmer_fn=optarg;
       break;
@@ -376,7 +380,7 @@ int main(int argc, char *argv[]) {
 	bitreduce_map_t *p_map = NULL;
 	if (br_map.size() > 0)
 	  p_map = & br_map;
-	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID);
+	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID, human_tid);
 	cout << "elapsed time: " << clock2.stop() << endl;
 	} // end for
 
@@ -408,7 +412,7 @@ int main(int argc, char *argv[]) {
     bitreduce_map_t *p_map = NULL;
     if (br_map.size() > 0)
       p_map = & br_map;
-    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID); 
+    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID, human_tid); 
   }
   
 
