@@ -23,8 +23,18 @@ Set up environment variables necessary for index file generation and loading
 
 in the src/ directory  
 
+Note that the source repo used for development is different than the directory 
+stuctrure that is used for the LMAT release tarballs.  This was done so we can 
+export a cleaner version to the end user as our repo contains many additional
+experimental tools that aren't suitable for release.
 
+Two things to node:
 
+1)  due to an an archaic build environment, you need to set evniroment variable
+METAG_DIR=<this-repo-root-dir>
+
+2) the perm-je library is disrtributed separately.  The LMAT-1.2X tarballs contain the 
+latest compatible version.  Don't use perm-je from LMAT-1.1X or earlier.
 
 This work performed under the auspices of the U.S. Department of
 Energy by Lawrence Livermore National Laboratory under contract DE-
