@@ -157,8 +157,8 @@ if [ $genedbfile ] ; then
       if [ $verbose == 1 ] ; then
          vstr="-y"
       fi
-      genofile="${odir}$query_file_name.$genedbname.rl_output"
-      logfile="${odir}$query_file_name.$genedbname.rl_output.log"
+      genofile="${odir}$query_file_name.$genedbname.gl_output"
+      logfile="${odir}$query_file_name.$genedbname.gl_output.log"
       res=$genofile.$gene_score.$num_gene_kmers.genesummary
       res2=$genofile.$gene_score.$num_gene_kmers.genesummary.min_tax_score.$min_tax_score
       if [ ! -e $res ] || [ $overwrite == 1 ] ; then
