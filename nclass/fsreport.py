@@ -54,6 +54,7 @@ a.readline()
 children = {}
 names = {}
 parent = {}
+parent.setdefault(1,1)
 while True :
   f = a.readline()
   if len(f) == 0 : break
@@ -96,20 +97,19 @@ for line in a :
    orig[taxid]=t[3]
    if not parent.has_key(taxid) :
       if taxid != 1 :
-         print 'warning: did not find parent id for node (ignore)', taxid,'for entry:'
-         taxid=-1
-         print line
-      continue
-   else :
-      for rank in rank_lst :
-         tid=getRankTid(rank,taxid,ranktable,parent,plasmids)
-         if tid == -1 :
-            continue
-         if not store.has_key(rank) :
-            store[rank]={}
-         if not store[rank].has_key(tid) :
-            store[rank][tid]=[]
-         store[rank][tid].append( (taxid,wrc,count) )
+         #print 'warning: did not find parent id for node (ignore)', taxid,'for entry:'
+         #taxid=-1
+         #print line
+         parent.setdefault(taxid,1)
+   for rank in rank_lst :
+      tid=getRankTid(rank,taxid,ranktable,parent,plasmids)
+      if tid == -1 :
+         continue
+      if not store.has_key(rank) :
+         store[rank]={}
+      if not store[rank].has_key(tid) :
+         store[rank][tid]=[]
+      store[rank][tid].append( (taxid,wrc,count) )
 gene_store={}
 gene_cnt={}
 if gsfile != "" : 
@@ -117,40 +117,41 @@ if gsfile != "" :
    for line in a :
       line = line.rstrip()
       t = line.split('\t')
-      rc = t[0]
-      taxid = t[1]
+      rc = t[1]
+      taxid = t[2]
       if taxid == '0' :
          ## means this read was not assigned to a taxid
          continue
-      geneid = t[3]
-      type=t[6]
+      geneid = t[4]
+      type=t[7]
 
       if not parent.has_key(taxid) :
-         print 'warning: did not parent node for', taxid,' entry: (rRNA gene not counted)'
-         taxid=-1
-         print line
-         continue
-      else :
-         for rank in rank_lst :
-            tid=getRankTid(rank,taxid,ranktable,parent,plasmids)
-            ### track how many reads were mapped to rRNA
-            if tid == -1 :
-               continue
-            if type == "rRNA" :
-               if not gene_store.has_key(rank) :
-                  gene_store[rank]={}
-               if not gene_store[rank].has_key(tid) :
-                  gene_store[rank][tid]=[]
-               gene_store[rank][tid].append( (taxid,rc) )
+         #print 'warning: no parent node for', taxid,' entry: (rRNA gene not counted)'
+         #print line
+         #taxid=-1
+         #continue
+         parent.setdefault(taxid,1)
 
-            if int(rc) > min_gene_cnt :
-               if not gene_cnt.has_key(rank) :
-                  gene_cnt[rank]={}
-               if not gene_cnt[rank].has_key(tid) :
-                  gene_cnt[rank][tid]={}
-               if not gene_cnt[rank][tid].has_key(geneid) :
-                  gene_cnt[rank][tid][geneid] = 0
-               gene_cnt[rank][tid][geneid] += int(rc)
+      for rank in rank_lst :
+         tid=getRankTid(rank,taxid,ranktable,parent,plasmids)
+         ### track how many reads were mapped to rRNA
+         if tid == -1 :
+            continue
+         if type == "rRNA" :
+            if not gene_store.has_key(rank) :
+               gene_store[rank]={}
+            if not gene_store[rank].has_key(tid) :
+               gene_store[rank][tid]=[]
+            gene_store[rank][tid].append( (taxid,rc) )
+
+         if int(rc) > min_gene_cnt :
+            if not gene_cnt.has_key(rank) :
+               gene_cnt[rank]={}
+            if not gene_cnt[rank].has_key(tid) :
+               gene_cnt[rank][tid]={}
+            if not gene_cnt[rank][tid].has_key(geneid) :
+               gene_cnt[rank][tid][geneid] = 0
+            gene_cnt[rank][tid][geneid] += int(rc)
 
 
 for rank in store.keys() :
@@ -206,6 +207,12 @@ for rank in store.keys() :
       tup=(wrc_sum,count_sum,tid,name_str,rrna_csum,len(gene_id_lst),gene_read_cnt,strain_info)
       save.append(tup)
    sval=sorted(save, key=lambda val : val[0],reverse=True)
+   if gsfile != "" :
+      key_str="Average Read Score\tTotal Read Score\tRead Count\tPcnt. rRNA\tNo. Genes\tNo. Gene Reads\tTaxID\tName\tStrain Info"
+   else :
+      key_str="Average Read Score\tTotal Read Score\tRead Count\tTaxID\tName\tStrain Info"
+   
+   fh.write(key_str +"\n")
    for val in sval :
       avg = float(val[0])/float(val[1])
       astr="%.4f" % avg

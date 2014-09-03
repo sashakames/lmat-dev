@@ -1,4 +1,4 @@
-#!/bin/sh  -xvf
+#!/bin/sh
 
 #####################################
 ### SCRIPT TO RUN THE Gene labeling PIPELINE
@@ -49,15 +49,9 @@ genedbfile=""
 genefile="$LMAT_DIR/gn_ref2.txt.gz"
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
-
-if [ -f $LMAT_DIR/plasmid.names.txt ] ; then
-
-    rank_report="species,plasmid,genus"
-else
-    rank_report="species,genus"
-fi
+rank_report="species,plasmid,genus"
 ## minimum percentage of k-mer matches from a read found in a gene before a call can be made
-gene_score=0.01
+gene_score=0.1
 
 ## Additional user input default settings
 # set to 1 for debugging only (too much output for large runs)
@@ -120,8 +114,8 @@ while test -n "${1}"; do
       verbose=1;;
    --overwrite)
       overwrite=1;;
-   --min_gene_score)
-      gaene_score=$optarg;;
+   --min_gene_score*)
+      gene_score=$optarg;;
    --rank_report)
       rank_report=$optarg;;
    --min_tax_score)
@@ -157,8 +151,8 @@ if [ $genedbfile ] ; then
       if [ $verbose == 1 ] ; then
          vstr="-y"
       fi
-      genofile="${odir}$query_file_name.$genedbname.gl_output"
-      logfile="${odir}$query_file_name.$genedbname.gl_output.log"
+      genofile="${odir}$query_file_name.$genedbname.rl_output"
+      logfile="${odir}$query_file_name.$genedbname.rl_output.log"
       res=$genofile.$gene_score.$num_gene_kmers.genesummary
       res2=$genofile.$gene_score.$num_gene_kmers.genesummary.min_tax_score.$min_tax_score
       if [ ! -e $res ] || [ $overwrite == 1 ] ; then
@@ -167,7 +161,7 @@ if [ $genedbfile ] ; then
          mv tmp.$$ $res 
          min_map_reads=10
          if [ -e $fs_file ] ; then
-            ${bin_dir}fsreport.py $fs_out $rank_report $odir $res2 $min_map_reads
+            ${bin_dir}fsreport.py $fs_file $rank_report $odir $res2 $min_map_reads
          fi
       fi
 else

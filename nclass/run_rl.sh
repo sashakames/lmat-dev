@@ -50,8 +50,6 @@ dbfile=""
 taxtree="$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat.nohl"
 ## content_caller_qsum.py  uses the non pruned version
 noprune_taxtree=$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat
-## Used by gene_label to assign human readable names to genes
-genefile="$LMAT_DIR/gn_ref2.txt.gz"
 ## Stores tree depth of each taxnomy node
 depthf="$LMAT_DIR/depth_for_ncbi_taxonomy.segment.pruned.dat"
 ## identify the rank for each taxid - uses a keyword "strain" to identify ranks below species
@@ -251,17 +249,10 @@ if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    min_num_reads=10 ## minimum abundance cutoffs to help with Krona plots
    min_avg=0 ## minimum average read score (off)
    ${bin_dir}tolineage.py $taxfile $fastsum_file $fastsum_file.lineage $min_num_reads $min_avg
-
-   if [ -f $LMAT_DIR/plasmid.names.txt ] ; then
-       fsrstr=plasmid,species,genus
-   else
-       fsrstr=species,genus
-   fi
-   ${bin_dir}fsreport.py $fastsum_file $fsrstr $odir
+   ${bin_dir}fsreport.py $fastsum_file plasmid,species,genus $odir
 
 
-  # disabled for now
-#   python ${bin_dir}genusspecies2html.py ${odir}$fastsum_file.species ${odir}$fastsum_file.genus $taxfile > ${odir}$fastsum_file.html
+   python ${bin_dir}genusspecies2html.py ${odir}$fastsum_file.species ${odir}$fastsum_file.genus $taxfile > ${odir}$fastsum_file.html
 
 
 
