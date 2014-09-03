@@ -47,6 +47,7 @@ typedef map<uint32_t,uint32_t> map_t;
 typedef map<uint32_t,float> ufmap_t;
 typedef map<uint16_t, ufmap_t> u_ufmap_t;
 typedef map<uint32_t,uint32_t> hmap_t;
+typedef map<uint32_t,float> hfmap_t;
 typedef map<TID_T,uint32_t> tmap_t;
 
 vector <int> read_len_vec;
@@ -126,6 +127,34 @@ struct ScoreOptions {
    u_ufmap_t _rand_hits; 
    bool _comp_rand_hits;
 };
+
+
+
+static void doMergeF(const vector< map<TID_T,hfmap_t> >& gtrackall, map<uint32_t,ufmap_t>& merge_cnt) {
+   for(unsigned thread = 0; thread < gtrackall.size();  ++thread) {
+      const map<TID_T,hfmap_t>& gt = const_cast<map<TID_T,hfmap_t>&>(gtrackall[thread]);
+      map<TID_T,hfmap_t>::const_iterator it = gt.begin();
+      const map<TID_T,hfmap_t>::const_iterator is = gt.end();
+      for(; it != is; ++it) {
+         TID_T tid = (*it).first;
+         const hfmap_t& hm = (*it).second;
+         hfmap_t::const_iterator it1 = hm.begin();
+         const hfmap_t::const_iterator is1 = hm.end();
+         for(; it1 != is1; ++it1) {
+            uint32_t gid = (*it1).first;
+            float score = (*it1).second;
+            if( merge_cnt.find(gid) == merge_cnt.end() ) {
+               merge_cnt.insert( make_pair(gid,ufmap_t()));
+            }
+            if( merge_cnt[gid].find(tid) == merge_cnt[gid].end() ) {
+               merge_cnt[gid][tid] = score;
+            } else {
+               merge_cnt[gid][tid] += score;
+            }
+         }
+      }
+   }
+}
 
 
 static void doMerge(const vector< map<TID_T,hmap_t> >& gtrackall, map<uint32_t,tmap_t>& merge_cnt) {
@@ -236,7 +265,10 @@ unsigned retrieve_kmer_labels(INDEXDBSZ* table, const char* str, const int slen,
 }
 
 void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs, 
-               const ScoreOptions& sopt, uint16_t max_count, hmap_t& gene_update, hmap_t& gene_update_taxscore, float min_score, int min_kmer, const string& hdr, const taxid_t tid, float tscore, float min_tax_score) {
+               const ScoreOptions& sopt, uint16_t max_count, 
+               hmap_t& gene_update, hmap_t& gene_update_taxscore, 
+               hfmap_t& gene_score_update, hfmap_t& gene_score_update_taxscore, 
+               float min_score, int min_kmer, const string& hdr, const taxid_t tid, float tscore, float min_tax_score) {
 
      const int ri_len = line.length();
      if(ri_len < 0 ) {
@@ -267,9 +299,11 @@ void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs,
            ofs<<"\t"<<-1<<" "<<gsort[0].second<<" "<<cnt<<"\t"<<gl<<" "<<gscore<<" GL"<<endl;
            if( gscore > min_score && (signed)cnt > min_kmer) {
                ++gene_update[gl];
+               gene_score_update[gl] += gscore;
            } 
            if( tscore >= min_tax_score && gscore > min_score && (signed)cnt > min_kmer) {
                ++gene_update_taxscore[gl];
+               gene_score_update_taxscore[gl] += gscore;
            } 
         } else {
            //ofs<<hdr<<"\t"<<line<<"\t"<<tid<<"\t";
@@ -496,6 +530,9 @@ int main(int argc, char* argv[])
       cout<<"set threads="<<n_threads<<endl;
    }
    omp_set_num_threads(n_threads);
+   vector< map<TID_T,hfmap_t> > score_gtrackall(n_threads);
+   vector< map<TID_T,hfmap_t> > score_gtrackall_tax(n_threads);
+
    vector< map<TID_T,hmap_t> > gtrackall(n_threads);
    vector< map<TID_T,hmap_t> > gtrackall_tax(n_threads);
    string line;
@@ -507,7 +544,7 @@ int main(int argc, char* argv[])
    clock.start();
    size_t read_count = 0; 
 
-#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, gtrackall, gtrackall_tax, min_score, min_kmer, min_tax_score)  private(ifs,finished, pos, ofs, ofname, line, read_count)
+#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, gtrackall, gtrackall_tax, score_gtrackall, score_gtrackall_tax, min_score, min_kmer, min_tax_score)  private(ifs,finished, pos, ofs, ofname, line, read_count)
 
    {
      bool useFasta = query_fn.length() > 0 ? true : false;
@@ -591,19 +628,30 @@ int main(int argc, char* argv[])
        if( match_type[0] == 'N' || match_type[0] == 'R' ) {
          taxid=0;
        }
+       map<TID_T,hfmap_t>& score_track = score_gtrackall[omp_get_thread_num()];
+       map<TID_T,hfmap_t>& score_track_tax = score_gtrackall_tax[omp_get_thread_num()];
+
        map<TID_T,hmap_t>& track = gtrackall[omp_get_thread_num()];
        map<TID_T,hmap_t>& track_tax = gtrackall_tax[omp_get_thread_num()];
        hmap_t& gtrack_tax = track_tax[taxid];
        hmap_t& gtrack = track[taxid];
-	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, gtrack, gtrack_tax, min_score, min_kmer, hdr,taxid,tax_score, min_tax_score);
+       hfmap_t& score_gtrack_tax = score_track_tax[taxid];
+       hfmap_t& score_gtrack = score_track[taxid];
+	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, gtrack, gtrack_tax, score_gtrack, score_gtrack_tax, min_score, min_kmer, hdr,taxid,tax_score, min_tax_score);
 	    read_count ++;
      }
      ofs.close();
    }
+
    map<uint32_t,tmap_t>  merge_cnt;
    doMerge(gtrackall,merge_cnt);
    map<uint32_t,tmap_t>  merge_cnt_tax;
    doMerge(gtrackall_tax,merge_cnt_tax);
+
+   map<uint32_t,ufmap_t>  score_merge_cnt;
+   doMergeF(score_gtrackall,score_merge_cnt);
+   map<uint32_t,ufmap_t>  score_merge_cnt_tax;
+   doMergeF(score_gtrackall_tax,score_merge_cnt_tax);
 
    igzstream zipifs(genefile.c_str());
    if( !zipifs ) {
@@ -639,7 +687,9 @@ int main(int argc, char* argv[])
          for(; ti != ts; ++ti) {
             TID_T label = (*ti).first;
             uint32_t cnt = (*ti).second;
-            sum_ofs<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
+            float score = score_merge_cnt[gid][label];
+            float avg=score/(float)cnt;
+            sum_ofs<<avg<<"\t"<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
          }
       } 
       if( merge_cnt_tax.find(gid) != merge_cnt_tax.end() ) {
@@ -648,7 +698,9 @@ int main(int argc, char* argv[])
          for(; ti != ts; ++ti) {
             TID_T label = (*ti).first;
             uint32_t cnt = (*ti).second;
-            sum_ofs_tax<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
+            float score = score_merge_cnt_tax[gid][label];
+            float avg=score/(float)cnt;
+            sum_ofs_tax<<avg<<"\t"<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
          }
       }
 

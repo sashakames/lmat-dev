@@ -54,7 +54,7 @@ struct TObj {
    }
 };
 
-#define isPlasmid(tid) ((tid >=10000000 || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
+#define isPlasmid(tid) (((tid >=10000000 && tid < 11000000) || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
 
 static void loadLowNumPlasmids(const string& file) {
    ifstream ifs_lst(file.c_str());
@@ -240,8 +240,12 @@ int main(int argc, char* argv[])
    string low_num_plasmid_file, k_size_str, rank_check_str;
    hmap_t imap;	
    bool skipHuman=false;
-   while ((c = getopt(argc, argv, "m:f:a:h:n:jb:ye:wp:k:c:v:k:i:d:l:t:sr:o:x:f:g:z:q:V")) != -1) {
+   bool doHumanReg=false;
+   while ((c = getopt(argc, argv, "m:f:a:h:njb:ye:wp:k:c:v:k:i:d:l:t:sr:o:x:f:q:V")) != -1) {
       switch(c) {
+      case 'n':
+         doHumanReg = true;
+         break;
       case 'a':
          rank_check_str = optarg;
          break;
@@ -359,14 +363,14 @@ int main(int argc, char* argv[])
          istrm>>wght_rc>>read_cnt>>tid>>descrip;
          weighted_readcnt.insert(make_pair(tid,wght_rc));
          read_cnts.insert(make_pair(tid,read_cnt)); 
-         if( rank_table[tid] == "species" ) {
+         if( (rank_table[tid] == "species" && !doHumanReg) || (rank_table[tid] == "region" && doHumanReg) ) {
             strain2spec.insert( make_pair(tid,tid) );
          }
          if( !isPlasmid(tid) ) {
             vector<TID_T> localptor;
             tax_tree.getPathToRoot(tid,localptor);
             for(unsigned li = 0; li < localptor.size(); ++li) {
-               if( rank_table[localptor[li]] == "species" ) {
+               if( (rank_table[localptor[li]] == "species" && !doHumanReg) || (rank_table[localptor[li]] == "region" && doHumanReg) ) {
                   strain2spec.insert( make_pair(tid,localptor[li]) );
                   if(VERBOSE) cout<<"save species mapping: "<<tid<<" to "<<localptor[li]<<endl;
                }
@@ -410,7 +414,7 @@ int main(int argc, char* argv[])
        const string read_buff = line.substr(p1+1,p2-p1-1);
        const string taxid_w_scores = line.substr(p4+1,p5-p4-1);
        // would be faster to check for a -1 not a string but read_label *may* need to be modified
-       if( taxid_w_scores.find( "NoDbHits" ) != string::npos || taxid_w_scores.find( "ReadTooShort") != string::npos ) {
+       if( taxid_w_scores[0] == 'N' || taxid_w_scores[0] == 'R') {
          continue;
        }
        istringstream istrm(taxid_w_scores.c_str());
@@ -427,10 +431,10 @@ int main(int argc, char* argv[])
          use_tid = strain2spec[taxid];  
        } 
        // for speed sake, don't bother k-mer counting beyond species,plasmid,genus
-       string rnk = rank_table.find(use_tid) != rank_table.end() ? rank_table[use_tid] : "undef" ;
+       const string& rnk = rank_table.find(use_tid) != rank_table.end() ? rank_table[use_tid] : "undef" ;
        if( rank_check.find(rnk) != rank_check.end() || isPlasmid(taxid) ) { 
           storeKmers(read_buff, k_size, kmer_track[thread], valid_kmer_cnt[thread], use_tid);
-       }
+       } 
        read_count ++;
      }
    }
