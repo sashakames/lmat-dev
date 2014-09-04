@@ -1,4 +1,3 @@
-#!/bin/sh -xvf
 if test $# = 0
 then
     echo "$0: LMAT database auto-download utility"
@@ -120,7 +119,7 @@ else
       fi
    else 
       for suffix in `seq 0 $mx` ; do
-         file=$dbname.$suffix.cmprs
+         file=$dbname.$suffix.$cmprs
          echo "Retrieve $file"
          if [ $cmprs == "lzma" ] ; then
             wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$dbname/$file | unlzma -c >> $outpath/$dbname
