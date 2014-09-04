@@ -168,6 +168,9 @@ for rank in store.keys() :
          name_str=orig[tid]
       else :
          name_str=names[tid]
+      idx =  name_str.find(',') 
+      if idx != -1 :
+         name_str=name_str[idx+1:]
       ### taxid sum
       lst=store[rank][tid]
       ## where plasmids are located at the species node, only report them
