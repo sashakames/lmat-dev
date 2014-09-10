@@ -86,7 +86,7 @@ kmer_set_t *get_kmer_set(FILE *in_kmers_fp, kencode_c &ken )
 
 /* This should really be refactored!! */
 template <class tid_T>
-void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL,  FILE * illum_kmers_fp = NULL, uint32_t adaptor_tid = 0)
+void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL,  FILE * illum_kmers_fp = NULL, uint32_t adaptor_tid = 0, uint32_t HUMAN_FEED_TID = 9606)
 {
 
 
@@ -151,7 +151,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   uint16_t ADAPTOR_16 = 0;
 
   if (p_br_map) {
-    HUMAN_16 = (*p_br_map)[9606];
+    HUMAN_16 = (*p_br_map)[HUMAN_FEED_TID];
     ADAPTOR_16 = (*p_br_map)[adaptor_tid];
   }
 
@@ -215,7 +215,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    if (HUMAN_16)
 	      kmer_table[m_list_offset].page_offset = HUMAN_16;
 	    else
-	      kmer_table[m_list_offset].page_offset = 9606;
+	      kmer_table[m_list_offset].page_offset = HUMAN_FEED_TID;
 	  }
       new_human++;      
       m_list_offset++;
@@ -347,7 +347,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	    assert(fread(&tid, 4, 1, in) == 1);        
 
-	    if (add_human && tid == 9606) {
+	    if (add_human && tid == HUMAN_FEED_TID) {
 	      add_human = false;
 	    }
 
@@ -361,7 +361,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    
 
 	    new_isect++;
-	    const MyPair  pp(species_map[9606], 9606);
+	    const MyPair  pp(species_map[HUMAN_FEED_TID], HUMAN_FEED_TID);
 	    taxid_q.push(pp);
 	    matched_in--;
 	  }
@@ -433,7 +433,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       // we need to handle the case where a single tid matches a human k-mer
 
-      if (add_human && tid != 9606) {
+      if (add_human && tid != HUMAN_FEED_TID) {
 	
 	doubles++;
 	matched_in--;  // modify the counters
@@ -485,7 +485,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	  mcpyinsdb(tid, 4);
 	  m_cur_offset += 4;
-	  tid = 9606;
+	  tid = HUMAN_FEED_TID;
 	  mcpyinsdb(tid, 4);
 	  m_cur_offset += 4;
 
@@ -628,7 +628,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  ext_taxids++;
 	  assert(fread(&tid, 4, 1, in) == 1);        
 	  
-	  if (tid == 9606)
+	  if (tid == HUMAN_FEED_TID)
 	    add_human = false;
 
 	  if (add_human) {
@@ -662,7 +662,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       if (add_human)  {
 
-	tid = 9606;
+	tid = HUMAN_FEED_TID;
 
 	if (p_br_map) {
 
@@ -748,8 +748,8 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 
 }
-template <class tid_T>
- void SortedDb<tid_T>::load_struct(int idx_config,  index_config &ic )
+
+void load_struct(int idx_config,  index_config &ic )
 
  {
 

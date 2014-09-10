@@ -54,6 +54,7 @@ vector <int> read_len_avgs;
 
 #define USE_KPATH_IDS 0
 
+index_config index_config_consts;
 
 bool badGenomes(uint32_t tid) {
    bool isBad=false;

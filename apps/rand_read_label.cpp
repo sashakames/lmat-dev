@@ -52,6 +52,8 @@ vector <int> read_len_avgs;
 
 #define _USE_KPATH_IDS 0
 
+index_config index_config_consts;
+
 
 my_map tid_rank_map;
 id_convback_map_t conv_map;
@@ -621,6 +623,9 @@ int random_roll = dice_roller();
    //}
 
 #endif
+
+
+
    //cout << "End kmer DB load\n";
    //cout << "DB size is " << table->size() << endl;
    if( k_size <= 0 ) {
@@ -629,6 +634,10 @@ int random_roll = dice_roller();
    }
    string line;
    /* ASSUME READ FITS ON ONE LINE FOR NOW!! */
+
+   
+   cout << "Setting config for rand label\n";
+   taxtable->set_config();
 
    ofstream ofs;
 

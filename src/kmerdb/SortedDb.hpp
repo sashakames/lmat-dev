@@ -76,6 +76,8 @@ typedef   __gnu_cxx::hash_set<uint64_t> kmer_set_t;
 
 extern index_config index_config_consts;
 
+void load_struct(int idx_config,  index_config &ic );
+
 namespace metag {
 
 class MyPair
@@ -112,9 +114,9 @@ public:
 
 public:
 
-    void load_struct(int idx_config,  index_config &ic );
+    
 
-
+    void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool, FILE *, FILE *, uint32_t, uint32_t );
 
     SortedDb(size_t n_kmers, size_t space_size, int idxcfg) 
 
@@ -125,6 +127,9 @@ public:
       idx_config=idxcfg;
       
       set_config();
+
+
+
 
 
 
@@ -150,7 +155,6 @@ public:
 
 
 
-    void add_data(const char *, size_t, bool, bitreduce_map_t *, my_map &, int, bool, FILE *, FILE *, uint32_t);
 
 
     bool begin_(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out, uint8_t &page_out) {
