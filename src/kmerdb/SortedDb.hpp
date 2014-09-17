@@ -448,7 +448,7 @@ bool begin_20(uint64_t kmer_in, uint16_t &taxid_count_out,  uint32_t &offset_out
   }
          
   size_t size() {
-    return m_n_kmers;
+    return m_list_offset;
   }
 
 private:
