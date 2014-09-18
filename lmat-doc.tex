@@ -46,6 +46,20 @@
 \tableofcontents
 
 \section{What's New in Version \lmatver}
+
+\begin{itemize}
+\item
+Updated reference databases
+\item
+Support for world-region classification
+\item
+Fixed bug in fs-report of genus for consistent output
+
+\end{itemize}
+
+{\it Earlier updates:}
+Version 1.2.3
+
 \begin{itemize}
 \item 
 Database build supports human and select k-mer inputs.  Read on for more details.
@@ -61,8 +75,6 @@ run\_lmat.sh has been split into three shell scripts for each subcomponent of LM
 
 
 \end{itemize}
-
-{\it Earlier updates:}
 
 Version 1.2.2
 \begin{itemize} 
@@ -145,12 +157,14 @@ Our approach is divided into two steps:
      ("Full" refers to a database that contains k-mers from
      all viral, prokaryote, fungal and protist genomes.)
 
-     Our current ``Full'' database is 373 GB in size, smaller than
+     Our current ``Full'' database is 460 GB in size, smaller than
      what we used for our July 2013 publication in Bioinformatics due
-     to several of the key optimizations within this release.  We have
-     thre smaller ``marker'' database available for ftp download.  See
-     the \nameref{sec:downloads} Section for more information about
-     the various LMAT databases availble for download.
+     to several of the key optimizations within this release, yet
+     larger than previous database releases due to a large increase in
+     available reference sequences.  We have several smaller
+     ``marker'' database available for ftp download.  See the
+     \nameref{sec:downloads} Section for more information about the
+     various LMAT databases availble for download.
 
      An additional download required for running LMAT is the
      collection of ``runtime-input'' files needed to go along with the
@@ -165,10 +179,8 @@ Our databases are available for download from the ftp site:
 
    First download the external datafiles needed to run LMAT, these include the required NCBI taxonomy information, gene annotation and other support data.
 
-   There are three marker libraries currently available, which are
-   roughly characterized as being small (16GB), medium (50GB) or large
-   (80GB) in size.  Generally, it is preferable to use the largest
-   library that will fit in memory.
+   The most recent marker library is available with or without human k-mers included and are under 20 GB.
+
 
 
 \begin{verbatim}
@@ -181,16 +193,20 @@ Our databases are available for download from the ftp site:
    #  set the environment variable to point to the location
    setenv LMAT_DIR=<LMAT-root-dir>/runtime_inputs
 
-   #  Download the marker libary, set <db-name> to kML-18mer-medium
-   #  or kML-18mer-small.  (Larger libraries availble)
+   #  Download the marker libary, set <db-name> to kML.v4-14.20.g10.db 
+   #  or kML+Human.v4-14.20.g10.db
+
    ./get_db.sh <db-name> <data-dir>
 
-   #  Download the gene annotation libary, set <db-name> 
-   #  to gene-20mer (for gene annotation only)
-   ./get_db.sh <db-name> <data-dir>
+   #  Download the gene annotation libary, set <db-name> to
+   #  lmat.genes.7-14.db (for gene annotation only, latest requires
+   #  128 GB DRAM or SSD) ./get_db.sh <db-name> <data-dir>
 
    # Note that LMAT uses a .db extension for its database files,
    # omitted in the command syntax above
+
+
+
 
 \end{verbatim}     
          
@@ -320,30 +336,32 @@ Step 1 must be run prior to running the optional steps 2A and 2B. Steps 2A and 2
 Note that output can vary slightly depending on the choice of the database.
 
 ## 1) Assign taxonomic labels to each read and report summary of organism contents
-./run_rl.sh --db_file=<path-to-library/kML.18mer.16bit.db --query_file=../example/simple_list.1000.fna --odir=../tmp --genedb_file=<path-to-gene-database>/gene.20mer.db --threads=8
+
+./run_rl.sh --db_file=<path-to-library/kML+Human.v4-14.20.g10.db --query_file=../example/simple_list.1000.fna --odir=../tmp --threads=8
 
 # Output files:
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.species - Bins reads by species rank and reports the top strain match (where possible)
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.plasmid - Bins reads assigned to plasmids.
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.genus - Bin reads by genus rank
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary - Bins for the raw LMAT search results, read bins are in rank flexible categories
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.[0-7].out - individually taxonomically labeled reads; NOTE these files will take up substantial disk space as more runs are completed. They are retained for quick access for pulling reads of interest for further analysis 
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary.species - Bins reads by species rank and reports the top strain match (where possible)
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary.plasmid - Bins reads assigned to plasmids.
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary.genus - Bin reads by genus rank
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary - Bins for the raw LMAT search results, read bins are in rank flexible categories
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.[0-7].out - individually taxonomically labeled reads; NOTE these files will take up substantial disk space as more runs are completed. They are retained for quick access for pulling reads of interest for further analysis 
+
 
 ## 2A) Assign gene identifiers to each read a report sumary of gene contents
-find ../tmp -name simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst
+find ../tmp -name simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst
 ./run_gl.sh --db_file=<path-to-gene-database/gene.20mer.db --ilst=../tmp/rl_output.flst --odir=../tmp 
 
 # Output files:
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output.0.01.20.genesummary - gene content summary
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output[0-7].out - individually gene labeled reads
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output.0.01.20.genesummary - gene content summary
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output[0-7].out - individually gene labeled reads
 
 ## 2B) Assign gene identifiers to each read a report sumary of gene contents
-find ../tmp -name simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst
-./run_cs.sh --db_file=<path-to-gene-database/gene.20mer.db --ilst=../tmp/rl_output.flst --odir=../tmp --filesum=../tmp/simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary
+find ../tmp -name simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst
+./run_cs.sh --db_file=<path-to-gene-database/gene.20mer.db --ilst=../tmp/rl_output.flst --odir=../tmp --filesum=../tmp/simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary
 
 # Output files with supplementary information
 simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output.0.30.nomatchsum - Count reads not assigned a taxonomic ID
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.summ.leftover - Count reads / taxnomic IDs exluded from the final *.summ file (due to not meeting minimum score/abundance thresholds)
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary.summ.leftover - Count reads / taxnomic IDs exluded from the final *.summ file (due to not meeting minimum score/abundance thresholds)
 
 # Description of tab delimited columns for each type of output file
 *.fastsummary file - Weighted (by taxid assigned score) read count, non-weighted read count, NCBI taxonomy identifier, taxonomy rank and name
@@ -358,7 +376,7 @@ simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.summ.lefto
 # Additional example run configurations
 
 # run just the full database
-./run_rl.sh --db_file=<path-to-database>/m9.0904.16 --query_file=<your-fasta-file> --odir=<path-to-output-directory>
+./run_rl.sh --db_file=<path-to-database>/lmat-4-14.20mer.db --query_file=<your-fasta-file> --odir=<path-to-output-directory>
 \end{verbatim}
 
 Note that the marker libraries have a smaller range of values making 0 (or values close to 0) the best cutoff.  For the full libraries the range of values is larger giving the user some flexibility to choose higher cutoff values of 1 or 2 to select only the highest confidence tax calls (although 0 is still a reasonable default cutoff).  Choice of cutoff depends on the type of sample and analysis. The default (threshold of 0) is meant to maximize sensitivity to detect more distantly related organisms.  It is recommended to run with 0 cutoff first, and sort the *.species file by the first column (average read score), which will give you an indication for the range of read scores and where to set the cutoff higher to reduce the potential for false positive calls.
@@ -432,14 +450,39 @@ If using MPI (optional; only used in some drivers when building
 \end{enumerate}
 
 \section{Downloadable Databases}
+\label{sec:downloads}
+
 
 LMAT has several prebuilt databases available for download.  Use the \texttt{bin/get\_db.sh} utility to automatically perform downloads from the ftp site, mentioned above, using any of the following databases.  
+
+Note that the database organization changed between releases.  Current databases use the same file and key names.  
+
+Current databases:
+
+
+\begin{tabular}{| c | c | c |}
+\hline
+Keyname/filename & Description & File size(GB) \\
+\hline
+lmat-4-14.20mer.db & Full-sized database for extensive read binning & 460 \\
+\hline
+kML.v4-14.20.g10.db & Microbial marker database (small database for fast microbial profiling) & 17 \\
+\hline
+kML+Human.v4-14.20.g10.db & Microbial marker database with explicit human read tagging (small database for fast microbial profiling) & 18 \\
+\hline
+lmat.genes.7-14.db & Gene database for gene name binning & 120 \\
+\hline
+lmat-world-region & Database for binning human reads by world region & 2 \\
+\hline
+\end{tabular}
+
+Previous databases (using 9/4/13 sequence data):
 
 \begin{tabular}{| c | c | c |}
 \hline
 Database key-name (for get\_db script) & Filename & File size (GB) \\
 \hline
-kML-18mer-large & kML.18mer.no_prune.16.db & 80 \\
+kML-18mer-large & kML.18mer.no\_prune.16.db & 80 \\
 \hline
 kML-18mer-medium & kML.18mer.16bit.db  & 52 \\
 \hline
@@ -790,11 +833,11 @@ You can specify multiple taxids to be placed in one fasta file, and/or place mul
 \begin{verbatim}
 Using the example included with the distribution try the following in your test working directory:
 echo 136845 > tid.txt
-../bin/pull_reads_mc.sh --idfile=tid.txt --file_lst=simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.flst
+../bin/pull_reads_mc.sh --idfile=tid.txt --file_lst=simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.flst
 \end{verbatim}
 
 The script will create a fasta file with the selected reads, creating a filename from the input information. Output should be a fasta file with the name (names differ with the different choice of database)
-simple_list.1000.fna.kML.18mer.16bit.db.tid.txt.136845.fna
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.tid.txt.136845.fna
 
 A second utility script is included called {build_taxid_lst.sh}, which allows the user to build a taxid list using a NCBI taxonomy string key word of the form rank,rank_value.
 For example kingdom,Virus will retrieve all reads explicitly tagged as viral reads in the user specified *.fastsummary files (output generated by LMAT's {read_label} and {losummary_fast_mc.sh}
@@ -810,7 +853,7 @@ ls -1 *.fastsummary > fastsummary.file_lst
 \end{verbatim}
 
 The script will create a text file with the taxonomic IDs, creating a filename from the input information. For the example above the output file should be:
-simple_list.1000.fna.kML.18mer.16bit.db.lo.rl_output.0.30.fastsummary.viruses.idtxt
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary.viruses.idtxt
 
 
 
