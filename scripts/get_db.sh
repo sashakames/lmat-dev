@@ -1,141 +1,173 @@
-if test $# = 0
-then
-    echo "$0: LMAT database auto-download utility"
-    echo ""
-    echo ""
-    echo "Usage: $0 <database name|inputs name> [Destination path for database/input files]"
-    echo "Example databases"
-    echo "kML.v4-14.20.g10.db  - Microbial marker database (small database for fast microbial profiling"
-    echo "kML+Human.v4-14.20.g10.db  - Microbial marker database with explicit human read tagging (small database for fast microbial profiling)"
-    echo "lmat-4-14.20mer.db  - Fullsized database for extensive read binning"
-    echo "lmat.genes.7-14.db  - Gene database for gene name binning"
-    echo "lmat-world-region  - Database for binning human reads by world region"
-    echo ""
-    echo "For all databases except world-region, use '$0 inputs 04072014 to download the needed auxilliary data"
-    echo "For world-region use '$0 inputs world-region"
-    echo ""
-    echo "Legacy usage for older databases"
-    echo "Usage: $0 <kML-18mer-large|kML-18mer-medium|kML-18mer-small|gene-20mer|kFull-20mer|inputs> [Destination path for database/input files]"
-    echo ""
-    echo "'inputs' downloads and extracts the LMAT 'runtime_inputs' files."
-    echo "Please see LMAT documentation for more details."
-    exit
+#!/bin/sh
+
+dtype=db
+outdir=.
+name=kML.v4-14.20.g10.db
+usage="
+    $0: LMAT database auto-download utility
+    Usage: $0 --dtype=<inputs|db> --name=<db_name> --outdir=<Destination path for database/input files>
+
+    option list:
+    --dtype=$dtype (default) (either inputs for runtime inputs or db for database)
+    --outdir=$outdir (default) (place downloaded data in this directory
+    --name=$name (default) (name of database or runtime inputs data)
+
+    example usage:
+
+    # download taxonomy data and auxillary files
+    $0 --dtype=inputs --name=04072014 --outdir=.
+
+    # download marker database
+    $0 --dtype=db --name=kML.v4-14.20.g10.db --outdir=.
+      
+
+    Current databases:
+    kML.v4-14.20.g10.db  - Microbial marker database (small database for fast microbial profiling
+    kML+Human.v4-14.20.g10.db  - Microbial marker database with explicit human read tagging (small database for fast microbial profiling)
+    lmat-4-14.20mer.db  - Fullsized database for extensive read binning
+    lmat.genes.7-14.db  - Gene database for gene name binning
+    lmat-world-region  - Database for binning human reads by world region
+
+    Current runtime input files:
+    04072014 - use for all databases except world-region
+    world-region - use for world-region 
+
+    Legacy names for older databases
+    <kML-18mer-large|kML-18mer-medium|kML-18mer-small|gene-20mer|kFull-20mer|inputs> [Destination path for database/input files]
+    runtime_inputs (for runtime inputs data)
+
+    Please see LMAT documentation for more details.
+"
+
+if test $# = 0; then
+   echo "${usage}"
+   exit 1
 fi
 
-if test $# = 1
-then
-outpath="."
-else
-outpath=$2
-fi
+while test -n "${1}"; do
+   opt=${1}
+   optarg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
 
-dbname=$1
+   case $opt in
+   --dtype=*)
+      dtype=$optarg;;
+   --outdir=*)
+      outdir=$optarg;;
+   --name=*)
+      name=$optarg;;
+   *)
+      echo "Unrecognized argument [$opt]"
+      echo "${usage}"
+      exit 1
+   esac
+   shift
+done
 
-if ! test -d $outpath; then
-    echo "$outpath not found, creating directory"
-    mkdir $outpath
-    if ! test -d $outpath; then
+if ! test -d $outdir; then
+    echo "$outdir not found, creating directory"
+    mkdir $outdir
+    if ! test -d $outdir; then
 	echo Could not create directory for database download.  Please ensure that the parent directory name is correct.
 	exit 1
     fi
 fi
 
 
-if [ $dbname == "kML-18mer-medium" ]
+if [ $name == "kML-18mer-medium" ]
 then
-dbname=kML.18mer.16bit
+name=kML.18mer.16bit
 for suffix in a b c d e
 do
-    wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/18merML/$dbname.db.$suffix.gz | gunzip -c >> $outpath/$dbname.db
+    wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/18merML/$name.db.$suffix.gz | gunzip -c >> $outdir/$name.db
 echo "Part $suffix out of 5 done"
 done
-echo Download complete.  When running LMAT set --db_file=$outpath/$dbname.db
+echo Download complete.  When running LMAT set --db_file=$outdir/$name.db
 
-elif [ $dbname == "kML-18mer-small" ]
+elif [ $name == "kML-18mer-small" ]
 then
-dbname=kML.18mer.16bit.reduced
+name=kML.18mer.16bit.reduced
 echo downloading...
-wget -q -O -  ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/18merML/$dbname.db.gz | gunzip -c > $outpath/$dbname.db
-echo Download complete.  When running LMAT set --db_file=$outpath/$dbname.db
+wget -q -O -  ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/18merML/$name.db.gz | gunzip -c > $outdir/$name.db
+echo Download complete.  When running LMAT set --db_file=$outdir/$name.db
 
-elif [ $dbname == "gene-20mer" ]
+elif [ $name == "gene-20mer" ]
 then
-dbname=gene.20mer
+name=gene.20mer
 for suffix in a b c d e
 do
-wget -q -O -  ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/GeneDB/$dbname.db.a$suffix.gz | gunzip -c >> $outpath/$dbname.db
+wget -q -O -  ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/GeneDB/$name.db.a$suffix.gz | gunzip -c >> $outdir/$name.db
 echo "Part $suffix out of 5 done"
 done
-echo Download complete.  When running LMAT set --db_file=$outpath/$dbname.db
-elif [ $dbname == "kFull-20mer" ]
+echo Download complete.  When running LMAT set --db_file=$outdir/$name.db
+elif [ $name == "kFull-20mer" ]
 then
 
    mx=19
    for suffix in `seq 0 $mx` ; do
       file=kFull.20mer.g1000.part.$suffix.lzma
       echo "Retrieve $file"
-      wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/20merFullDB/$file | unlzma -c >> $outpath/m9.20mer.16bit.g1000.db
+      wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/20merFullDB/$file | unlzma -c >> $outdir/m9.20mer.16bit.g1000.db
       echo part $suffix out of $mx done
-      size=`stat $outpath/m9.20mer.16bit.g1000.db | grep Size | awk '{print $2}'`
+      size=`stat $outdir/m9.20mer.16bit.g1000.db | grep Size | awk '{print $2}'`
       if [ $size -gt 400000000000 ] ; then
-         truncate -s 400GB $outpath/m9.20mer.16bit.g1000.db
+         truncate -s 400GB $outdir/m9.20mer.16bit.g1000.db
          break
       fi
    done
-   echo Download complete.  When running LMAT set --db_file=$outpath/m9.20mer.16bit.g1000.db 
+   echo Download complete.  When running LMAT set --db_file=$outdir/m9.20mer.16bit.g1000.db 
 
-elif [ $dbname == "kML-18mer-large" ]
+elif [ $name == "kML-18mer-large" ]
 then
 for suffix in `seq 0 7` ; do
-wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/18merML/kML.18mer.no_prune.16bit.part.$suffix.lzma | unlzma -c >> $outpath/kML.18mer.no_prune.16bit.db
+wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/18merML/kML.18mer.no_prune.16bit.part.$suffix.lzma | unlzma -c >> $outdir/kML.18mer.no_prune.16bit.db
 echo part $(( 1 + $suffix )) out of 8 done
 done
-echo Download complete.  When running LMAT set --db_file=$outpath/kML.18mer.no_prune.16bit.db 
+echo Download complete.  When running LMAT set --db_file=$outdir/kML.18mer.no_prune.16bit.db 
 
-elif [ $dbname == "inputs" ]
+elif [ $dtype == "inputs" ]
 then
-echo "Downloading LMAT runtime-input files to $outpath"
+echo "Downloading LMAT runtime-input files to $outdir"
 input_file=$2
-wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/runtime_inputs/$input_file.tgz | tar -C $outpath/ -zxvf - 
-abspath=`readlink -f $outpath`
+wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/runtime_inputs/$input_file.tgz | tar -C $outdir/ -zxvf - 
+abspath=`readlink -f $outdir`
 echo "For LMAT to run correctly, please set the LMAT_DIR environment variable to $abspath"
 
 else
    ## Now assume naming convention to avoid updating this file for evry new database
-   wget -q -O $outpath/dbinfo ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$dbname/dbinfo 
-   mx=`head -1 $outpath/dbinfo | cut -f1`
-   cmprs=`head -1 $outpath/dbinfo | cut -f2`
-   mbytes=`head -1 $outpath/dbinfo | cut -f3`
-   rm -f $outpath/dbinfo
+   wget -q -O $outdir/dbinfo ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/dbinfo 
+   mx=`head -1 $outdir/dbinfo | cut -f1`
+   cmprs=`head -1 $outdir/dbinfo | cut -f2`
+   mbytes=`head -1 $outdir/dbinfo | cut -f3`
+   rm -f $outdir/dbinfo
    echo "Debug: $mx $cmprs $mbytes"
    if [ $mx == -1 ] ; then
-      file=$dbname.$cmprs
+      file=$name.$cmprs
       if [ $cmprs == "lzma" ] ; then
-         wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$dbname/$file | unlzma > $outpath/$dbname
+         wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/$file | unlzma > $outdir/$name
       elif [ $cmprs == "gz" ] ; then 
-         wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$dbname/$file | gunzip > $outpath/$dbname
+         wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/$file | gunzip > $outdir/$name
       else 
          echo "Unrecognized compression, failed to download"
       fi
    else 
       for suffix in `seq 0 $mx` ; do
-         file=$dbname.$suffix.$cmprs
+         file=$name.$suffix.$cmprs
          echo "Retrieve $file"
          if [ $cmprs == "lzma" ] ; then
-            wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$dbname/$file | unlzma -c >> $outpath/$dbname
+            wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/$file | unlzma -c >> $outdir/$name
          elif [ $cmprs == "gz" ] ; then 
-            wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$dbname/$file | gunzip -c >> $outpath/$dbname
+            wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/$file | gunzip -c >> $outdir/$name
          else 
             echo "Unrecognized compression, failed to download"
          fi
          echo part $suffix out of $mx done
-         size=`stat $outpath/$dbname | grep Size | awk '{print $2}'`
+         size=`stat $outdir/$name | grep Size | awk '{print $2}'`
          if [ $size -gt $mbytes ] ; then
-            truncate -s $mbytes $outpath/$dbname
+            truncate -s $mbytes $outdir/$name
             break
          fi
       done
-      echo Download complete.  When running LMAT set --db_file=$outpath/$dbname
+      echo Download complete.  When running LMAT set --db_file=$outdir/$name
    fi
 
 fi
