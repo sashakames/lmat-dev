@@ -252,7 +252,7 @@ if [ ! -e $fastsum_file ] || [ $overwrite == 1 ] ; then
    ${bin_dir}fsreport.py $fastsum_file plasmid,species,genus $odir
 
 
-   python ${bin_dir}genusspecies2html.py ${odir}$fastsum_file.species ${odir}$fastsum_file.genus $taxfile > ${odir}$fastsum_file.html
+#   python ${bin_dir}genusspecies2html.py ${odir}$fastsum_file.species ${odir}$fastsum_file.genus $taxfile > ${odir}$fastsum_file.html
 
 
 

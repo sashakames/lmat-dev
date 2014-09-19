@@ -356,11 +356,12 @@ simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.[0-7].out - individu
 
 ## 2A) Assign gene identifiers to each read a report sumary of gene contents
 find ../tmp -name simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst
-./run_gl.sh --db_file=<path-to-gene-database/gene.20mer.db --ilst=../tmp/rl_output.flst --odir=../tmp 
+./run_gl.sh --db_file=<path-to-gene-database/gene.20mer.db --ilst=../tmp/rl_output.flst --odir=../tmp --filesum=../tmp/simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary
 
 # Output files:
-simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output.0.01.20.genesummary - gene content summary
+simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output.0.1.20.genesummary - gene content summary
 simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.ras.flst.gene.20mer.db.rl_output[0-7].out - individually gene labeled reads
+# modifies .genus, .species, etc.
 
 ## 2B) Assign gene identifiers to each read a report sumary of gene contents
 find ../tmp -name simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output[0-9]\*.out > ../tmp/rl_output.flst

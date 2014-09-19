@@ -160,7 +160,7 @@ if [ $genedbfile ] ; then
          cat $res | sort -k1gr,1gr > tmp.$$
          mv tmp.$$ $res 
          min_map_reads=10
-         if [ -e $fs_file ] ; then
+         if [ ! -z $fs_file ] ; then
             ${bin_dir}fsreport.py $fs_file $rank_report $odir $res2 $min_map_reads
          fi
       fi
