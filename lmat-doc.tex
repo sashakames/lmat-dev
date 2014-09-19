@@ -51,9 +51,15 @@
 \item
 Updated reference databases
 \item
+Support cross links between taxonomy profiles and gene label profiles
+
+\item
 Support for world-region classification
 \item
 Fixed bug in fs-report of genus for consistent output
+
+\item
+Fixed bug in reported k-mer count of input database
 
 \end{itemize}
 
@@ -188,7 +194,8 @@ Our databases are available for download from the ftp site:
 
    cd <LMAT-root-dir>/bin
 
-   ./get_db.sh inputs <LMAT-root-dir>/runtime_inputs
+   # <name-of-input> reflects current taxonomy data used - current version is: 04072014
+   ./get_db.sh --dtype=inputs --name=<name-of-input>  --outdir=<LMAT-root-dir>/runtime_inputs
 
    #  set the environment variable to point to the location
    setenv LMAT_DIR=<LMAT-root-dir>/runtime_inputs
@@ -196,7 +203,7 @@ Our databases are available for download from the ftp site:
    #  Download the marker libary, set <db-name> to kML.v4-14.20.g10.db 
    #  or kML+Human.v4-14.20.g10.db
 
-   ./get_db.sh <db-name> <data-dir>
+   ./get_db.sh --dtype=db --name=<db-name> <data-dir>
 
    #  Download the gene annotation libary, set <db-name> to
    #  lmat.genes.7-14.db (for gene annotation only, latest requires
@@ -364,14 +371,31 @@ simple_list.1000.fna.kML.18mer.16mit.db.lo.rl_output.0.30.nomatchsum - Count rea
 simple_list.1000.fna.kML+Human.v4-14.20.g10.db.lo.rl_output.0.30.fastsummary.summ.leftover - Count reads / taxnomic IDs exluded from the final *.summ file (due to not meeting minimum score/abundance thresholds)
 
 # Description of tab delimited columns for each type of output file
+
 *.fastsummary file - Weighted (by taxid assigned score) read count, non-weighted read count, NCBI taxonomy identifier, taxonomy rank and name
 *.species - Average read score, Total weighted read count, Count of reads assigned to organism, NCBI taxnomic species ID, taxonomic name, Total strain read score, Count of reads assigned to top strain, NCBI taxonomy strain ID, taxonomy name
 (When strain information is not reported it means no strain information could be recovered)
 *.genus - Average read score, Total weighted read count, Count of reads assigned to organism, NCBI taxnomic genus ID, taxonomic name
 *.plasmid - Average read score, Total weighted read count, Count of reads assigned to organism, taxnomic plasmid ID (frequently a custom LMAT ID), taxonomic name (frequently a fasta header from the original plasmid source sequence)
 
+*.nomatchsum - gives basic information on all reads not included in the taxonomic profile.
+
+ReadTooShort  -- Gives number of reads with too few valid k-mers (minimum of 30 required)
+NoDbHits -- Number of reads with no matching k-mers in the database.
+LowScore -- Number of reads assigned a taxonomic label with a score below the minimum threshold (0)
+
 *.genesummary - read count assigned to gene, LMAT NCBI taxonomic ID, NCBI taxonomic ID for source gene, NCBI Gene ID, NCBI Locus tag, description, gene type and protein accession.
 *.lo.rl_output[0-9]*.out - query read identifier, query read sequence, scoring statistics (average,standard deviation, # of k-mers), list of taxid,score pairs, final LMAT taxid call with score and match type. Match types are MultiMatch (lowest common ancestor), DirectMatch (best match), NoMatch (no database match).
+
+
+Note when run\_gl.sh is run - and the *fastsummary file is provided as input, the script will regenerate the *species file with additional gene information as follows:
+Column 4) Pcnt . rRNA - Percentage of reads in bin that were assigned to a rRNA gene.
+
+Column 5) No. Genes - Number of genes associated with the taxonomic bin. Note this number must be viewed with caution, since multiple closely related genes may be reported but may reflect a single gene.
+
+Column 6) No. Gene Reads - Number of reads in bin that were assigned to a gene.
+
+The original columns starting at column 4 are shifted over to the right.
 
 # Additional example run configurations
 
@@ -464,7 +488,7 @@ Current databases:
 \hline
 Keyname/filename & Description & File size(GB) \\
 \hline
-lmat-4-14.20mer.db & Full-sized database for extensive read binning & 460 \\
+lmat-4-14.20mer.db & Full-sized database for extensive read binning (LMAT-Grand) & 460 \\
 \hline
 kML.v4-14.20.g10.db & Microbial marker database (small database for fast microbial profiling) & 17 \\
 \hline
@@ -514,27 +538,41 @@ download \texttt{gi\_taxid\_nucl.dmp.gz} from ftp://ftp.ncbi.nih.gov/pub/taxonom
 \begin{verbatim}
 mkdir WORK
 
-#assume your reference genome fasta file is: WORK/test.fa.  
+#assume your reference genome fasta file is: WORK/test.fa.
 #Note to get started we provide a list of genome files from fall 2012, which we used for our initial database
 #the identifiers can be obtained here:  wget ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/microbe2.gi.header_table.gz
 #currently the actual genomes sequences must be retrieved from NCBI
 
-prepare_fasta.py WORK/test.fa WORK
-kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 0
-kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 1
-kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 2
-kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 3
-tax_histo_fast_limited -o WORK/out.tax_hist.0 -d WORK/kmerDB.0 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
-tax_histo_fast_limited -o WORK/out.tax_hist.1 -d WORK/kmerDB.1 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
-tax_histo_fast_limited -o WORK/out.tax_hist.2 -d WORK/kmerDB.2 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
-tax_histo_fast_limited -o WORK/out.tax_hist.3 -d WORK/kmerDB.3 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat
+Individual genome sequences must be mapped to a taxonomy identifier
+The mapping is specified as a tab delimited file with the first column containing the tax id and the second
+column should contain the header associated with sequence stored in the input fasta file (WORK/test.fa below)
+For example:
+418127   >ref|NC_009782.1|gnl|NCBI_GENOMES|21340|gi|156978331|Staphylococcus aureus subsp. aureus Mu3, complete genome
 
-# generate the file containing list of binary source data files
+build_header_table.py WORK/test.fa GenomeToTaxID.txt WORK
+## WORK/test.fa.int file will be generated as part of the output
 
-ls WORK/*.bin > WORK/table_input_list
- 
-make_db_table -i WORK/table_input_list -o WORK/my_table -k 20
+The current version of LMAT requires 16-bit taxonomy identifers (to save space) so a 32-16 bit mapping must be created
+If the mapping from sequence fasta headers to tax ids is store in a file tax_gen_map.txt
+cut -f1 tax_gen_map.txt > tax_32bit_ids.txt
+Tid16_getMapping.py tax_32bit_ids.txt ../runtime_inputs/ncbi_taxonomy.data tax_32to16.txt
+The mapping will now be contained in the file tax_32to16.txt
 
+
+ kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 0
+ kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 1
+ kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 2
+ kmerPrefixCounter -i WORK/test.fa.int -k 20 -o WORK/kmerDB -l 1 -f 3
+ tax_histo -o WORK/out.tax_hist.0 -d WORK/kmerDB.0 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat -f 32
+ tax_histo -o WORK/out.tax_hist.1 -d WORK/kmerDB.1 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat -f 32
+ tax_histo -o WORK/out.tax_hist.2 -d WORK/kmerDB.2 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat -f 32
+ tax_histo -o WORK/out.tax_hist.3 -d WORK/kmerDB.3 -g WORK/test.fa.gi_to_tid_map -t ../runtime_inputs/ncbi_taxonomy.dat -f 32
+
+ # generate the file containing list of binary source data files
+
+ ls WORK/*.bin > WORK/table_input_list
+
+ make_db_table -i WORK/table_input_list -o WORK/my_table -k 20 -f tax_32to16.txt
 \end{verbatim}
 
 \subsection{How to update the taxonomy}
@@ -815,8 +853,10 @@ example usage:
 losummary_fast_mc.sh --file_lst=<list_of_output_files_from_read_label.txt> --min_score=<new minimum score>
 <min_score> if user wants to pick up more distantly related hits, try a value of -0.5 or -1.0,
 if the user wants to focus on high confidence hits try a value of 1.0
-
 \end{verbatim}
+
+A similar script is available for re-binning genes with a different threshold.
+type gsummary_mc.sh for usage.
 
 \subsection{Read Analysis}
 A common post processing step is to retrieve reads for a specific organism or set of taxonomic IDs.
@@ -886,7 +926,7 @@ There is now a gene identification step.  The user can download the gene databas
 
 \subsection{16-bit ID Space}
 
-The make\_db\_table utility contains an option to store taxonomy IDs as 16-bit values.  The downloadable databases are built with 16-bit taxonomy id fields.  The instructions given above to use those reference databases refer to a file that maps traditional 32-bit taxonomy IDs (eg. from NCBI) to 16-bit IDs.  This is in tht run\_lmat.sh helper script or the '-f' option to the read\_label binary executable.
+The make\_db\_table utility contains an option to store taxonomy IDs as 16-bit values.  The downloadable databases are built with 16-bit taxonomy id fields.  The instructions given above to use those reference databases refer to a file that maps traditional 32-bit taxonomy IDs (eg. from NCBI) to 16-bit IDs.  This is in the run\_rl.sh helper script or the '-f' option to the read\_label binary executable.
 
 In order to use custom 16 bit IDs within a custom reference database, this mapping file  needs to be generated from file containing the complete list of taxonomy IDs.  If 32-bit IDs are adequate or necessary due to the ID space, you can skip most of these steps.  However, you should ensure that you have compiled the LMAT binaries with the following environment variable set:  \texttt{TAXID\_SIZE=32}  
 
@@ -895,7 +935,7 @@ In order to use custom 16 bit IDs within a custom reference database, this mappi
 Ensure you have compiled (make) LMAT with the following enviroment variable set:  \texttt{TAXID\_SIZE=16}
 Use the -f <filename> option with make\_db\_table to specify the filename when creating the database index.
 
-Run LMAT (read\_label) with -f <filename> option to specify the mapping table or set the file in the run\_lmat.sh helper script.
+Run LMAT (read\_label) with -f <filename> option to specify the mapping table or set the file in the run\_rl.sh helper script.
 
 \subsection{Taxonomy list pruning}
 
