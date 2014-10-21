@@ -11,6 +11,7 @@ usage="
     --dtype=$dtype (default) (either inputs for runtime inputs or db for database)
     --outdir=$outdir (default) (place downloaded data in this directory
     --name=$name (default) (name of database or runtime inputs data)
+    --overwrite [optional]  (overwrite existing database file)
 
     example usage:
 
@@ -26,7 +27,7 @@ usage="
     kML+Human.v4-14.20.g10.db  - Microbial marker database with explicit human read tagging (small database for fast microbial profiling)
     lmat-4-14.20mer.db  - Fullsized database for extensive read binning
     lmat.genes.7-14.db  - Gene database for gene name binning
-    lmat-world-region  - Database for binning human reads by world region
+    lmat-world-region.db  - Database for binning human reads by world region
 
     Current runtime input files:
     04072014 - use for all databases except world-region
@@ -44,6 +45,8 @@ if test $# = 0; then
    exit 1
 fi
 
+overwrite=0
+
 while test -n "${1}"; do
    opt=${1}
    optarg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
@@ -55,6 +58,11 @@ while test -n "${1}"; do
       outdir=$optarg;;
    --name=*)
       name=$optarg;;
+   --overwrite)
+      overwrite=1;;
+   --version)
+	echo "LMAT version 1.2.4.1"
+	exit 0 ;;
    *)
       echo "Unrecognized argument [$opt]"
       echo "${usage}"
@@ -127,14 +135,30 @@ echo Download complete.  When running LMAT set --db_file=$outdir/kML.18mer.no_pr
 elif [ $dtype == "inputs" ]
 then
 echo "Downloading LMAT runtime-input files to $outdir"
-input_file=$2
-wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/runtime_inputs/$input_file.tgz | tar -C $outdir/ -zxvf - 
+input_file=$name
+
+wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/runtime_inputs/$input_file.tgz | tar -C $outdir/ -zxf - 
+
+if [ $? -ne 0 ] ; then 
+    echo "Inputs download failed"
+    exit 1
+fi
+
 abspath=`readlink -f $outdir`
+
 echo "For LMAT to run correctly, please set the LMAT_DIR environment variable to $abspath"
+
+
 
 else
    ## Now assume naming convention to avoid updating this file for evry new database
    wget -q -O $outdir/dbinfo ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/dbinfo 
+
+   if [ $? -ne 0 ] ; then 
+       echo "LMAT database $name not found. Exiting"
+       exit 1
+   fi
+
    mx=`head -1 $outdir/dbinfo | cut -f1`
    cmprs=`head -1 $outdir/dbinfo | cut -f2`
    mbytes=`head -1 $outdir/dbinfo | cut -f3`
@@ -149,8 +173,20 @@ else
       else 
          echo "Unrecognized compression, failed to download"
       fi
+   if [ $? -ne 0 ] ; then 
+       echo "LMAT database $name download failed."
+       exit 1
+   fi
    else 
       for suffix in `seq 0 $mx` ; do
+
+	  if [ $overwrite -eq 1 ] ; then
+	      rm $outdir/$name
+	  else
+	      if [ -f $outdir/$name ] ; then
+		  echo "WARNING: $outdir/$name exists. This may (or may not) be from an incomplete download.  If you intend to restart the download and replace this file, add --overwrite" 
+	  fi
+
          file=$name.$suffix.$cmprs
          echo "Retrieve $file"
          if [ $cmprs == "lzma" ] ; then
@@ -160,6 +196,12 @@ else
          else 
             echo "Unrecognized compression, failed to download"
          fi
+	 if [ $? -ne 0 ] ; then 
+	     echo "LMAT database download failed."
+	     rm $outdir/$name
+	     exit 1
+	 fi
+
          echo part $suffix out of $mx done
          size=`stat $outdir/$name | grep Size | awk '{print $2}'`
          if [ $size -gt $mbytes ] ; then
@@ -167,9 +209,9 @@ else
             break
          fi
       done
-      echo Download complete.  When running LMAT set --db_file=$outdir/$name
+	  echo Download complete.  When running LMAT set --db_file=$outdir/$name
    fi
 
 fi
 
-echo "Download complete"
+    echo "Download complete"
