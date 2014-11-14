@@ -12,6 +12,7 @@
 #include <cmath>
 #include <version.h>
 
+#define QUEUE_SIZE_MAX 2000000000
 #define MMAP_SIZE 0
 #define TID_T uint32_t
 
@@ -32,8 +33,6 @@ using namespace metag;
 
 static bool verbose=false;
 
-bool add_root_on_kmer_drop = true;
-
 size_t perm_bytes_allocd;
 
 typedef uint32_t taxid_t;
@@ -42,12 +41,16 @@ typedef pair<uint32_t,uint32_t> upair_t;
 typedef pair<uint32_t,float> ufpair_t;
 typedef pair<uint32_t,uint16_t> tax_elem_t;
 typedef set<tax_elem_t> tax_data_t;
+typedef map<uint32_t,float> hfmap_t;
 typedef pair<int16_t,tax_data_t> label_info_t;
 typedef map<uint32_t,uint32_t> map_t;
 typedef map<uint32_t,float> ufmap_t;
 typedef map<uint16_t, ufmap_t> u_ufmap_t;
 typedef map<uint32_t,uint32_t> hmap_t;
+typedef map<kmer_t,uint32_t> kmap_t;
+
 typedef map<TID_T,uint32_t> tmap_t;
+typedef pair<string,string> read_pair;
 
 vector <int> read_len_vec;
 vector <int> read_len_avgs;
@@ -127,28 +130,51 @@ struct ScoreOptions {
    bool _comp_rand_hits;
 };
 
+struct TrackCon {
+   TrackCon(vector< map<TID_T,hmap_t> >& a, vector< map<TID_T,hmap_t> >& b, vector< map<TID_T,kmap_t> >& c, vector< map<TID_T,hfmap_t> >& d, vector< map<TID_T,hfmap_t> >& e ) :
+      _gtrack(a), _gtrack_tax(b), _ktrack(c), _score_gtrack(d), _score_gtrack_tax(e) { }
+   vector< map<TID_T,hmap_t> >& _gtrack;
+   vector< map<TID_T,hmap_t> >& _gtrack_tax;
+   vector< map<TID_T,kmap_t> >& _ktrack;
+   vector< map<TID_T,hfmap_t> >& _score_gtrack;
+   vector< map<TID_T,hfmap_t> >& _score_gtrack_tax;
+};
 
-static void doMerge(const vector< map<TID_T,hmap_t> >& gtrackall, map<uint32_t,tmap_t>& merge_cnt) {
+void proc_fasta(ofstream& ofs, ifstream& ifs, int k_size, INDEXDBSZ *taxtable,
+               const ScoreOptions& sopt, uint16_t max_count, TrackCon& , float min_score, int min_kmer,
+               bool& , omp_lock_t& , std::queue < read_pair >&  , int , size_t& , size_t& read_count_out);
+
+template<typename KT, typename VL>
+static void doMerge(const vector< map<TID_T,map<KT,VL> > >& gtrackall, 
+                     map<uint32_t,map<KT,VL> >& merge_cnt) {
+   typedef map<KT,VL> map_t;
+   typedef typename map<TID_T,map_t>::const_iterator mit_t;
+
    for(unsigned thread = 0; thread < gtrackall.size();  ++thread) {
-      const map<TID_T,hmap_t>& gt = const_cast<map<TID_T,hmap_t>&>(gtrackall[thread]);
-      map<TID_T,hmap_t>::const_iterator it = gt.begin();
-      const map<TID_T,hmap_t>::const_iterator is = gt.end();
+      const map<TID_T,map_t>& gt = const_cast<map<TID_T,map_t>&>(gtrackall[thread]);
+      mit_t it = gt.begin();
+      const mit_t is = gt.end();
       for(; it != is; ++it) {
-         TID_T tid = (*it).first;
-         const hmap_t& hm = (*it).second;
-         hmap_t::const_iterator it1 = hm.begin();
-         const hmap_t::const_iterator is1 = hm.end();
+         // if binning genes, this is the taxid
+         // if tracking k-mers this is the gene id
+         TID_T id1 = (*it).first;
+         const map_t& hm = (*it).second;
+         typename map_t::const_iterator it1 = hm.begin();
+         typename map_t::const_iterator is1 = hm.end();
          for(; it1 != is1; ++it1) {
-            uint32_t gid = (*it1).first;
-            uint32_t cnt = (*it1).second;
-            if( merge_cnt.find(gid) == merge_cnt.end() ) {
-               merge_cnt.insert( make_pair(gid,tmap_t()));
+            // if binning genes, this is the geneid
+            // if tracking k-mers this is the kmer id
+            KT id2 = (*it1).first;
+            VL cnt = (*it1).second;
+            if( merge_cnt.find(id1) == merge_cnt.end() ) {
+               merge_cnt.insert( make_pair(id1,map_t()));
             }
-            if( merge_cnt[gid].find(tid) == merge_cnt[gid].end() ) {
-               merge_cnt[gid][tid] = cnt;
+            if( merge_cnt[id1].find(id2) == merge_cnt[id1].end() ) {
+               merge_cnt[id1][id2] = cnt;
             } else {
-               merge_cnt[gid][tid] += cnt;
+               merge_cnt[id1][id2] += cnt;
             }
+            cout<<"debug "<<id1<<" "<<id2<<" "<<merge_cnt[id1][id2]<<endl;
          }
       }
    }
@@ -235,8 +261,54 @@ unsigned retrieve_kmer_labels(INDEXDBSZ* table, const char* str, const int slen,
    return valid_cnt;
 }
 
+static void
+track_gene_kmers(INDEXDBSZ* table, const char* str, const int slen, const kmer_t klen, TID_T track_gid, kmap_t& gene_kmer) {
+    unsigned valid_cnt = 0;
+    int j; /* position of last nucleotide in sequence */
+    int k = 0; /* count of contiguous valid characters */
+    int highbits = (klen-1)*2; /* shift needed to reach highest k-mer bits */
+    kmer_t mask = ((kmer_t)1 << klen*2)-1; /* bits covering encoded k-mer */
+    kmer_t forward = 0; /* forward k-mer */
+    kmer_t reverse = 0; /* reverse k-mer */
+    kmer_t kmer_id; /* canonical k-mer */
+    unsigned debug_cnt = 0;
+    set<kmer_t> no_dups;
+    for (j = 0; j < slen; j++) {
+        register int t;
+        ENCODE(t, str[j], k);
+        forward = ((forward << 2) | t) & mask;
+        reverse = ((kmer_t)(t^3) << highbits) | (reverse >> 2);
+        if (++k >= (signed)klen) {
+            /* zero based position of forward k-mer is (j-klen+1) */
+            /* zero based position of reverse k-mer is (slen-j-1) */
+           // const int pos = j-klen+1;
+           kmer_id = (forward < reverse) ? forward : reverse;
+           if( no_dups.find(kmer_id) != no_dups.end() ) continue;
+           no_dups.insert(kmer_id);
+           ++valid_cnt;
+           TAXNODESTAT *h = new TAXNODESTAT(*table);
+           h->begin(kmer_id,NULL);
+           while( h->next() ) {
+              const uint32_t gid = h->taxid();
+              if( gid == track_gid ) {
+                  if( gene_kmer.find(kmer_id) == gene_kmer.end() ) {
+                     gene_kmer.insert(make_pair(kmer_id,1));
+                  } else {
+                     ++gene_kmer[kmer_id];
+                  }
+                  break;
+              }
+              ++debug_cnt;
+           }
+           delete h;
+       }
+   }
+}
+
+
+
 void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs, 
-               const ScoreOptions& sopt, uint16_t max_count, hmap_t& gene_update, hmap_t& gene_update_taxscore, float min_score, int min_kmer, const string& hdr, const taxid_t tid, float tscore, float min_tax_score) {
+               const ScoreOptions& sopt, uint16_t max_count, TrackCon& ct, float min_score, int min_kmer, const string& hdr, const taxid_t tid, float tscore, float min_tax_score, int thread) {
 
      const int ri_len = line.length();
      if(ri_len < 0 ) {
@@ -247,6 +319,13 @@ void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs,
          //ofs<<hdr<<"\t"<<line<<"\t"<<tid<<"\t";
          //ofs<<"\t"<<-1<<" "<<-1<<"\tNone\t"<<"\t-1 -1 ReadTooShort"<<endl;
      } else {
+
+         map<TID_T,hmap_t>& track = ct._gtrack[thread];
+         map<TID_T,hmap_t>& track_tax = ct._gtrack_tax[thread];
+         map<TID_T,kmap_t>& gene_kmers = ct._ktrack[thread];
+         map<TID_T,hfmap_t>& score_track = ct._score_gtrack[thread];
+         map<TID_T,hfmap_t>& score_track_tax = ct._score_gtrack_tax[thread];
+
         vector<label_info_t> label_vec(ri_len-k_size+1,make_pair(-1,tax_data_t()));
         list<geneid_t> geneid_lst; 
         hmap_t gene_track;
@@ -263,13 +342,16 @@ void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs,
            sort(gsort.begin(),gsort.end(),Cmp()); 
            const float gscore = (float)gsort[0].second/(float)cnt;
            const uint32_t gl = gsort[0].first;
+           track_gene_kmers(table, line.c_str(), ri_len, k_size,gl,gene_kmers[gl]);
            ofs<<hdr<<"\t"<<line<<"\t"<<tid<<" "<<tscore<<"\t";
            ofs<<"\t"<<-1<<" "<<gsort[0].second<<" "<<cnt<<"\t"<<gl<<" "<<gscore<<" GL"<<endl;
            if( gscore > min_score && (signed)cnt > min_kmer) {
-               ++gene_update[gl];
+               ++track[gl][tid];
+               score_track[gl][tid] += gscore;
            } 
            if( tscore >= min_tax_score && gscore > min_score && (signed)cnt > min_kmer) {
-               ++gene_update_taxscore[gl];
+               ++track_tax[gl][tid];
+               score_track_tax[gl][tid] += gscore;
            } 
         } else {
            //ofs<<hdr<<"\t"<<line<<"\t"<<tid<<"\t";
@@ -348,7 +430,7 @@ int main(int argc, char* argv[])
    int min_kmer = 0;
    const bool restore=true;
 
-   string genefile, kmer_db_fn, query_fn, query_fn_lst, ofname, ofbase;
+   string genefile, kmer_db_fn, query_fn, query_fn_lst, ofname, ofbase, kcnt_file;
    hmap_t imap;	
    ScoreOptions sopt(imap);
    size_t mmap_size = 0;
@@ -364,10 +446,7 @@ int main(int argc, char* argv[])
          break;
       case 'h' :
         max_count = atoi(optarg);
-        if (max_count < 0) {
-          max_count *= -1;
-          add_root_on_kmer_drop = true;
-        }
+        max_count = max_count < 1 ? 1 : max_count;
         break;
       case 's':
          mmap_size = atoi(optarg);
@@ -399,7 +478,7 @@ int main(int argc, char* argv[])
          min_kmer = atoi(optarg);
          break;
       case 'k':
-         k_size = atoi(optarg);
+         kcnt_file = optarg;
          break;
       case 'i':
          query_fn = optarg;
@@ -429,6 +508,7 @@ int main(int argc, char* argv[])
 
    }
    if(verbose) cout<<"verbose on"<<endl;
+
    cout << "Start kmer DB load\n";
    INDEXDBSZ *taxtable;
 #if USE_BOOST == 1
@@ -486,71 +566,77 @@ int main(int argc, char* argv[])
    size_t * arr= NULL;
    string * file_lst=NULL;
    ifstream ifs;
-   if( query_fn.length() > 0 ) {
+   //if( query_fn.length() > 0 ) {
       /* ASSUME READ FITS ON ONE LINE FOR NOW!! */
-      ifs.open(query_fn.c_str());
-      arr = split_file(n_threads, ifs);
-      ifs.close();
-   } else if( query_fn_lst.length() > 0 ) {
+      //ifs.open(query_fn.c_str());
+      //arr = split_file(n_threads, ifs);
+      //ifs.close();
+   //} else 
+   if( query_fn_lst.length() > 0 ) {
       file_lst = split_file_names(n_threads,query_fn_lst);
       cout<<"set threads="<<n_threads<<endl;
    }
+   assert(n_threads>0);
    omp_set_num_threads(n_threads);
-   vector< map<TID_T,hmap_t> > gtrackall(n_threads);
-   vector< map<TID_T,hmap_t> > gtrackall_tax(n_threads);
+   vector< map<TID_T,kmap_t> > track_kmers(n_threads);
+   vector< map<TID_T,hmap_t> > gtrack(n_threads);
+   vector< map<TID_T,hmap_t> > gtrack_tax(n_threads);
+   vector< map<TID_T,hfmap_t> > score_gtrack(n_threads);
+   vector< map<TID_T,hfmap_t> > score_gtrack_tax(n_threads);
+
+   TrackCon trcon(gtrack,gtrack_tax,track_kmers,score_gtrack,score_gtrack_tax);
    string line;
    bool finished;
    size_t pos = 0 ;
    ofstream ofs;
-
+   bool in_finished=false;
    StopWatch clock;
    clock.start();
    size_t read_count = 0; 
+   omp_lock_t buffer_lock;
+   std::queue < read_pair > read_buffer_q;
+   omp_init_lock(&buffer_lock);
+   size_t read_count_in =0;
+   size_t read_count_out = 0;
+   bool useFasta = query_fn.length() > 0 ? true : false;
+   if(useFasta) {
+      ifs.open(query_fn.c_str());
+      if(!ifs) {
+         cerr<<"did not open for reading: ["<<query_fn<<"] tid: ["<<omp_get_thread_num()<<"]"<<endl;
+         exit(-1);
+      }
+   }
 
-#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, gtrackall, gtrackall_tax, min_score, min_kmer, min_tax_score)  private(ifs,finished, pos, ofs, ofname, line, read_count)
+
+#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, trcon, min_score, min_kmer, min_tax_score,in_finished,buffer_lock,read_buffer_q,read_count_in, read_count_out, n_threads, ifs)  private(finished, pos, ofs, ofname, line, read_count)
 
    {
      bool useFasta = query_fn.length() > 0 ? true : false;
-     if( useFasta ) {
-         cout<<"Sorry fasta input file not yet supported"<<endl;
-         exit(0);
-     }
+     ofname = ofbase;
+     std::stringstream outs;
+     outs << omp_get_thread_num();
+     ofname += outs.str();
+     ofname += ".out" ;
+     ofs.open(ofname.c_str());
      read_count = 0;
      finished = false;
      const char* fn = NULL;
-     if( arr ) {
-         fn = query_fn.c_str();
+     if( useFasta ) { 
+         proc_fasta(ofs,ifs,k_size,taxtable,sopt,max_count,trcon,min_score,min_kmer,in_finished,buffer_lock,read_buffer_q,n_threads,read_count_in, read_count_out);
      } else if( file_lst ) {
          fn = file_lst[ omp_get_thread_num() ].c_str();
      }  
+     if( !useFasta ) {
      ifs.open(fn);
      if(!ifs) {
          cerr<<"did not open for reading: ["<<fn<<"] tid: ["<<omp_get_thread_num()<<"]"<<endl;
          exit(-1);
      }
-         
-        
-     ofname = ofbase;
-
-     std::stringstream outs;
-
-     outs << omp_get_thread_num();
-     ofname += outs.str();
-
-     ofname += ".out" ;
-
-     ofs.open(ofname.c_str());
-
-      
      if( arr ) {
       ifs.seekg(arr[omp_get_thread_num()]);
      }
-
      while (!finished)   {
-
-
        getline(ifs, line);
-
        pos = ifs.tellg();
        if ((signed)pos == -1) {
           finished = true;   
@@ -591,19 +677,31 @@ int main(int argc, char* argv[])
        if( match_type[0] == 'N' || match_type[0] == 'R' ) {
          taxid=0;
        }
-       map<TID_T,hmap_t>& track = gtrackall[omp_get_thread_num()];
-       map<TID_T,hmap_t>& track_tax = gtrackall_tax[omp_get_thread_num()];
-       hmap_t& gtrack_tax = track_tax[taxid];
-       hmap_t& gtrack = track[taxid];
-	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, gtrack, gtrack_tax, min_score, min_kmer, hdr,taxid,tax_score, min_tax_score);
+       //map<TID_T,hmap_t>& track = gtrackall[omp_get_thread_num()];
+       //map<TID_T,hmap_t>& track_tax = gtrackall_tax[omp_get_thread_num()];
+       //hmap_t& gtrack_tax = track_tax[taxid];
+       //hmap_t& gtrack = track[taxid];
+	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, trcon,  min_score, min_kmer, hdr,taxid,tax_score, min_tax_score,omp_get_thread_num());
+
 	    read_count ++;
      }
      ofs.close();
+     } 
    }
+
+   cout<<"here? "<<endl;
+   
+   map<uint32_t,map<kmer_t,uint32_t> >  merge_cnt_kmer;
+   doMerge<kmer_t,uint32_t>(trcon._ktrack,merge_cnt_kmer);
    map<uint32_t,tmap_t>  merge_cnt;
-   doMerge(gtrackall,merge_cnt);
+   doMerge<uint32_t,uint32_t>(trcon._gtrack,merge_cnt);
    map<uint32_t,tmap_t>  merge_cnt_tax;
-   doMerge(gtrackall_tax,merge_cnt_tax);
+   doMerge<uint32_t,uint32_t>(trcon._gtrack_tax,merge_cnt_tax);
+
+   map<uint32_t,map<TID_T,float> >  score_merge_cnt;
+   doMerge<TID_T,float>(trcon._score_gtrack,score_merge_cnt);
+   map<uint32_t,map<TID_T,float> >  score_merge_cnt_tax;
+   doMerge<TID_T,float>(trcon._score_gtrack_tax,score_merge_cnt_tax);
 
    igzstream zipifs(genefile.c_str());
    if( !zipifs ) {
@@ -625,6 +723,17 @@ int main(int argc, char* argv[])
       cerr<<"Can't write to "<<output_tax.str()<<endl;
       return -1;
    }
+   cout << "Load k-mer counts\n";
+   ifstream ifk(kcnt_file.c_str());
+   if( !ifk ) {
+      cerr<<"Unable to open kcnts: "<<kcnt_file<<endl;
+      return -1;
+   }
+   hmap_t gene_kcnt;
+   uint32_t gid,kcnt;
+   while(ifk>>gid>>kcnt) {
+      gene_kcnt.insert( make_pair(gid,kcnt) );
+   }
 
    const unsigned buff_size = 20000;
    char buff[buff_size]; 
@@ -634,12 +743,33 @@ int main(int argc, char* argv[])
       uint32_t gid;
       istrm>>tid>>gid;
       if( merge_cnt.find(gid) != merge_cnt.end() ) {
-         tmap_t::const_iterator ti = merge_cnt[gid].begin();
+         kmap_t::const_iterator ti = merge_cnt_kmer[gid].begin();
+         const kmap_t::const_iterator ts2 = merge_cnt_kmer[gid].end();
+         unsigned num_kmers = 0;
+         unsigned sum_kmer_cnt = 0;
+         for(; ti != ts2; ++ti) {
+            //TID_T label = (*ti).first;
+            const uint32_t cnt = (*ti).second;
+            sum_kmer_cnt += cnt;
+            ++num_kmers; 
+         }
+         //sum_ofs<<"\t"<<num_kmers<<" "<<sum_kmer_cnt<<endl;
+         tmap_t::const_iterator ti1 = merge_cnt[gid].begin();
          const tmap_t::const_iterator ts = merge_cnt[gid].end();
-         for(; ti != ts; ++ti) {
-            TID_T label = (*ti).first;
-            uint32_t cnt = (*ti).second;
-            sum_ofs<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
+         for(; ti1 != ts; ++ti1) {
+            const TID_T label = (*ti1).first;
+            const uint32_t cnt = (*ti1).second;
+            const float score = score_merge_cnt[gid][label];
+            const float avg=score/(float)cnt;
+            float redun = (float)num_kmers / (float)sum_kmer_cnt;
+            float gene_cov = 0;
+            uint32_t tot = 0;
+            if( gene_kcnt.find(gid) != gene_kcnt.end()) {
+               // this should always be true, but want to keep going if it does
+               tot = gene_kcnt[gid];
+               gene_cov = (float)num_kmers/(float)tot;
+            }
+            sum_ofs<<avg<<"\t"<<cnt<<"\t"<<label<<"\t"<<buff<<"\t"<<num_kmers<<"\t"<<sum_kmer_cnt<<"\t"<<tot<<"\t"<<gene_cov<<"\t"<<redun<<endl;
          }
       } 
       if( merge_cnt_tax.find(gid) != merge_cnt_tax.end() ) {
@@ -648,7 +778,9 @@ int main(int argc, char* argv[])
          for(; ti != ts; ++ti) {
             TID_T label = (*ti).first;
             uint32_t cnt = (*ti).second;
-            sum_ofs_tax<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
+            const float score = score_merge_cnt_tax[gid][label];
+            const float avg=score/(float)cnt;
+            sum_ofs_tax<<avg<<"\t"<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
          }
       }
 
@@ -657,3 +789,92 @@ int main(int argc, char* argv[])
 
    return 0; 
 }
+
+
+void proc_fasta(ofstream& ofs, ifstream& ifs, int k_size, INDEXDBSZ *taxtable,
+               const ScoreOptions& sopt, uint16_t max_count, TrackCon& ct, float min_score, int min_kmer,
+               bool& in_finished, omp_lock_t& buffer_lock, std::queue < read_pair >&  read_buffer_q, int n_threads, size_t& read_count_in, size_t& read_count_out) { 
+    string line;
+    bool eof = false;
+    bool finished=false;
+    bool fastq=false;
+    string hdr_buff, read_buff, save_hdr;
+    while (!finished)   {
+      if ((in_finished == false) && (omp_get_thread_num() == 0)) {
+         int j = 0 ;
+         int queue_size = 0;
+         omp_set_lock(&buffer_lock);
+         queue_size = read_buffer_q.size();
+         omp_unset_lock(&buffer_lock);
+         string last_hdr_buff;
+         while (queue_size < QUEUE_SIZE_MAX && j< 2* n_threads && (!in_finished)) {
+            eof = !getline(ifs, line);
+            if (eof) {
+               in_finished = true;
+               if(verbose) cout << line.size() << " line length\n";
+               line = "";
+            }
+            if (line[0] == '>' || (fastq && line[0] == '@') ) {
+               last_hdr_buff = hdr_buff;
+                // skip the ">"
+                hdr_buff=line.substr(1,line.length()-1);
+            }
+
+           if (line[0] != '>' && line.length() > 1 && !fastq) {
+             read_buff += line;
+             line = "";
+           }
+           if( fastq && line[0] != '@' && line[0] != '+' && line[0] != '-' ) {
+             read_buff += line;
+             line = "";
+           }
+           if( ((line[0] == '>' || in_finished) || (fastq && (line[0] == '+' ||
+              line[0] == '-'))) && read_buff.length() > 0 ) {
+               omp_set_lock(&buffer_lock);
+               if (in_finished)
+                  read_buffer_q.push(read_pair(read_buff, hdr_buff));
+               else
+                  read_buffer_q.push(read_pair(read_buff, last_hdr_buff));
+
+             read_count_in++;
+             omp_unset_lock(&buffer_lock);
+             read_buff="";
+             j ++;
+             if(fastq) eof = !getline(ifs, line); // skip quality values for now
+           }
+           if (in_finished) {
+               cout << read_count_in << " reads in\n";
+               break;
+           }
+         }
+      }
+      read_buff = "";
+      save_hdr = "";
+      omp_set_lock(&buffer_lock);
+      if (!read_buffer_q.empty()) {
+         read_pair in_pair = read_buffer_q.front();
+         read_buff = in_pair.first;
+         save_hdr = in_pair.second;
+         read_buffer_q.pop();
+         read_count_out++;
+
+      }
+      omp_unset_lock(&buffer_lock);
+      if (read_buff.length() > 0) {
+         if(save_hdr[0] == '\0') {
+           ostringstream ostrm;
+           ostrm<<"unknown_hdr:"<<read_count_out;
+           save_hdr=ostrm.str();
+         }
+         TID_T taxid = 0;
+         const float tax_score = 0.0;
+         const float min_tax_score= 1.0; // turns off use of taxonomy
+         proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, ct, min_score, min_kmer, save_hdr,taxid,tax_score, min_tax_score, omp_get_thread_num());
+         read_buff="";
+      }
+      if ((read_count_in == read_count_out) && in_finished)
+         finished = true;
+    }
+    ofs.close();
+}
+
