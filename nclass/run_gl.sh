@@ -1,4 +1,4 @@
-#!/bin/sh  -xvf
+#!/bin/sh
 
 #####################################
 ### SCRIPT TO RUN THE Gene labeling PIPELINE
@@ -34,12 +34,16 @@ fi
 ## Assume the perm-je library is here
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LMAT_DIR/../lib
 
+## temporary override bin_dir to work in development
+#export bin_dir=/p/lscratchd/allen99/lmat-dev/apps/
+
 
 
 
 #####################################
 ## default parameter settings
 #####################################
+threads=1
 fs_file=""
 overwrite=0
 min_tax_score=0
@@ -47,17 +51,17 @@ min_tax_score=0
 genedbfile=""
 ## Used by gene_label to assign human readable names to genes
 genefile="$LMAT_DIR/gn_ref2.txt.gz"
+## Tracks number of distinct k-mers  in each gene
+kcntfile="$LMAT_DIR/allgenes.kmercnt"
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
+## optional read from sequence file instead of read label output
+sfile=""
 
-if [ -f $LMAT_DIR/plasmid.names.txt ] ; then
+rank_report="species,plasmid,genus"
 
-    rank_report="species,plasmid,genus"
-else
-    rank_report="species,genus"
-fi
 ## minimum percentage of k-mer matches from a read found in a gene before a call can be made
-gene_score=0.01
+gene_score=0.1
 
 ## Additional user input default settings
 # set to 1 for debugging only (too much output for large runs)
@@ -67,6 +71,7 @@ odir=.
 ## minimum number of valid k-mers  present in read needed before considering the read for gene labeling
 num_gene_kmers=20
 lstr=""
+max_count=""
 
 # in some cases you might not want to bother summarizing the human reads
 # turn on if there are a huge # of human reads and you want to save time
@@ -89,6 +94,9 @@ option list:
    --min_gene_score (default=$gene_score) : minimum percentage of k-mers matching to reference gene (for gene summary step)
    --min_tax_score (default=$min_tax_score) : minimum score for matched tax id (used for tracking rRNA assigned to specific tax ids)
    --rank_report=$rank_report : read binning for different ranks (user provides a comma separated list of ranks). plasmid is treated as a separate rank
+   --sfile=$sfile (deafult=$sfile) : use a fastq/a input file instead of output from LMAT's read label
+   --threads=$threads : number of threads if input is fastq/a
+   --max_count=$max_count (default is no max count): can be used to limit number of genes retrieved for each k-mer (greedy). 100 -> retrieve first 100 genes, will reduce runtime
    --version : report version number and exit
 
 example usage:
@@ -108,6 +116,12 @@ while test -n "${1}"; do
    case $opt in
    --ilst=*)
       lstr=$optarg;;
+   --sfile=*)
+      sfile=$optarg;;
+   --threads=*)
+      threads=$optarg;;
+   --max_count=*)
+      max_count=$optarg;;
    --odir=*)
       odir=$optarg;;
    --min_read_kmer=*)
@@ -120,8 +134,8 @@ while test -n "${1}"; do
       verbose=1;;
    --overwrite)
       overwrite=1;;
-   --min_gene_score)
-      gaene_score=$optarg;;
+   --min_gene_score*)
+      gene_score=$optarg;;
    --rank_report)
       rank_report=$optarg;;
    --min_tax_score)
@@ -147,12 +161,21 @@ if [ ! $odir == '' ]; then
     odir="$odir/"
 fi
 
+mxcntarg=""
+if [ ! $max_count == '' ] ; then
+   mxcntarg="-h $max_count"
+fi
+
 ## assign gene names
 if [ $genedbfile ] ; then
       genedbname=`basename $genedbfile`
       query_file_name=`basename $lstr`
       qstr="-l $lstr"
       vstr=""
+      if [ $sfile != '' ]; then
+         qstr="-i $sfile -t $threads"
+         query_file_name=`basename $sfile`
+      fi
       ## note need to fix verbose setting to get here (if needed)
       if [ $verbose == 1 ] ; then
          vstr="-y"
@@ -162,12 +185,12 @@ if [ $genedbfile ] ; then
       res=$genofile.$gene_score.$num_gene_kmers.genesummary
       res2=$genofile.$gene_score.$num_gene_kmers.genesummary.min_tax_score.$min_tax_score
       if [ ! -e $res ] || [ $overwrite == 1 ] ; then
-         ${bin_dir}gene_label $vstr -b $min_tax_score -q $num_gene_kmers -x $gene_score -p $qstr -d $genedbfile -o $genofile -g $genefile >& $logfile
+         ${bin_dir}gene_label $vstr $mxcntarg -b $min_tax_score -k $kcntfile -q $num_gene_kmers -x $gene_score -p $qstr -d $genedbfile -o $genofile -g $genefile >& $logfile
          cat $res | sort -k1gr,1gr > tmp.$$
          mv tmp.$$ $res 
          min_map_reads=10
          if [ -e $fs_file ] ; then
-            ${bin_dir}fsreport.py $fs_out $rank_report $odir $res2 $min_map_reads
+            ${bin_dir}fsreport.py $fs_file $rank_report $odir $res2 $min_map_reads
          fi
       fi
 else
