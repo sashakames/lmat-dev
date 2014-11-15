@@ -174,7 +174,7 @@ static void doMerge(const vector< map<TID_T,map<KT,VL> > >& gtrackall,
             } else {
                merge_cnt[id1][id2] += cnt;
             }
-            cout<<"debug "<<id1<<" "<<id2<<" "<<merge_cnt[id1][id2]<<endl;
+            //cout<<"debug "<<id1<<" "<<id2<<" "<<merge_cnt[id1][id2]<<endl;
          }
       }
    }
