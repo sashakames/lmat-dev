@@ -27,6 +27,8 @@ int metag::kmer_rec_comp(const void *a, const void *b)
 
 }
 
+
+
 size_t ext_taxids = 0 ;
 size_t singletons = 0;
 size_t doubles = 0;
@@ -84,9 +86,9 @@ kmer_set_t *get_kmer_set(FILE *in_kmers_fp, kencode_c &ken )
 
 /* This should really be refactored!! */
 template <class tid_T>
-void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL,  FILE * illum_kmers_fp = NULL, uint32_t adaptor_tid = 0)
+void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool use_tax_histo_format = true, bitreduce_map_t *p_br_map = NULL   ,  my_map &species_map = NULL, int tid_cutoff = 0, bool strainspecies = false, FILE *human_kmers_fp = NULL,  FILE * illum_kmers_fp = NULL, uint32_t adaptor_tid = 0, uint32_t HUMAN_FEED_TID = 9606)
 {
-  
+
 
   static uint64_t last_kmer = 0;
 
@@ -149,7 +151,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   uint16_t ADAPTOR_16 = 0;
 
   if (p_br_map) {
-    HUMAN_16 = (*p_br_map)[9606];
+    HUMAN_16 = (*p_br_map)[HUMAN_FEED_TID];
     ADAPTOR_16 = (*p_br_map)[adaptor_tid];
   }
 
@@ -174,7 +176,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       
       // This is a new human k_mer
 
-      size_t top_index =  (last_human >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+      size_t top_index =  (last_human >> index_config_consts.BITS_PER_2ND);  // & 0x0000000007ffffff;
 
     // check the slot if it has been written to yet
 
@@ -187,7 +189,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	start_count = 1;  
       }
 
-      uint16_t kmer_lsb_in = MASK_2ND & last_human;
+      uint16_t kmer_lsb_in = index_config_consts.MASK_2ND & last_human;
       
       top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
       
@@ -213,7 +215,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    if (HUMAN_16)
 	      kmer_table[m_list_offset].page_offset = HUMAN_16;
 	    else
-	      kmer_table[m_list_offset].page_offset = 9606;
+	      kmer_table[m_list_offset].page_offset = HUMAN_FEED_TID;
 	  }
       new_human++;      
       m_list_offset++;
@@ -248,7 +250,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
     // First get the mapping - the msb for the kmer - assuming 27 for now
     // TODO: make this configurable at runtime 
 
-    size_t top_index =  (kmer >> BITS_PER_2ND);  // & 0x0000000007ffffff;
+    size_t top_index =  (kmer >> index_config_consts.BITS_PER_2ND);  // & 0x0000000007ffffff;
 
 
     // check the slot if it has been written to yet
@@ -262,7 +264,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       start_count = 1;  
     }
 
-    uint16_t kmer_lsb_in = MASK_2ND & kmer;
+    uint16_t kmer_lsb_in = index_config_consts.MASK_2ND & kmer;
 
     top_tier_block[top_index] = ((uint64_t) start_count << 48) | start_offset;
     
@@ -291,7 +293,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
       m_list_offset++;
       start_count++;
 
-      assert(start_count <= LENGTH_MAX_2ND );	
+      assert(start_count <= index_config_consts.LENGTH_MAX_2ND );	
       
     } else {
 
@@ -345,7 +347,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	    assert(fread(&tid, 4, 1, in) == 1);        
 
-	    if (add_human && tid == 9606) {
+	    if (add_human && tid == HUMAN_FEED_TID) {
 	      add_human = false;
 	    }
 
@@ -359,7 +361,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	    
 
 	    new_isect++;
-	    const MyPair  pp(species_map[9606], 9606);
+	    const MyPair  pp(species_map[HUMAN_FEED_TID], HUMAN_FEED_TID);
 	    taxid_q.push(pp);
 	    matched_in--;
 	  }
@@ -431,7 +433,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       // we need to handle the case where a single tid matches a human k-mer
 
-      if (add_human && tid != 9606) {
+      if (add_human && tid != HUMAN_FEED_TID) {
 	
 	doubles++;
 	matched_in--;  // modify the counters
@@ -483,23 +485,18 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
 	  mcpyinsdb(tid, 4);
 	  m_cur_offset += 4;
-	  tid = 9606;
+	  tid = HUMAN_FEED_TID;
 	  mcpyinsdb(tid, 4);
 	  m_cur_offset += 4;
 
 
 	}
 
-
 	
       } else {
 
-      
 	singletons++;
-	
-
 	//	assert (tid <= MAX_TID && tid != INVALID_TID_2 );
-      
 
 	kmer_table[m_list_offset].page_id = MAX_PAGE;
 
@@ -549,7 +546,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
     m_list_offset++;
     start_count++;
 
-    assert(start_count <= LENGTH_MAX_2ND );
+    assert(start_count <= index_config_consts.LENGTH_MAX_2ND );
 
 	//write the kmer
       //      memcpy(m_data[m_cur_page]+m_cur_offset, &kmer, 8);
@@ -631,7 +628,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 	  ext_taxids++;
 	  assert(fread(&tid, 4, 1, in) == 1);        
 	  
-	  if (tid == 9606)
+	  if (tid == HUMAN_FEED_TID)
 	    add_human = false;
 
 	  if (add_human) {
@@ -665,7 +662,7 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
 
       if (add_human)  {
 
-	tid = 9606;
+	tid = HUMAN_FEED_TID;
 
 	if (p_br_map) {
 
@@ -750,10 +747,87 @@ void SortedDb<tid_T>::add_data(const char *filename, size_t stopper = 0, bool us
   cout << "new human + other k-mers: " << new_isect << "\n";
 
 
-
 }
+
+void load_struct(int idx_config,  index_config &ic )
+
+ {
+
+    switch(idx_config) {
+      
+    case 2031 : 
+      ic.TT_BLOCK_COUNT = 2147483648 ;
+      ic.BITS_PER_2ND  = 9;
+      ic.MASK_2ND = 0x00000000000001ff;
+      ic.LENGTH_MAX_2ND =  513;
+      break;
+    case 2030 :
+
+      ic.TT_BLOCK_COUNT = 1073741824 ;
+      ic.BITS_PER_2ND  = 10 ;
+      ic.MASK_2ND = 0x00000000000003ff ;
+      ic.LENGTH_MAX_2ND = 1025 ;
+      break;
+
+    case 2029 :
+
+      ic.TT_BLOCK_COUNT =  536870912 ; 
+      ic.BITS_PER_2ND = 11 ; 
+      ic.MASK_2ND = 0x00000000000007ff ;
+      ic.LENGTH_MAX_2ND = 2049 ;
+      break;
+ 
+    case 2028 :
+
+      ic.TT_BLOCK_COUNT = 268435456 ; 
+      ic.BITS_PER_2ND = 12 ;
+      ic.MASK_2ND = 0x0000000000000fff ;
+      ic.LENGTH_MAX_2ND = 4097;
+      break;
+    case 2027 :
+
+      ic.TT_BLOCK_COUNT = 134217728;
+      ic.BITS_PER_2ND = 13;
+      ic.MASK_2ND = 0x0000000000001fff ;
+      ic.LENGTH_MAX_2ND = 8193;
+      break;
+    case 2026:
+
+      ic.TT_BLOCK_COUNT = 67108864 ; 
+      ic.BITS_PER_2ND = 14 ;
+      ic.MASK_2ND = 0x0000000000003fff ;
+      ic.LENGTH_MAX_2ND = 16385 ;
+      break;
+
+    case 2025:
+
+      ic.TT_BLOCK_COUNT = 33554432 ;
+      ic.BITS_PER_2ND = 15 ; 
+      ic.MASK_2ND = 0x0000000000007fff ;
+      ic.LENGTH_MAX_2ND = 32769 ; 
+      break;
+
+    case 2024:
+
+      ic.TT_BLOCK_COUNT = 16777216 ;
+      ic.BITS_PER_2ND = 16 ;
+      ic.MASK_2ND = 0x000000000000ffff ; 
+      ic.LENGTH_MAX_2ND = 65537 ; 
+      break;
+
+    case 1827:
+
+      ic.TT_BLOCK_COUNT = 134217728;
+      ic.BITS_PER_2ND = 9 ;
+      ic.MASK_2ND = 0x00000000000001ff;
+      ic.LENGTH_MAX_2ND = 513;
+      break;
+    }
+  }
 
 
 
 template class SortedDb<DBTID_T>;
+
+
 

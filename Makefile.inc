@@ -2,7 +2,7 @@ CXX = g++
 INCLUDE = -I$(PJPATH)/include -I. -I$(METAG_DIR)/src/kmerdb -I$(METAG_DIR)/include 
 
 
-CXXFLAGS = -O3 -g  -Wall -fopenmp $(INCLUDE) -D$(PJOPT)  \
+CXXFLAGS = -g -O3 -Wall -fopenmp $(INCLUDE) -D$(PJOPT)  \
             -DIDX_CONFIG=$(SDBIDX) -DTID_SIZE=$(TAXID_SIZE)  -DDBTID_T=$(TID_T) -Wno-deprecated \
 	    -DUSE_SORTED_DB=$(USE_SORTED_DB)
 
@@ -56,13 +56,13 @@ METAG_DIR=$(HOME)/lmat-git
 endif
 
 ifndef TAXID_SIZE
-TID_T = uint32_t
-TAXID_SIZE=32
-else
-ifeq ($(TAXID_SIZE), 16)
 TID_T = uint16_t
+TAXID_SIZE=16
 else
+ifeq ($(TAXID_SIZE), 32)
 TID_T = uint32_t
+else
+TID_T = uint12_t
 endif
 endif
 

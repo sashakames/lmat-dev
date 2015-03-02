@@ -191,7 +191,7 @@ out_fh.write(str(num_bins)+"\n")
 ## they likely need to be broken down by GC content type
 qlst =  tax_hist_cnt.keys()
 qlst.insert(0,562)
-print qlst
+#print qlst
 once={}
 save={}
 saveid=[]
@@ -248,8 +248,6 @@ for tid in qlst :
       curr_tid = parents[curr_tid]
    if isOther :
       use_val = merge_hack
-   if tid == 9606 :
-      use_val=store_rank_val[9606]    
    (rval_pcnt,rval_kcnt,rval_obs)=([0]*num_bins,[0]*num_bins,[0]*num_bins)
    (rval_pcnt1,rval_kcnt1,rval_obs1)=([1.0]*num_bins,[0]*num_bins,[0]*num_bins)
    close_match=[-1]*num_bins

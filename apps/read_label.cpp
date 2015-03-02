@@ -66,6 +66,7 @@ static std::tr1::unordered_set<int> gLowNumPlasmid;
 
 #define isPlasmid(tid) (((tid >=10000000 && tid < 11000000) || (gLowNumPlasmid.find(tid) != gLowNumPlasmid.end())) ? true : false)
 
+index_config index_config_consts;
 
 
 my_map tid_rank_map;
@@ -1457,9 +1458,7 @@ int main(int argc, char* argv[])
 #else
 
 
-#if WITH_PJMALLOC == 1
 
-   if (restore) {
       
      perm(&taxtable, sizeof(taxtable));
      if( mopen(kmer_db_fn.c_str(), "r", mmap_size) != 0 ) {
@@ -1472,40 +1471,13 @@ int main(int argc, char* argv[])
      cout << "num kmers: " << taxtable->size() << " - " << k_size  <<   endl ;
 
 
-   } else 
+
+
     
 #endif
 
-{
+   taxtable->set_config();
 
-
-#if (USE_SORTED_DB == 0)
-     taxtable = new INDEXDB<DBTID_T>;
-
-     ifstream qifs(kmer_db_fn.c_str());
-     if( !qifs ) {
-       cerr<<"Unable to open: "<<kmer_db_fn<<endl;
-       return -1;
-
-
-     }
-
-
-
-
-     string fname;
-     
-     while(qifs>>fname) {
-       cout<<"register file: "<<fname<<endl;
-       taxtable->registerFile(fname.c_str());
-     }
-     taxtable->ingest();
-#endif
-
-
-   }
-
-#endif
    if( low_num_plasmid_file.length() > 0 ) {
       loadLowNumPlasmids(low_num_plasmid_file);
    }

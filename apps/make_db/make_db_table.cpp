@@ -21,6 +21,8 @@ using namespace metag;
 
 bool use_tax_histo_format = true;
 
+index_config index_config_consts ; 
+
 #define ILLU_TAXID  32630
 
 //typedef pair<size_t, int> kmer_info_t; 
@@ -46,6 +48,8 @@ void usage() {
     "  -w        - pruing uses strain-to-species mapping\n" 
     "  -u        - file for illumina adaptor k-mers\n"
     "  -V        - print version and exit\n"
+    "  -z        - tid for (human ) k-mer stream\n"
+    "  -e        - index config value\n"
     "guidance for setting -s: from our paper, our full reference DB required 619G;\n"
     "this was for a fasta file that was ~19G\n";
 }
@@ -130,7 +134,9 @@ int main(int argc, char *argv[]) {
   string species_map_fn, id_bit_conv_fn, human_kmer_fn, illu_kmer_fn;
 
   bool strainspecies = false;
-  //  while ((c = getopt(argc, argv, "t:g:q:k:i:o:s:t:h:r l a ")) != -1) {
+  //  while ((c = getopt(argc, argv, "t:g:q:k:i:o:s:t:hr l a ")) != -1) {
+
+  int cfg = 2027;
 
   cout << "invocation: ";
   for (int j=0; j<argc; j++) {
@@ -139,10 +145,16 @@ int main(int argc, char *argv[]) {
   cout << endl;
 
 
-
+  uint32_t human_tid = 9606;
  
- while ((c = getopt(argc, argv, "g:q:k:i:o:s: l h m:f:wj:c:u:V")) != -1) {
+
+  while ((c = getopt(argc, argv, "z:g:q:k:i:o:s:e: l h m:f:wj:c:u:V")) != -1) {
+
     switch(c) {
+    case 'z':
+
+      human_tid = atoi(optarg);
+      break;
     case 'j':
       human_kmer_fn=optarg;
       break;
@@ -191,6 +203,7 @@ int main(int argc, char *argv[]) {
       break;
     case 'h':
       use_tax_histo_format = false;
+      cout << "\"Tax histo\" input format disabled.  Use of the format will likely result in the database failure to load.\n";
       break;
     case 'g':
       tid_cut = atoi(optarg);
@@ -201,6 +214,9 @@ int main(int argc, char *argv[]) {
     case 'V':
       cout << "LMAT version " << LMAT_VERSION  << "\n" ; 
 	exit(0);
+    case 'e':
+      cfg = atoi(optarg);
+      break;
     default:
       usage();
       exit(1);
@@ -237,8 +253,11 @@ int main(int argc, char *argv[]) {
   // for now keep 1 extra GB for keeping 
   //(TODO: narrow that down to necessary amount)
 
+  index_config tmpcfg;
 
-  size_t space = ((TT_BLOCK_COUNT * 8) + (hash_size * 8));
+  load_struct(cfg, tmpcfg);
+  
+  size_t space = ((tmpcfg.TT_BLOCK_COUNT * 8) + (hash_size * 8));
 
   storage_size = (size_t)((mmap_size - space) * (double).95) - (size_t)(xtra_kmers*8);
 
@@ -314,7 +333,7 @@ int main(int argc, char *argv[]) {
 #if USE_BOOST == 1
   bip::managed_mapped_file mfile(bip::create_only, (const char*) outputfn.c_str(
 										) , mmap_size );  
-  ttable = mfile.construct<SortedDb<uint32_t> >("KmerDB")(hash_size, storage_size, mfile);
+  ttable = mfile.construct<SortedDb<uint32_t> >("KmerDB")(hash_size, storage_size, cfg, mfile);
   // ,n_threads);
   
 
@@ -334,7 +353,7 @@ int main(int argc, char *argv[]) {
     if (kmer_len < 16)
       hash_size=(1<<(kmer_len*2));
 
-    ttable = PERM_NEW(SortedDb<DBTID_T>)(hash_size+xtra_kmers, storage_size);
+    ttable = PERM_NEW(SortedDb<DBTID_T>)(hash_size+xtra_kmers, storage_size, cfg);
 
   }
 
@@ -376,7 +395,7 @@ int main(int argc, char *argv[]) {
 	bitreduce_map_t *p_map = NULL;
 	if (br_map.size() > 0)
 	  p_map = & br_map;
-	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID);
+	ttable->add_data(input_files[i].c_str() , stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID, human_tid);
 	cout << "elapsed time: " << clock2.stop() << endl;
 	} // end for
 
@@ -408,7 +427,7 @@ int main(int argc, char *argv[]) {
     bitreduce_map_t *p_map = NULL;
     if (br_map.size() > 0)
       p_map = & br_map;
-    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID); 
+    ttable->add_data(inputfn.c_str(), stopper, use_tax_histo_format, p_map,  species_map, tid_cut, strainspecies, human_fp, illu_fp, ILLU_TAXID, human_tid); 
   }
   
 

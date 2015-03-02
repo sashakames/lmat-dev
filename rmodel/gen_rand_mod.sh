@@ -11,8 +11,8 @@ fi
 if hash rand_read_label >& /dev/null ; then
    bin_dir=
 else
-   bin_dir="$LMAT_DIR/../bin/"
-   echo "Did not find rand_read_label in your path, assume LMAT binaries/scripts are here: $bin_dir"
+   bin_dir="../apps/"
+#   echo "Did not find rand_read_label in your path, assume LMAT binaries/scripts are here: $bin_dir"
 fi
 
 ## platform specific support for hyperthreading
@@ -123,6 +123,10 @@ fi
 #tot_reads=$[num_reads*threads]
 
 db_file_name=`basename $db_file`
+
+cp /p/lscratchf/ames4/dbs/$db_file_name /dev/shm
+
+
 while [ $beg -le $end ] ; do
    read_len=$beg
    tmpval=$[num_bases/read_len]
