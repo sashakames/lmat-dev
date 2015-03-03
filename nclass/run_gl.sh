@@ -28,40 +28,35 @@ elif [ -f gene_label ] ; then
     bin_dir=./
 elif [ `basename $PWD` == "nclass" ] ; then
     bin_dir="../apps/"
- else
+else
    bin_dir="$LMAT_DIR/../bin/"
 fi
+
 ## Assume the perm-je library is here
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LMAT_DIR/../lib
-
-## temporary override bin_dir to work in development
-#export bin_dir=/p/lscratchd/allen99/lmat-dev/apps/
-
 
 
 
 #####################################
 ## default parameter settings
 #####################################
-threads=1
 fs_file=""
 overwrite=0
 min_tax_score=0
 ## Memory mapped gene database file
-genedbfile=""
+dbfile=""
 ## Used by gene_label to assign human readable names to genes
 genefile="$LMAT_DIR/gn_ref2.txt.gz"
-## Tracks number of distinct k-mers  in each gene
-kcntfile="$LMAT_DIR/allgenes.kmercnt"
 ## ignore reads with less valid k-mers than this value
 min_read_kmer=30
-## optional read from sequence file instead of read label output
-sfile=""
-
 rank_report="species,plasmid,genus"
-
 ## minimum percentage of k-mer matches from a read found in a gene before a call can be made
 gene_score=0.1
+## optional read from sequence file instead of read label output
+sfile=""
+threads=1
+
+
 
 ## Additional user input default settings
 # set to 1 for debugging only (too much output for large runs)
@@ -71,7 +66,6 @@ odir=.
 ## minimum number of valid k-mers  present in read needed before considering the read for gene labeling
 num_gene_kmers=20
 lstr=""
-max_count=""
 
 # in some cases you might not want to bother summarizing the human reads
 # turn on if there are a huge # of human reads and you want to save time
@@ -82,7 +76,7 @@ Usage: $0 options
 
 option list:
    --ilst=$lstr : File list LMAT read_label output
-   --db_file=$genedbfile : Memory mapped gene database file
+   --db_file=$dbfile : Memory mapped gene database file
    --verbose=$verbose : Only used for debugging single read queries (too much output for larger datasets)
    --odir=$odir : Place output in this directory (defaults to current)
    --filesum=$fs_file : fastsummary file generated from read_label. When file is specified (optional)
@@ -97,10 +91,11 @@ option list:
    --sfile=$sfile (deafult=$sfile) : use a fastq/a input file instead of output from LMAT's read label
    --threads=$threads : number of threads if input is fastq/a
    --max_count=$max_count (default is no max count): can be used to limit number of genes retrieved for each k-mer (greedy). 100 -> retrieve first 100 genes, will reduce runtime
+
    --version : report version number and exit
 
 example usage:
-$0 --db_file=$genedbfile --ilst=run_lmat_output_file_lst.lst 
+$0 --db_file=$dbfile --ilst=run_lmat_output_file_lst.lst 
 
 "
 
@@ -116,29 +111,27 @@ while test -n "${1}"; do
    case $opt in
    --ilst=*)
       lstr=$optarg;;
-   --sfile=*)
-      sfile=$optarg;;
-   --threads=*)
-      threads=$optarg;;
-   --max_count=*)
-      max_count=$optarg;;
    --odir=*)
       odir=$optarg;;
    --min_read_kmer=*)
       num_gene_kmers=$optarg;;
    --db_file=*)
-      genedbfile=$optarg;;
+      dbfile=$optarg;;
    --filesum=*)
       fs_file=$optarg;;
    --verbose)
       verbose=1;;
    --overwrite)
       overwrite=1;;
-   --min_gene_score*)
+   --min_gene_score=*)
       gene_score=$optarg;;
-   --rank_report)
+   --sfile=*)
+      sfile=$optarg;;
+   --rank_report=*)
       rank_report=$optarg;;
-   --min_tax_score)
+   --threads=*)
+      threads=$optarg;;
+   --min_tax_score=*)
       min_tax_score=$optarg;;
   --version)
       ${bin_dir}read_label -V ; exit;;
@@ -152,6 +145,11 @@ done
 
 min_gene_read=0
 
+mxcntarg=""
+if [ ! $max_count == '' ] ; then
+   mxcntarg="-h $max_count"
+fi
+
 vstr=""
 if [ $verbose == 1 ] ; then
    vstr="-y"
@@ -161,31 +159,34 @@ if [ ! $odir == '' ]; then
     odir="$odir/"
 fi
 
-mxcntarg=""
-if [ ! $max_count == '' ] ; then
-   mxcntarg="-h $max_count"
-fi
+# deterimne if the database needs copying.  clear ssd if so to ensure enough space
+
+dbname=`basename $dbfile`
+
+## k cnts for genes -- use specific file name convention:
+## name of gene database with a .kmercnt extension
+kcntfile="$LMAT_DIR/$dbname.kmercnt"
 
 ## assign gene names
-if [ $genedbfile ] ; then
-      genedbname=`basename $genedbfile`
-      query_file_name=`basename $lstr`
-      qstr="-l $lstr"
+if [ $dbfile ] ; then
       vstr=""
-      if [ $sfile != '' ]; then
-         qstr="-i $sfile -t $threads"
-         query_file_name=`basename $sfile`
-      fi
       ## note need to fix verbose setting to get here (if needed)
       if [ $verbose == 1 ] ; then
          vstr="-y"
       fi
-      genofile="${odir}$query_file_name.$genedbname.gl_output"
-      logfile="${odir}$query_file_name.$genedbname.gl_output.log"
+      if [ $sfile ]; then
+         qstr="-i $sfile -t $threads"
+         query_file_name=`basename $sfile`
+      else 
+         qstr="-l $lstr"
+         query_file_name=`basename $lstr`
+      fi
+      genofile="${odir}$query_file_name.$dbname.gl_output"
+      logfile="${odir}$query_file_name.$dbname.gl_output.log"
       res=$genofile.$gene_score.$num_gene_kmers.genesummary
       res2=$genofile.$gene_score.$num_gene_kmers.genesummary.min_tax_score.$min_tax_score
       if [ ! -e $res ] || [ $overwrite == 1 ] ; then
-         ${bin_dir}gene_label $vstr $mxcntarg -b $min_tax_score -k $kcntfile -q $num_gene_kmers -x $gene_score -p $qstr -d $genedbfile -o $genofile -g $genefile >& $logfile
+         ${bin_dir}gene_label $vstr $mxcntarg -b $min_tax_score -k $kcntfile -q $num_gene_kmers -x $gene_score -p $qstr -d $dbfile -o $genofile -g $genefile >& $logfile
          cat $res | sort -k1gr,1gr > tmp.$$
          mv tmp.$$ $res 
          min_map_reads=10
@@ -194,6 +195,6 @@ if [ $genedbfile ] ; then
          fi
       fi
 else
-   echo "Could not localte database file: $genedbfile"
+   echo "Could not localte database file: $dbfile"
    exit 1
 fi
