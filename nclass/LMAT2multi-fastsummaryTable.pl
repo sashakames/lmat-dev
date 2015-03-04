@@ -43,6 +43,28 @@ my %data_by_org=();
 
 my @num_reads_array=();
 
+<<<<<<< HEAD
+=======
+my %valid;
+for (my $i=0 ; $i<@File ; $i++) {
+    my $file=$File[$i];
+    open IN,"$file" or warn "Cannot open $file: $!\n";
+    my ($avg_score,$wrc,$rc,$taxid,$org);
+    while (my $line=<IN>) {
+	    chomp $line;
+       if ($file =~ /fastsummary$/) {
+          ($wrc,$rc,$taxid,$org) = split/\t/,$line;
+          $avg_score=$wrc/$rc;
+       } else {
+           ($avg_score,$wrc,$rc,$taxid,$org,@junk) = split/\t/,$line;
+       }
+       if( $rc >= $min_reads && $avg_score >= $avg_score_min ) {
+           $valid{$taxid}=1;
+       }
+    }
+}
+
+>>>>>>> master
 for (my $i=0 ; $i<@File ; $i++) {
     my $file=$File[$i];
 
@@ -59,7 +81,11 @@ for (my $i=0 ; $i<@File ; $i++) {
     chomp $thisdir;
     print "dir: $thisdir\n";
     my $cmd="grep \" reads in\" $thisdir/$prefix*_output.log "  ;
+<<<<<<< HEAD
     #print "$cmd\n";
+=======
+    print "$cmd\n";
+>>>>>>> master
     my $z=`$cmd`;
     my $num_reads=0;
     if ($z=~ /(\d+)/) {
@@ -79,7 +105,12 @@ for (my $i=0 ; $i<@File ; $i++) {
 	} else {
 	     ($avg_score,$wrc,$rc,$taxid,$org,@junk) = split/\t/,$line;
 	}
+<<<<<<< HEAD
 	if ($rc/$num_reads >= $min_frac && $rc >= $min_reads && $avg_score >= $avg_score_min  ) {
+=======
+	#if ($rc/$num_reads >= $min_frac && $rc >= $min_reads && $avg_score >= $avg_score_min  ) {
+	if ($rc/$num_reads >= $min_frac && $avg_score >= $avg_score_min && $valid{$taxid}  ) {
+>>>>>>> master
 	    # print "$org $rc ",$rc/$num_reads,"\n";
 	    $org =~ s/^\s+//;
 	    $org =~ s/\s+$//;
