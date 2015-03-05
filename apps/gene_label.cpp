@@ -47,12 +47,8 @@ typedef map<uint32_t,uint32_t> map_t;
 typedef map<uint32_t,float> ufmap_t;
 typedef map<uint16_t, ufmap_t> u_ufmap_t;
 typedef map<uint32_t,uint32_t> hmap_t;
-<<<<<<< HEAD
-typedef map<uint32_t,float> hfmap_t;
-=======
 typedef map<kmer_t,uint32_t> kmap_t;
 
->>>>>>> master
 typedef map<TID_T,uint32_t> tmap_t;
 typedef pair<string,string> read_pair;
 
@@ -155,38 +151,6 @@ static void doMerge(const vector< map<TID_T,map<KT,VL> > >& gtrackall,
    typedef map<KT,VL> map_t;
    typedef typename map<TID_T,map_t>::const_iterator mit_t;
 
-<<<<<<< HEAD
-
-static void doMergeF(const vector< map<TID_T,hfmap_t> >& gtrackall, map<uint32_t,ufmap_t>& merge_cnt) {
-   for(unsigned thread = 0; thread < gtrackall.size();  ++thread) {
-      const map<TID_T,hfmap_t>& gt = const_cast<map<TID_T,hfmap_t>&>(gtrackall[thread]);
-      map<TID_T,hfmap_t>::const_iterator it = gt.begin();
-      const map<TID_T,hfmap_t>::const_iterator is = gt.end();
-      for(; it != is; ++it) {
-         TID_T tid = (*it).first;
-         const hfmap_t& hm = (*it).second;
-         hfmap_t::const_iterator it1 = hm.begin();
-         const hfmap_t::const_iterator is1 = hm.end();
-         for(; it1 != is1; ++it1) {
-            uint32_t gid = (*it1).first;
-            float score = (*it1).second;
-            if( merge_cnt.find(gid) == merge_cnt.end() ) {
-               merge_cnt.insert( make_pair(gid,ufmap_t()));
-            }
-            if( merge_cnt[gid].find(tid) == merge_cnt[gid].end() ) {
-               merge_cnt[gid][tid] = score;
-            } else {
-               merge_cnt[gid][tid] += score;
-            }
-         }
-      }
-   }
-}
-
-
-static void doMerge(const vector< map<TID_T,hmap_t> >& gtrackall, map<uint32_t,tmap_t>& merge_cnt) {
-=======
->>>>>>> master
    for(unsigned thread = 0; thread < gtrackall.size();  ++thread) {
       const map<TID_T,map_t>& gt = const_cast<map<TID_T,map_t>&>(gtrackall[thread]);
       mit_t it = gt.begin();
@@ -345,14 +309,7 @@ track_gene_kmers(INDEXDBSZ* table, const char* str, const int slen, const kmer_t
 
 
 void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs, 
-<<<<<<< HEAD
-               const ScoreOptions& sopt, uint16_t max_count, 
-               hmap_t& gene_update, hmap_t& gene_update_taxscore, 
-               hfmap_t& gene_score_update, hfmap_t& gene_score_update_taxscore, 
-               float min_score, int min_kmer, const string& hdr, const taxid_t tid, float tscore, float min_tax_score) {
-=======
                const ScoreOptions& sopt, uint16_t max_count, TrackCon& ct, float min_score, int min_kmer, const string& hdr, const taxid_t tid, float tscore, float min_tax_score, int thread) {
->>>>>>> master
 
      const int ri_len = line.length();
      if(ri_len < 0 ) {
@@ -390,21 +347,12 @@ void proc_line(const string &line, int k_size, INDEXDBSZ *table, ofstream &ofs,
            ofs<<hdr<<"\t"<<line<<"\t"<<tid<<" "<<tscore<<"\t";
            ofs<<"\t"<<-1<<" "<<gsort[0].second<<" "<<cnt<<"\t"<<gl<<" "<<gscore<<" GL"<<endl;
            if( gscore > min_score && (signed)cnt > min_kmer) {
-<<<<<<< HEAD
-               ++gene_update[gl];
-               gene_score_update[gl] += gscore;
-           } 
-           if( tscore >= min_tax_score && gscore > min_score && (signed)cnt > min_kmer) {
-               ++gene_update_taxscore[gl];
-               gene_score_update_taxscore[gl] += gscore;
-=======
                ++track[gl][tid];
                score_track[gl][tid] += gscore;
            } 
            if( tscore >= min_tax_score && gscore > min_score && (signed)cnt > min_kmer) {
                ++track_tax[gl][tid];
                score_track_tax[gl][tid] += gscore;
->>>>>>> master
            } 
         } else {
            //ofs<<hdr<<"\t"<<line<<"\t"<<tid<<"\t";
@@ -631,13 +579,6 @@ int main(int argc, char* argv[])
    }
    assert(n_threads>0);
    omp_set_num_threads(n_threads);
-<<<<<<< HEAD
-   vector< map<TID_T,hfmap_t> > score_gtrackall(n_threads);
-   vector< map<TID_T,hfmap_t> > score_gtrackall_tax(n_threads);
-
-   vector< map<TID_T,hmap_t> > gtrackall(n_threads);
-   vector< map<TID_T,hmap_t> > gtrackall_tax(n_threads);
-=======
    vector< map<TID_T,kmap_t> > track_kmers(n_threads);
    vector< map<TID_T,hmap_t> > gtrack(n_threads);
    vector< map<TID_T,hmap_t> > gtrack_tax(n_threads);
@@ -645,7 +586,6 @@ int main(int argc, char* argv[])
    vector< map<TID_T,hfmap_t> > score_gtrack_tax(n_threads);
 
    TrackCon trcon(gtrack,gtrack_tax,track_kmers,score_gtrack,score_gtrack_tax);
->>>>>>> master
    string line;
    bool finished;
    size_t pos = 0 ;
@@ -669,11 +609,7 @@ int main(int argc, char* argv[])
    }
 
 
-<<<<<<< HEAD
-#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, gtrackall, gtrackall_tax, score_gtrackall, score_gtrackall_tax, min_score, min_kmer, min_tax_score)  private(ifs,finished, pos, ofs, ofname, line, read_count)
-=======
 #pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, trcon, min_score, min_kmer, min_tax_score,in_finished,buffer_lock,read_buffer_q,read_count_in, read_count_out, n_threads, ifs)  private(finished, pos, ofs, ofname, line, read_count)
->>>>>>> master
 
    {
      bool useFasta = query_fn.length() > 0 ? true : false;
@@ -742,38 +678,22 @@ int main(int argc, char* argv[])
        if( match_type[0] == 'N' || match_type[0] == 'R' ) {
          taxid=0;
        }
-<<<<<<< HEAD
-       map<TID_T,hfmap_t>& score_track = score_gtrackall[omp_get_thread_num()];
-       map<TID_T,hfmap_t>& score_track_tax = score_gtrackall_tax[omp_get_thread_num()];
-
-       map<TID_T,hmap_t>& track = gtrackall[omp_get_thread_num()];
-       map<TID_T,hmap_t>& track_tax = gtrackall_tax[omp_get_thread_num()];
-       hmap_t& gtrack_tax = track_tax[taxid];
-       hmap_t& gtrack = track[taxid];
-       hfmap_t& score_gtrack_tax = score_track_tax[taxid];
-       hfmap_t& score_gtrack = score_track[taxid];
-	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, gtrack, gtrack_tax, score_gtrack, score_gtrack_tax, min_score, min_kmer, hdr,taxid,tax_score, min_tax_score);
-=======
        //map<TID_T,hmap_t>& track = gtrackall[omp_get_thread_num()];
        //map<TID_T,hmap_t>& track_tax = gtrackall_tax[omp_get_thread_num()];
        //hmap_t& gtrack_tax = track_tax[taxid];
        //hmap_t& gtrack = track[taxid];
 	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, trcon,  min_score, min_kmer, hdr,taxid,tax_score, min_tax_score,omp_get_thread_num());
 
->>>>>>> master
 	    read_count ++;
      }
      ofs.close();
      } 
    }
 
-<<<<<<< HEAD
-=======
    cout<<"here? "<<endl;
    
    map<uint32_t,map<kmer_t,uint32_t> >  merge_cnt_kmer;
    doMerge<kmer_t,uint32_t>(trcon._ktrack,merge_cnt_kmer);
->>>>>>> master
    map<uint32_t,tmap_t>  merge_cnt;
    doMerge<uint32_t,uint32_t>(trcon._gtrack,merge_cnt);
    map<uint32_t,tmap_t>  merge_cnt_tax;
@@ -783,11 +703,6 @@ int main(int argc, char* argv[])
    doMerge<TID_T,float>(trcon._score_gtrack,score_merge_cnt);
    map<uint32_t,map<TID_T,float> >  score_merge_cnt_tax;
    doMerge<TID_T,float>(trcon._score_gtrack_tax,score_merge_cnt_tax);
-
-   map<uint32_t,ufmap_t>  score_merge_cnt;
-   doMergeF(score_gtrackall,score_merge_cnt);
-   map<uint32_t,ufmap_t>  score_merge_cnt_tax;
-   doMergeF(score_gtrackall_tax,score_merge_cnt_tax);
 
    igzstream zipifs(genefile.c_str());
    if( !zipifs ) {
@@ -842,14 +757,6 @@ int main(int argc, char* argv[])
          //sum_ofs<<"\t"<<num_kmers<<" "<<sum_kmer_cnt<<endl;
          tmap_t::const_iterator ti1 = merge_cnt[gid].begin();
          const tmap_t::const_iterator ts = merge_cnt[gid].end();
-<<<<<<< HEAD
-         for(; ti != ts; ++ti) {
-            TID_T label = (*ti).first;
-            uint32_t cnt = (*ti).second;
-            float score = score_merge_cnt[gid][label];
-            float avg=score/(float)cnt;
-            sum_ofs<<avg<<"\t"<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
-=======
          for(; ti1 != ts; ++ti1) {
             const TID_T label = (*ti1).first;
             const uint32_t cnt = (*ti1).second;
@@ -864,7 +771,6 @@ int main(int argc, char* argv[])
                gene_cov = (float)num_kmers/(float)tot;
             }
             sum_ofs<<avg<<"\t"<<cnt<<"\t"<<label<<"\t"<<buff<<"\t"<<num_kmers<<"\t"<<sum_kmer_cnt<<"\t"<<tot<<"\t"<<gene_cov<<"\t"<<redun<<endl;
->>>>>>> master
          }
       } 
       if( merge_cnt_tax.find(gid) != merge_cnt_tax.end() ) {
@@ -873,13 +779,8 @@ int main(int argc, char* argv[])
          for(; ti != ts; ++ti) {
             TID_T label = (*ti).first;
             uint32_t cnt = (*ti).second;
-<<<<<<< HEAD
-            float score = score_merge_cnt_tax[gid][label];
-            float avg=score/(float)cnt;
-=======
             const float score = score_merge_cnt_tax[gid][label];
             const float avg=score/(float)cnt;
->>>>>>> master
             sum_ofs_tax<<avg<<"\t"<<cnt<<"\t"<<label<<"\t"<<buff<<endl;
          }
       }

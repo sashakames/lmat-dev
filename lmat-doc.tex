@@ -47,6 +47,17 @@
 
 \section{What's New in Version \lmatver}
 
+
+\begin{itemize}
+\item
+Support for ``Compacted'' ML databases.  See 
+\end{itemize}
+
+
+{\it Earlier updates:}
+
+Version 1.2.3
+
 \begin{itemize}
 \item
 Updated reference databases.
@@ -65,7 +76,7 @@ New utility for output formatted for use with other tools.
 
 \end{itemize}
 
-{\it Earlier updates:}
+
 Version 1.2.3
 
 \begin{itemize}
@@ -521,6 +532,8 @@ lmat-world-region & Database for binning human reads by world region & 2 \\
 \hline
 \end{tabular}
 
+There are additionally several ``compacted'' databases.  For these databases, part of the index table has been reduced in size, so the index has a smaller footprint in your system's filesystem buffer cache.  This is helpful for systems with 16 GB of main memory. and running from an SSD.  get\_db.sh displays these database names.  Each use 32 GB of storage due to file preallocation, but will use smaller buffer cache sizes.
+
 Previous databases (using 9/4/13 sequence data):
 
 \begin{tabular}{| c | c | c |}
@@ -776,11 +789,10 @@ Run '\texttt{make\_db\_table};' run with no options for usage information.
 
    When running  \nameref{sec:scoring} you would specify "\texttt{-d my\_ref\_db}"  
 
- To use make\_db\_table with values of $k$ (-k) other than 20, requires
- recompiling with alternate environment variables set.  For 18-mers
- ($k=18$) set the variable SDBIDX=1827 prior to compilation.  This sets up LMAT's
- two-level indexing to work with 18-mers.  Other LMAT binaries do not
- require this change for use with 18-mer databases built in this way.
+ 
+ To use make\_db\_table with 18-mers, you must use the ``-e 1827'' command line argument.  This properly configures the indexing for $k=18$.  
+
+The -e option also enables "compacted" databases which can be helpful for running databases on limited main memory systems, eg. 16 gb. For these databases use ``-e 2025''.   For 24gb using the default value has shown the best measured runtime performance. 
 
 For values of $k$ other than 18 or 20, set the environment variable
  USE_SORTED_DB=0 prior to compilation.  All LMAT binaries must be
@@ -982,6 +994,8 @@ The LMAT software distribution comes with scripts to generate these files.  \tex
 The \texttt{make\_db\_table} utility included to produce the database index file (used by the LMAT classifier) has the ability to add human (ncbi: 9606) specific k-mers from an additional feed.  K-mers in this feed should be in ascii form with out duplicates, lexicographically sorted, and in canonicalized form.  Use \texttt{-j} command-line option to specify the input file for this feed of k-mers.  Additionally, \texttt{-c} must specify the count of these k-mers.
 
 The second additional feed is used to specify k-mers from "synthetic construct" sequences that should map exclusively to that taxonomy id (ncbi: 32630).  This feature will assist LMAT in identifying reads to such sequences without ambiguity given that these sequences often contaminate reference sequences.  Use \texttt{-u} command-line option to specify the filename.  As with the human k-mer feed, k-mers in this feed should be in ascii form with out duplicates, lexicographically sorted, and in canonicalized form.
+
+
 
 \section{AUSPICES STATEMENT}
 
