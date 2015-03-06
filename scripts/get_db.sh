@@ -39,11 +39,12 @@ usage="
 
 
 
-
-
     Current runtime input files:
-    04072014 - use for all databases except world-region
+    04072014.v2 - use for all databases except world-region.  Also supports update to gene_label binary - this download has additional files not included in the previous version 04072014 (which does not support the Compacted Microbial databases or the gene_label update)
+
     world-region - use for world-region 
+
+    
 
     Legacy names for older databases
     <kML-18mer-large|kML-18mer-medium|kML-18mer-small|gene-20mer|kFull-20mer|inputs> [Destination path for database/input files]
@@ -158,7 +159,7 @@ then
 
     abspath=`readlink -f $outdir`
 
-    echo "For LMAT to run correctly, please set the LMAT_DIR environment variable to $abspath"
+    echo "For LMAT to run correctly, please set the LMAT_DIR environment variable to $abspath/runtime_inputs"
 
     
 else
