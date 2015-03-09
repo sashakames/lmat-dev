@@ -39,12 +39,11 @@ usage="
 
 
 
+
+
     Current runtime input files:
-    04072014.v2 - use for all databases except world-region.  Also supports update to gene_label binary - this download has additional files not included in the previous version 04072014 (which does not support the Compacted Microbial databases or the gene_label update)
-
+    04072014 - use for all databases except world-region
     world-region - use for world-region 
-
-    
 
     Legacy names for older databases
     <kML-18mer-large|kML-18mer-medium|kML-18mer-small|gene-20mer|kFull-20mer|inputs> [Destination path for database/input files]
@@ -159,7 +158,7 @@ then
 
     abspath=`readlink -f $outdir`
 
-    echo "For LMAT to run correctly, please set the LMAT_DIR environment variable to $abspath/runtime_inputs"
+    echo "For LMAT to run correctly, please set the LMAT_DIR environment variable to $abspath"
 
     
 else
@@ -181,7 +180,7 @@ else
       if [ $cmprs == "lzma" ] ; then
           wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/$file | unlzma > $outdir/$name
       elif [ $cmprs == "gz" ] ; then 
-          wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/$file | gunzip > $outdir/$name
+          wget -q -O - ftp://gdo-bioinformatics.ucllnl.org/pub/lmat/$name/$file | gunzip -c | cp --sparse=always /proc/self/fd/0 $outdir/$name
       else 
           echo "Unrecognized compression, failed to download"
       fi

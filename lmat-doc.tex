@@ -50,7 +50,7 @@
 
 \begin{itemize}
 \item
-Support for ``Compacted'' ML databases.  Run get\_db.sh to see list.
+Support for ``Compacted'' ML databases.  Run get\_db.sh to see list. get_db creates ``sparse'' files.
 \item
 For genes reported from the gene database, report new k-mer statistics.
 \item
@@ -565,7 +565,7 @@ lmat-world-region & Database for binning human reads by world region & 2 \\
 \end{tabular}
 
 
-There are additionally several ``compacted'' databases.  For these databases, part of the index table has been reduced in size, so the index has a smaller footprint in your system's filesystem buffer cache.  This is helpful for systems with 16 GB of main memory. and running from an SSD.  get\_db.sh displays these database names.  Each use 32 GB of storage due to file preallocation, but will use smaller buffer cache sizes.
+There are additionally several ``compacted'' databases.  For these databases, part of the index table has been reduced in size, so the index has a smaller footprint in your system's filesystem buffer cache.  This is helpful for systems with 16 GB of main memory. and running from an SSD.  get\_db.sh displays these database names.  These databases are ``sparse'' files, so reported file size for each will be 32 GB, but the actual storage used in the file system will be less.  Use du -h to report information on actual file storage.
 
 
 Previous databases (using 9/4/13 sequence data):
