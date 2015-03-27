@@ -1,7 +1,7 @@
 #!/bin/sh
 #  set version number
 
-verno=1.2.5
+verno=1.2.6
 
 
 reldir=../../LMAT-$verno
@@ -134,7 +134,7 @@ done
 
 for n in gen_rand_mod.sh merge_cnts.py combine_counts.py
 do
-cp ../rmodel/$n  $reldir/bin
+    cp ../rmodel/$n  $reldir/bin
 done
 
 #copy download script

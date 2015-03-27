@@ -559,10 +559,13 @@ int main(int argc, char* argv[])
    }
 
 #endif
+
    //cout << "End kmer DB load\n";
    //cout << "DB size is " << table->size() << endl;
 
    assert(k_size > 0 );
+
+   taxtable->set_config();
 
    size_t * arr= NULL;
    string * file_lst=NULL;
