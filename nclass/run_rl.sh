@@ -50,8 +50,6 @@ dbfile=""
 taxtree="$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat.nohl"
 ## content_caller_qsum.py  uses the non pruned version
 noprune_taxtree=$LMAT_DIR/ncbi_taxonomy.segment.pruned.dat
-## Used by gene_label to assign human readable names to genes
-genefile="$LMAT_DIR/gn_ref2.txt.gz"
 ## Stores tree depth of each taxnomy node
 depthf="$LMAT_DIR/depth_for_ncbi_taxonomy.segment.pruned.dat"
 ## identify the rank for each taxid - uses a keyword "strain" to identify ranks below species
