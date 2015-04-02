@@ -567,15 +567,9 @@ int main(int argc, char* argv[])
 
    taxtable->set_config();
 
-   size_t * arr= NULL;
+
    string * file_lst=NULL;
    ifstream ifs;
-   //if( query_fn.length() > 0 ) {
-      /* ASSUME READ FITS ON ONE LINE FOR NOW!! */
-      //ifs.open(query_fn.c_str());
-      //arr = split_file(n_threads, ifs);
-      //ifs.close();
-   //} else 
    if( query_fn_lst.length() > 0 ) {
       file_lst = split_file_names(n_threads,query_fn_lst);
       cout<<"set threads="<<n_threads<<endl;
@@ -612,7 +606,7 @@ int main(int argc, char* argv[])
    }
 
 
-#pragma omp parallel shared(arr, file_lst, k_size, query_fn, ofbase, taxtable, sopt, trcon, min_score, min_kmer, min_tax_score,in_finished,buffer_lock,read_buffer_q,read_count_in, read_count_out, n_threads, ifs)  private(finished, pos, ofs, ofname, line, read_count)
+#pragma omp parallel shared(file_lst, k_size, query_fn, ofbase, taxtable, sopt, trcon, min_score, min_kmer, min_tax_score,in_finished,buffer_lock,read_buffer_q,read_count_in, read_count_out, n_threads, ifs)  private(finished, pos, ofs, ofname, line, read_count)
 
    {
      bool useFasta = query_fn.length() > 0 ? true : false;
@@ -631,70 +625,56 @@ int main(int argc, char* argv[])
          fn = file_lst[ omp_get_thread_num() ].c_str();
      }  
      if( !useFasta ) {
-     ifs.open(fn);
-     if(!ifs) {
-         cerr<<"did not open for reading: ["<<fn<<"] tid: ["<<omp_get_thread_num()<<"]"<<endl;
-         exit(-1);
-     }
-     if( arr ) {
-      ifs.seekg(arr[omp_get_thread_num()]);
-     }
-     while (!finished)   {
-       getline(ifs, line);
-       pos = ifs.tellg();
-       if ((signed)pos == -1) {
-          finished = true;   
+        ifstream local_ifs;
+        local_ifs.open(fn);
+        if(!local_ifs) {
+            cerr<<"did not open for reading: ["<<fn<<"] tid: ["<<omp_get_thread_num()<<"]"<<endl;
+            exit(-1);
+        }
+        while (!finished)   {
+          getline(local_ifs, line);
+          pos = local_ifs.tellg();
+          if ((signed)pos == -1) {
+             finished = true;   
 
-       }
-       if( arr ) {
-          if ((pos >= arr[1+omp_get_thread_num()]) ) {
-            finished = true;
-          } 
-       }
-       taxid_t taxid;
-       size_t p1 = line.find('\t');
-       string hdr = line.substr(0,p1);
+          }
+          taxid_t taxid;
+          size_t p1 = line.find('\t');
+          string hdr = line.substr(0,p1);
 
-       size_t p2 = line.find('\t',p1+1);
-       const string read_buff = line.substr(p1+1,p2-p1-1);
+          size_t p2 = line.find('\t',p1+1);
+          const string read_buff = line.substr(p1+1,p2-p1-1);
 
-       size_t p3 = line.find('\t',p2+1);
-       string stats = line.substr(p2+1,p3-p2-1);
-       istringstream istrm2(stats.c_str());
-       float score1,score2,score3;
-       istrm2>>score1>>score2>>score3;
-       // means this read lacks valid k-mers
-       if( score3 == -1 ) continue;
-       
-       size_t p4 = line.find('\t',p3+1);
-       //string ignore_alt_scores = line.substr(p3+1,p4-p3-1);
-       size_t p5 = line.find('\t',p4+1);
-       string taxid_w_scores = line.substr(p4+1,p5-p4);
+          size_t p3 = line.find('\t',p2+1);
+          string stats = line.substr(p2+1,p3-p2-1);
+          istringstream istrm2(stats.c_str());
+          float score1,score2,score3;
+          istrm2>>score1>>score2>>score3;
+          // means this read lacks valid k-mers
+          if( score3 == -1 ) continue;
+          
+          size_t p4 = line.find('\t',p3+1);
+          size_t p5 = line.find('\t',p4+1);
+          string taxid_w_scores = line.substr(p4+1,p5-p4);
 
-       istringstream istrm(taxid_w_scores.c_str());
-       float tax_score = 0.0;
-       string match_type;
-       
-       istrm >>taxid>>tax_score>>match_type; 
-       // check keywords from read_label output -
-       // NoDbHits or ReadTooShort  (valid hits are DirectMatch and MultiMatch or PartialMultiMatch)
-       if( match_type[0] == 'N' || match_type[0] == 'R' ) {
-         taxid=0;
-       }
-       //map<TID_T,hmap_t>& track = gtrackall[omp_get_thread_num()];
-       //map<TID_T,hmap_t>& track_tax = gtrackall_tax[omp_get_thread_num()];
-       //hmap_t& gtrack_tax = track_tax[taxid];
-       //hmap_t& gtrack = track[taxid];
-	    proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, trcon,  min_score, min_kmer, hdr,taxid,tax_score, min_tax_score,omp_get_thread_num());
+          istringstream istrm(taxid_w_scores.c_str());
+          float tax_score = 0.0;
+          string match_type;
+          
+          istrm >>taxid>>tax_score>>match_type; 
+          // check keywords from read_label output -
+          // NoDbHits or ReadTooShort  (valid hits are DirectMatch and MultiMatch or PartialMultiMatch)
+          if( match_type[0] == 'N' || match_type[0] == 'R' ) {
+            taxid=0;
+          }
+          proc_line(read_buff, k_size, taxtable, ofs, sopt, max_count, trcon,  min_score, min_kmer, hdr,taxid,tax_score, min_tax_score,omp_get_thread_num());
 
-	    read_count ++;
-     }
-     ofs.close();
-     } 
+          read_count ++;
+        }
+        ofs.close();
+      } 
    }
 
-   cout<<"here? "<<endl;
-   
    map<uint32_t,map<kmer_t,uint32_t> >  merge_cnt_kmer;
    doMerge<kmer_t,uint32_t>(trcon._ktrack,merge_cnt_kmer);
    map<uint32_t,tmap_t>  merge_cnt;
